@@ -156,6 +156,10 @@ Keep it short and concrete:
   (with reason).
 - Judgment calls: inferred states, links left as `#`, form submit TODOs, colours that fail
   contrast, breakpoint decisions.
+- A reviewing tip: the converted page honours `prefers-reduced-motion`, so a reviewer whose OS
+  has animations turned off (Windows: Accessibility → Visual effects → Animation effects) will see
+  a static page. The original export often still animates, because its reduced-motion rule misses
+  pseudo-elements. Say this up front so it isn't mistaken for a broken animation.
 
 ## Re-syncing an updated export
 
