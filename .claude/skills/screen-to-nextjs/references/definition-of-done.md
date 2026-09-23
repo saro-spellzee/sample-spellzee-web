@@ -51,7 +51,8 @@ where you have doubts, not all of them by default.
 - [ ] Text contrast ≥ 4.5:1 (3:1 for large text). Flag any design colour that fails rather than silently changing it
 
 ## 8. Performance (`performance-optimization`)
-- [ ] LCP image uses `next/image` with `preload`; others lazy with correct `sizes`
+- [ ] LCP image uses `next/image` with `loading="eager"` + `fetchPriority="high"`; others lazy with correct `sizes`
+- [ ] Hero text doesn't start at `opacity: 0` (it would drop out of LCP)
 - [ ] Fonts via `next/font`, only the weights used
 - [ ] No layout shift from images or fonts (dimensions known, font `display` handled by next/font)
 - [ ] Client JS limited to interactive leaves; heavy canvas code only in the components that use it

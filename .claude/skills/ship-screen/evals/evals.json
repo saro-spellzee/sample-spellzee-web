@@ -1,0 +1,23 @@
+{
+  "skill_name": "ship-screen",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/ship-screen homepage --no-convert",
+      "expected_output": "Pre-flight creates feat/homepage-quality from a clean tree and installs test tooling (committed). Phases 3-12 each run in their own subagent, leave gates green and are committed separately without Co-Authored-By trailers. Final: tests exist and pass, 0 serious axe violations except listed contrast decisions, security headers present with the route still static, Lighthouse numbers reported against budgets, broken programme links and contrast colours listed under decisions, .quality/homepage/REPORT.md written, nothing pushed.",
+      "files": ["screens/homepage/Main.dc.html"]
+    },
+    {
+      "id": 2,
+      "prompt": "screens/pricing la puthu design export pottiruken. /screen-to-nextjs pricing - convert panni ellaa checks-um run pannu",
+      "expected_output": "screen-to-nextjs hands off to ship-screen; the convert phase runs in the screen-converter agent and reuses existing tokens/primitives/header/footer (promoting header/footer to components/layout on this second screen); route /pricing; then every quality phase in order; final report with decisions.",
+      "files": ["screens/pricing/Main.dc.html"]
+    },
+    {
+      "id": 3,
+      "prompt": "homepage la a11y and perf phases mattum thirumba run pannu, mobile perf budget 85 vei",
+      "expected_output": "ship-screen with --no-convert --only a11y,perf --budget mobile.perf=85: build gate first, then only the a11y and perf agents, committed per phase, short report.",
+      "files": []
+    }
+  ]
+}

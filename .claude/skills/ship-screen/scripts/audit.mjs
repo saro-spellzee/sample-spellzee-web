@@ -1,0 +1,407 @@
+#!/usr/bin/env node
+// Production audit for the ship-screen pipeline. Starts `next start` on the
+// existing build (or uses --url), then runs any of:
+//   console    console errors/warnings, page errors, failed requests (1440 + 390)
+//   links      every internal link resolves (status + #anchor target exists)
+//   axe        axe-core WCAG 2.2 AA scan (1440 + 390)
+//   headers    security response headers
+//   lighthouse Lighthouse mobile + desktop, checked against budgets
+//   capture    design fidelity vs the screens/ export (needs --original), via screen-to-nextjs/capture.mjs
+// Writes <out>/audit.md + audit.json and prints the markdown.
+//
+// Usage (from the project root, after `npm run build`):
+//   node .claude/skills/ship-screen/scripts/audit.mjs --routes / [--checks console,links,axe,headers,lighthouse,capture]
+//        [--original screens/<screen>/Main.dc.html] [--widths 1440,1000,390]
+//        [--out .quality/<screen>/audit] [--url http://localhost:3000] [--budget mobile.perf=85,desktop.lcp=2000] [--strict]
+// Default checks: everything except capture (capture is added automatically when --original is given).
+//
+// Needs `playwright` (and `axe-core` for the axe check) resolvable from the project.
+
+import { spawn, spawnSync } from "node:child_process";
+import { createRequire } from "node:module";
+import fs from "node:fs";
+import net from "node:net";
+import path from "node:path";
+
+const argv = process.argv.slice(2);
+const opt = (n, d) => {
+  const i = argv.indexOf(`--${n}`);
+  return i >= 0 ? argv[i + 1] : d;
+};
+const flag = (n) => argv.includes(`--${n}`);
+
+const cwd = process.cwd();
+const req = createRequire(path.join(cwd, "package.json"));
+// Git Bash (MSYS) rewrites a "/about" argument into "C:/Program Files/Git/about"; undo that,
+// and accept routes written without the leading slash ("about", "home" = "/").
+const normalizeRoute = (r) => {
+  const msys = r.match(/^[A-Za-z]:[\\/].*?[\\/]Git([\\/].*)?$/i);
+  let route = msys ? (msys[1] || "/").replace(/\\/g, "/") : r;
+  if (route === "home") route = "/";
+  return route.startsWith("/") ? route : `/${route}`;
+};
+const routes = opt("routes", "/").split(",").map((r) => r.trim()).filter(Boolean).map(normalizeRoute);
+const checks = new Set(opt("checks", `console,links,axe,headers,lighthouse${opt("original") ? ",capture" : ""}`).split(","));
+const outDir = opt("out", ".quality/audit");
+fs.mkdirSync(outDir, { recursive: true });
+
+const budgets = {
+  desktop: { perf: 90, a11y: 95, bp: 95, seo: 95, lcp: 2500, cls: 0.1, tbt: 200 },
+  mobile: { perf: 80, a11y: 95, bp: 95, seo: 95, lcp: 4000, cls: 0.1, tbt: 300 },
+};
+for (const pair of (opt("budget", "") || "").split(",").filter(Boolean)) {
+  const [key, value] = pair.split("=");
+  const [mode, metric] = key.split(".");
+  if (budgets[mode] && metric in budgets[mode]) budgets[mode][metric] = Number(value);
+}
+
+// ---------- server ----------
+const freePort = () =>
+  new Promise((resolve) => {
+    const s = net.createServer();
+    s.listen(0, () => {
+      const { port } = s.address();
+      s.close(() => resolve(port));
+    });
+  });
+
+let server;
+let base = opt("url");
+if (!base) {
+  if (!fs.existsSync(path.join(cwd, ".next", "BUILD_ID"))) {
+    console.error("No production build found (.next/BUILD_ID). Run `npm run build` (or gates.mjs) first, or pass --url.");
+    process.exit(2);
+  }
+  const port = Number(opt("port", 0)) || (await freePort());
+  const nextBin = req.resolve("next/dist/bin/next");
+  let log = "";
+  server = spawn(process.execPath, [nextBin, "start", "-p", String(port)], { cwd, stdio: ["ignore", "pipe", "pipe"] });
+  server.stdout.on("data", (d) => (log += d));
+  server.stderr.on("data", (d) => (log += d));
+  base = `http://localhost:${port}`;
+  const deadline = Date.now() + 60_000;
+  for (;;) {
+    try {
+      const r = await fetch(base + routes[0], { signal: AbortSignal.timeout(5000) });
+      if (r.status < 500) break;
+    } catch {}
+    if (Date.now() > deadline || server.exitCode !== null) {
+      server.kill();
+      console.error(`next start did not come up on ${base}:\n${log.slice(-1500)}`);
+      process.exit(2);
+    }
+    await new Promise((r) => setTimeout(r, 500));
+  }
+}
+const stop = () => server && !server.killed && server.kill();
+process.on("exit", stop);
+process.on("SIGINT", () => process.exit(130));
+
+// ---------- browser ----------
+let chromium;
+try {
+  ({ chromium } = req("playwright"));
+} catch {
+  console.error("playwright is not installed in this project: npm i -D playwright");
+  process.exit(2);
+}
+async function launch() {
+  for (const channel of [undefined, "chrome", "msedge"]) {
+    try {
+      return await chromium.launch(channel ? { channel } : {});
+    } catch {}
+  }
+  console.error("No browser could be launched. Run: npx playwright install chromium");
+  process.exit(2);
+}
+const needsBrowser = ["console", "links", "axe"].some((c) => checks.has(c));
+const browser = needsBrowser ? await launch() : null;
+
+async function openPage(route, width, reducedMotion = "no-preference") {
+  const ctx = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion });
+  const page = await ctx.newPage();
+  const events = [];
+  page.on("console", (m) => ["error", "warning"].includes(m.type()) && events.push({ kind: `console.${m.type()}`, text: m.text().slice(0, 300) }));
+  page.on("pageerror", (e) => events.push({ kind: "pageerror", text: String(e).slice(0, 300) }));
+  page.on("requestfailed", (r) => events.push({ kind: "requestfailed", text: `${r.url()} (${r.failure()?.errorText})` }));
+  page.on("response", (r) => r.status() >= 400 && events.push({ kind: `http ${r.status()}`, text: r.url() }));
+  await page.goto(base + route, { waitUntil: "networkidle", timeout: 60_000 });
+  await page.evaluate(async () => {
+    for (let y = 0; y < document.body.scrollHeight; y += 600) {
+      window.scrollTo(0, y);
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    window.scrollTo(0, 0);
+  });
+  await page.waitForTimeout(500);
+  return { ctx, page, events };
+}
+
+const report = { base, routes, checks: [...checks], budgets, results: {} };
+const md = [`# Audit`, ``, `Server: ${base} · routes: ${routes.join(", ")}`, ``];
+const summary = [];
+const add = (check, route, status, note) => summary.push({ check, route, status, note });
+
+for (const route of routes) {
+  const r = (report.results[route] = {});
+
+  // ---------- console ----------
+  if (checks.has("console")) {
+    const all = [];
+    for (const width of [1440, 390]) {
+      const { ctx, events } = await openPage(route, width);
+      all.push(...events.map((e) => ({ ...e, width })));
+      await ctx.close();
+    }
+    r.console = all;
+    const errors = all.filter((e) => e.kind !== "console.warning");
+    add("console", route, errors.length ? "FAIL" : all.length ? "WARN" : "PASS", `${errors.length} errors, ${all.length - errors.length} warnings`);
+  }
+
+  // ---------- links ----------
+  if (checks.has("links")) {
+    const { ctx, page } = await openPage(route, 1440);
+    const hrefs = await page.evaluate(() => [...new Set([...document.querySelectorAll("a[href]")].map((a) => a.getAttribute("href")))]);
+    const ids = await page.evaluate(() => [...document.querySelectorAll("[id]")].map((e) => e.id));
+    await ctx.close();
+    const internal = hrefs.filter((h) => h && !/^(https?:|mailto:|tel:|javascript:)/i.test(h) || (h && h.startsWith(base)));
+    const broken = [];
+    const htmlCache = new Map();
+    for (const href of internal) {
+      const u = new URL(href, base + route);
+      const samePage = u.pathname === new URL(base + route).pathname;
+      if (!samePage) {
+        if (!htmlCache.has(u.pathname)) {
+          const res = await fetch(base + u.pathname).catch(() => null);
+          htmlCache.set(u.pathname, { status: res?.status ?? 0, html: res && res.ok ? await res.text() : "" });
+        }
+        const t = htmlCache.get(u.pathname);
+        if (t.status >= 400 || t.status === 0) {
+          broken.push({ href, problem: `HTTP ${t.status}` });
+          continue;
+        }
+        if (u.hash && !new RegExp(`id="${u.hash.slice(1)}"`).test(t.html)) broken.push({ href, problem: `no element ${u.hash} on ${u.pathname}` });
+      } else if (u.hash && u.hash !== "#" && !ids.includes(decodeURIComponent(u.hash.slice(1)))) {
+        broken.push({ href, problem: `no element ${u.hash} on this page` });
+      } else if (href === "#") {
+        broken.push({ href, problem: "placeholder link (#)" });
+      }
+    }
+    r.links = { checked: internal.length, broken };
+    add("links", route, broken.length ? "FAIL" : "PASS", `${internal.length} internal links, ${broken.length} broken`);
+  }
+
+  // ---------- axe ----------
+  if (checks.has("axe")) {
+    let axePath;
+    try {
+      axePath = req.resolve("axe-core/axe.min.js");
+    } catch {
+      add("axe", route, "SKIP", "axe-core not installed (npm i -D axe-core)");
+    }
+    if (axePath) {
+      const byRule = new Map();
+      let incomplete = 0;
+      for (const width of [1440, 390]) {
+        // Reduced motion so entrance animations don't leave text mid-fade during contrast checks.
+        const { ctx, page } = await openPage(route, width, "reduce");
+        await page.addScriptTag({ path: axePath });
+        const res = await page.evaluate(() =>
+          // eslint-disable-next-line no-undef
+          axe.run(document, { runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"] } }),
+        );
+        incomplete += res.incomplete.length;
+        for (const v of res.violations) {
+          const prev = byRule.get(v.id) ?? { id: v.id, impact: v.impact, help: v.help, tags: v.tags, widths: [], nodes: [] };
+          prev.widths.push(width);
+          for (const n of v.nodes.slice(0, 4)) prev.nodes.push({ target: n.target.join(" "), summary: (n.failureSummary || "").split("\n")[1]?.trim() ?? "" });
+          byRule.set(v.id, prev);
+        }
+        await ctx.close();
+      }
+      const violations = [...byRule.values()];
+      r.axe = { violations, incomplete };
+      const serious = violations.filter((v) => ["critical", "serious"].includes(v.impact));
+      add("axe", route, serious.length ? "FAIL" : violations.length ? "WARN" : "PASS", `${violations.length} rules violated (${serious.length} serious/critical), ${incomplete} need manual review`);
+    }
+  }
+
+  // ---------- headers ----------
+  if (checks.has("headers")) {
+    const res = await fetch(base + route);
+    const h = Object.fromEntries(res.headers.entries());
+    const csp = h["content-security-policy"] ?? "";
+    const expect = [
+      ["content-security-policy", !!csp],
+      ["strict-transport-security", !!h["strict-transport-security"]],
+      ["x-content-type-options: nosniff", h["x-content-type-options"] === "nosniff"],
+      ["referrer-policy", !!h["referrer-policy"]],
+      ["permissions-policy", !!h["permissions-policy"]],
+      ["clickjacking (x-frame-options or frame-ancestors)", !!h["x-frame-options"] || /frame-ancestors/.test(csp)],
+      ["no x-powered-by", !h["x-powered-by"]],
+    ];
+    r.headers = { present: h, expect: expect.map(([name, ok]) => ({ name, ok })) };
+    const missing = expect.filter(([, ok]) => !ok).map(([n]) => n);
+    add("headers", route, missing.length ? "FAIL" : "PASS", missing.length ? `missing: ${missing.join("; ")}` : "all present");
+  }
+
+  // ---------- capture (design fidelity vs the screens/ export) ----------
+  if (checks.has("capture")) {
+    const original = opt("original");
+    const capture = path.join(cwd, ".claude/skills/screen-to-nextjs/scripts/capture.mjs");
+    if (!original || !fs.existsSync(original)) {
+      add("capture", route, "SKIP", "no --original <screens/<screen>/Main.dc.html> given");
+    } else {
+      const slug = route === "/" ? "home" : route.replace(/^\/|\/$/g, "").replace(/\//g, "_");
+      const capOut = path.join(outDir, `capture-${slug}`);
+      spawnSync(process.execPath, [capture, "--original", original, "--url", base + route, "--out", capOut, "--widths", opt("widths", "1440,1000,390")], { cwd, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+      const repFile = path.join(capOut, "report.json");
+      if (!fs.existsSync(repFile)) {
+        add("capture", route, "SKIP", "capture.mjs produced no report");
+      } else {
+        const rep = JSON.parse(fs.readFileSync(repFile, "utf8"));
+        const perWidth = Object.entries(rep.widths).map(([w, sides]) => {
+          const o = sides.original?.landmarks ?? [];
+          const c = sides.converted?.landmarks ?? [];
+          const drift = o.map((a, i) => (c[i] ? Math.abs(c[i].height - a.height) / Math.max(a.height, 1) : 1));
+          return {
+            width: Number(w),
+            countMatch: o.length === c.length,
+            maxDriftPct: Math.round(Math.max(0, ...drift) * 1000) / 10,
+            maxPixelDiff: Math.max(0, ...c.map((x) => x.diffPct ?? 0)),
+            overflow: sides.converted?.horizontalOverflowPx ?? 0,
+            errors: sides.converted?.errors?.length ?? 0,
+          };
+        });
+        r.capture = { perWidth, report: path.join(capOut, "report.md") };
+        const hard = perWidth.some((p) => !p.countMatch || p.overflow > 0 || p.errors > 0);
+        const soft = perWidth.some((p) => p.maxDriftPct > 4 || p.maxPixelDiff > 5);
+        add("capture", route, hard ? "FAIL" : soft ? "WARN" : "PASS", perWidth.map((p) => `${p.width}: drift ≤${p.maxDriftPct}% diff ≤${p.maxPixelDiff}%${p.countMatch ? "" : " landmark count differs"}${p.overflow ? ` overflow ${p.overflow}px` : ""}`).join(" · "));
+      }
+    }
+  }
+
+  // ---------- lighthouse ----------
+  if (checks.has("lighthouse")) {
+    const env = { ...process.env };
+    if (!env.CHROME_PATH) {
+      const candidates = [
+        "C:/Program Files/Google/Chrome/Application/chrome.exe",
+        "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
+        `${process.env.LOCALAPPDATA}/Google/Chrome/Application/chrome.exe`,
+        "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "/usr/bin/google-chrome",
+        "/usr/bin/chromium",
+      ];
+      try {
+        candidates.unshift(chromium.executablePath());
+      } catch {}
+      const found = candidates.find((p) => p && fs.existsSync(p));
+      if (found) env.CHROME_PATH = found;
+    }
+    r.lighthouse = {};
+    for (const mode of ["mobile", "desktop"]) {
+      const slug = route === "/" ? "home" : route.replace(/^\/|\/$/g, "").replace(/\//g, "_");
+      const file = path.join(outDir, `lighthouse-${slug}-${mode}.json`);
+      const cmd = `npx -y lighthouse@12 "${base + route}" --output=json --output-path="${file}" --quiet --chrome-flags="--headless=new" ${mode === "desktop" ? "--preset=desktop" : ""}`;
+      const run = spawnSync(cmd, { shell: true, env, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+      if (!fs.existsSync(file)) {
+        add(`lighthouse ${mode}`, route, "SKIP", `lighthouse failed: ${(run.stderr || "").split("\n").filter(Boolean).slice(-2).join(" ")}`);
+        continue;
+      }
+      const lh = JSON.parse(fs.readFileSync(file, "utf8"));
+      const a = lh.audits;
+      const cat = (k) => Math.round((lh.categories[k]?.score ?? 0) * 100);
+      const scores = { perf: cat("performance"), a11y: cat("accessibility"), bp: cat("best-practices"), seo: cat("seo") };
+      const metrics = {
+        lcp: Math.round(a["largest-contentful-paint"]?.numericValue ?? 0),
+        cls: Math.round((a["cumulative-layout-shift"]?.numericValue ?? 0) * 1000) / 1000,
+        tbt: Math.round(a["total-blocking-time"]?.numericValue ?? 0),
+        fcp: Math.round(a["first-contentful-paint"]?.numericValue ?? 0),
+      };
+      const findSnippet = (o) => {
+        if (!o || typeof o !== "object") return "";
+        if (typeof o.snippet === "string") return o.snippet.slice(0, 160);
+        for (const v of Object.values(o)) {
+          const s = findSnippet(v);
+          if (s) return s;
+        }
+        return "";
+      };
+      const lcpEl = findSnippet(a["largest-contentful-paint-element"]?.details);
+      const lcpChecklist = [];
+      const walk = (o) => {
+        if (!o || typeof o !== "object") return;
+        if (o.type === "checklist") for (const v of Object.values(o.items)) lcpChecklist.push({ ok: !!v.value, label: v.label });
+        for (const v of Object.values(o)) walk(v);
+      };
+      walk(a["lcp-discovery-insight"]?.details);
+      const b = budgets[mode];
+      const over = [];
+      for (const k of ["perf", "a11y", "bp", "seo"]) if (scores[k] < b[k]) over.push(`${k} ${scores[k]} < ${b[k]}`);
+      for (const k of ["lcp", "cls", "tbt"]) if (metrics[k] > b[k]) over.push(`${k} ${metrics[k]} > ${b[k]}`);
+      // The canonical/hreflang audits compare against the production domain, so they fail on localhost by design.
+      const localNoise = new Set(["canonical", "hreflang"]);
+      const failing = Object.values(a)
+        .filter((x) => typeof x.score === "number" && x.score < 0.9 && ["binary", "numeric", "metricSavings"].includes(x.scoreDisplayMode))
+        .sort((x, y) => x.score - y.score)
+        .map((x) => ({ id: x.id, title: x.title, score: x.score, value: x.displayValue ?? "", expectedOnLocalhost: localNoise.has(x.id) }));
+      r.lighthouse[mode] = { scores, metrics, lcpElement: lcpEl, lcpChecklist, overBudget: over, failing: failing.slice(0, 15), report: file };
+      add(`lighthouse ${mode}`, route, over.length ? "FAIL" : "PASS", `perf ${scores.perf} a11y ${scores.a11y} bp ${scores.bp} seo ${scores.seo} · LCP ${metrics.lcp}ms CLS ${metrics.cls} TBT ${metrics.tbt}ms${over.length ? ` · over budget: ${over.join(", ")}` : ""}`);
+    }
+  }
+}
+
+await browser?.close();
+stop();
+
+// ---------- markdown ----------
+const icon = { PASS: "✅", WARN: "⚠️", FAIL: "❌", SKIP: "⏭️" };
+md.push(`| check | route | result | notes |`, `|---|---|---|---|`);
+for (const s of summary) md.push(`| ${s.check} | ${s.route} | ${icon[s.status]} ${s.status} | ${s.note} |`);
+
+for (const [route, r] of Object.entries(report.results)) {
+  if (r.console?.length) {
+    md.push(``, `## Console / network: ${route}`);
+    for (const e of r.console.slice(0, 20)) md.push(`- [${e.width}] ${e.kind}: \`${e.text.replace(/`/g, "'")}\``);
+  }
+  if (r.capture) {
+    md.push(``, `## Design capture: ${route}`, `| width | landmarks match | max height drift | max pixel diff | overflow | errors |`, `|---|---|---|---|---|---|`);
+    for (const p of r.capture.perWidth) md.push(`| ${p.width} | ${p.countMatch ? "yes" : "NO"} | ${p.maxDriftPct}% | ${p.maxPixelDiff}% | ${p.overflow}px | ${p.errors} |`);
+    md.push(`- Per-section table and side-by-side pairs: \`${r.capture.report}\` (pairs/ next to it). Deliberate deviations (e.g. a phone-width fix) show up as drift, so check them against the converter's report.`);
+  }
+  if (r.links?.broken.length) {
+    md.push(``, `## Broken links: ${route}`);
+    for (const l of r.links.broken) md.push(`- \`${l.href}\`: ${l.problem}`);
+  }
+  if (r.axe?.violations.length) {
+    md.push(``, `## axe violations: ${route}`);
+    for (const v of r.axe.violations) {
+      md.push(`- **${v.id}** (${v.impact}, at ${[...new Set(v.widths)].join("/")}px): ${v.help}`);
+      for (const n of v.nodes.slice(0, 3)) md.push(`  - \`${n.target}\`${n.summary ? `: ${n.summary}` : ""}`);
+    }
+  }
+  if (r.headers) {
+    const missing = r.headers.expect.filter((e) => !e.ok);
+    if (missing.length) md.push(``, `## Security headers: ${route}`, ...missing.map((e) => `- missing/wrong: ${e.name}`));
+  }
+  for (const [mode, l] of Object.entries(r.lighthouse ?? {})) {
+    md.push(``, `## Lighthouse ${mode}: ${route}`);
+    md.push(`- Scores: perf ${l.scores.perf} · a11y ${l.scores.a11y} · best-practices ${l.scores.bp} · seo ${l.scores.seo}`);
+    md.push(`- LCP ${l.metrics.lcp}ms · CLS ${l.metrics.cls} · TBT ${l.metrics.tbt}ms · FCP ${l.metrics.fcp}ms`);
+    if (l.lcpElement) md.push(`- LCP element: \`${l.lcpElement.replace(/`/g, "'")}\``);
+    for (const c of l.lcpChecklist) md.push(`- LCP discovery: ${c.ok ? "✅" : "❌"} ${c.label}`);
+    if (l.failing.length) {
+      md.push(`- Failing audits:`);
+      for (const f of l.failing) md.push(`  - ${f.title}${f.value ? ` (${f.value})` : ""}${f.expectedOnLocalhost ? " · expected on localhost, ignore" : ""}`);
+    }
+    md.push(`- Full report: \`${l.report}\``);
+  }
+}
+md.push(``, `Lighthouse on localhost varies ±5 points run to run; re-run before chasing a small miss.`);
+
+fs.writeFileSync(path.join(outDir, "audit.json"), JSON.stringify(report, null, 2));
+fs.writeFileSync(path.join(outDir, "audit.md"), md.join("\n"));
+console.log(md.join("\n"));
+process.exit(flag("strict") && summary.some((s) => s.status === "FAIL") ? 1 : 0);

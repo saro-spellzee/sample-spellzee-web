@@ -279,7 +279,13 @@ and accepts a `title` when the icon carries meaning. Inline one-off SVGs in the 
   dimensions, alt text and where each is used. Skip files the inventory marks UNUSED.
 - Use `next/image` with the intrinsic `width`/`height` from the inventory (or `fill` + a sized
   parent) and a `sizes` attribute that reflects the rendered width at each breakpoint.
-- The hero/LCP image gets `preload` (Next 16 deprecated `priority`; check the image docs).
+- The hero/LCP image gets `loading="eager"` + `fetchPriority="high"`. Next 16 deprecated
+  `priority`, and its `preload` prop emits a `<link>` without `fetchpriority` that competes
+  with other preloads (Lighthouse "LCP request discovery" fails). Only that one image is high
+  priority; header logos etc. stay default.
+- Above-the-fold text (hero `h1`/lead) must not start at `opacity: 0`: Chrome ignores
+  invisible paints for LCP, so a fade-in hero pushes LCP onto another element. Use a
+  transform-only entrance (`animate-rise`) for the hero, and keep fade-ups for content below the fold.
   Everything else lazy-loads by default.
 - `alt` text comes from the export verbatim. Decorative images get `alt=""`.
 - Images used as CSS backgrounds (`.silk`) stay CSS backgrounds via `@utility`, referenced by `/images/…` path.

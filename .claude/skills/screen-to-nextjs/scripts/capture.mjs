@@ -154,6 +154,12 @@ for (const width of widths) {
       }
       window.scrollTo(0, 0);
     });
+    // Lazy images below the fold may still be loading (a cold next/image optimiser can take
+    // seconds for a large source). Load them all and wait, or the capture shows empty boxes.
+    await page.evaluate(() => document.querySelectorAll('img[loading="lazy"]').forEach((img) => (img.loading = "eager")));
+    await page
+      .waitForFunction(() => [...document.images].every((img) => img.complete), null, { timeout: 30_000 })
+      .catch(() => console.error(`[${t.side} ${width}] some images were still loading after 30s`));
     await page.waitForTimeout(800);
 
     const landmarks = await page.evaluate(collect);

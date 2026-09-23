@@ -1,6 +1,6 @@
 ---
 name: screen-to-nextjs
-description: Converts a Claude Design screen export in this repo's `screens/<screen>/` folder (Main.dc.html + assets/ + support.js + vendor/) into production Next.js 16 + Tailwind v4 code for spellzee-web, with feature-folder components, design tokens, typed content, ported interactivity, and screenshot-verified visual fidelity at desktop/tablet/phone widths. Use this whenever the user wants a screen/page/section from `screens/` built, converted, implemented, ported, or "made into Next.js/React", mentions `Main.dc.html`, `.dc.html`, an x-dc/design-canvas export, or says things like "convert the homepage", "build the pricing screen", "implement screens/about", "add the new screen from design", or wants an already-converted screen re-synced with an updated export, even if they don't say "convert". Prefer this over the generic html-to-react and figma-pixel-perfect skills for anything under `screens/`.
+description: Converts a Claude Design screen export in this repo's `screens/<screen>/` folder (Main.dc.html + assets/ + support.js + vendor/) into production Next.js 16 + Tailwind v4 code for spellzee-web, with feature-folder components, design tokens, typed content, ported interactivity, and screenshot-verified visual fidelity at desktop/tablet/phone widths. By default it hands off to the ship-screen pipeline, which runs the conversion and then tests, accessibility, performance, SEO/GEO/AEO, security, error handling and code review in sequence. Use this whenever the user wants a screen/page/section from `screens/` built, converted, implemented, ported, or "made into Next.js/React", mentions `Main.dc.html`, `.dc.html`, an x-dc/design-canvas export, or says things like "convert the homepage", "build the pricing screen", "implement screens/about", "add the new screen from design", or wants an already-converted screen re-synced with an updated export, even if they don't say "convert". Prefer this over the generic html-to-react and figma-pixel-perfect skills for anything under `screens/`.
 ---
 
 # screens/ → Next.js
@@ -21,13 +21,29 @@ Two failure modes to steer between:
 
 Exact values, idiomatic structure.
 
+## How this skill runs: pipeline by default
+
+Conversion is phase 1 of a longer sequence (tests → structure → accessibility →
+performance → SEO/GEO/AEO → forms → security → error handling → code review → final
+regression). Which part you do depends on who invoked you:
+
+- **The user asked for a screen** (`/screen-to-nextjs <screen>`, "convert screens/pricing",
+  "build the about page"): invoke the **`ship-screen`** skill with that screen and its
+  flags, and let it orchestrate. It runs this conversion in a `screen-converter` subagent
+  and then every quality phase in order. Don't do the conversion inline yourself.
+- **Conversion only**: the user explicitly said "convert only", "no pipeline" or "skip the
+  checks", **or** you are the pipeline's `screen-converter` agent (your prompt says so).
+  Follow the workflow below and stop after step 7.
+- **An already-converted screen needs checks** ("audit the homepage", "run a11y on /about"):
+  that's `ship-screen` with `--no-convert` / `--only`, not this skill.
+
 ## Read first (every time)
 
 1. `AGENTS.md`: this Next.js version has breaking changes. Before writing code, skim
    the relevant guides in `node_modules/next/dist/docs/01-app/` (at minimum
    `01-getting-started/12-images.md`, `13-fonts.md`, `05-server-and-client-components.md`,
    `11-css.md`, `14-metadata-and-og-images.md`) and heed deprecations (e.g. `next/image`
-   `priority` → `preload`).
+   `priority` is deprecated; for the LCP image use `loading="eager"` + `fetchPriority="high"`).
 2. `references/x-dc-format.md`: how to read `Main.dc.html` (template syntax, the logic
    class, what maps to what).
 3. `references/conventions.md`: where files go, tokens, breakpoints, fonts, content,
@@ -68,7 +84,7 @@ user to show it to? Keep it in your notes and include it in your final report.)
 
 | # | Landmark | Component | Server/Client | Client leaves | Primitives | Notes |
 |---|---|---|---|---|---|---|
-| 2 | `section#top` | `HeroSection` | server | `HeroCanvas` (useNetCanvas) | Container, Heading, Button | LCP image, preload |
+| 2 | `section#top` | `HeroSection` | server | `HeroCanvas` (useNetCanvas) | Container, Heading, Button | LCP image: eager + fetchPriority high |
 | 12 | `section#faq` | `FaqSection` | server | `FaqAccordion` (state: open index) | … | accordion a11y |
 
 Also list: new tokens, new/extended primitives, assets to copy with their role names,
