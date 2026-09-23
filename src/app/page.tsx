@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { meta } from "@/features/homepage/content";
+import { site } from "@/lib/site";
 import { homepageStructuredData } from "@/features/homepage/structured-data";
 import { BookSection } from "@/features/homepage/sections/BookSection";
 import { ClassroomSection } from "@/features/homepage/sections/ClassroomSection";
@@ -22,8 +23,11 @@ export const metadata: Metadata = {
   title: { absolute: meta.title },
   description: meta.description,
   alternates: { canonical: "/" },
+  // A route's openGraph replaces the layout's wholesale, so repeat siteName/locale here.
   openGraph: {
     type: "website",
+    siteName: site.name,
+    locale: site.locale,
     url: "/",
     title: meta.title,
     description: meta.description,

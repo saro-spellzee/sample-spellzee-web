@@ -41,7 +41,7 @@ export function CommunitySection() {
       <Container className="relative text-center">
         <Kicker>{community.kicker}</Kicker>
         <Heading look="display" size="text-[clamp(36px,4.2vw,54px)] leading-[1.1] tracking-[-0.035em]" className="mx-auto mt-4 max-w-[880px]">
-          {title.line1}
+          {title.line1}{" "}
           <br />
           {title.before}
           <Accent className="text-[1.12em] text-brand">{title.accent}</Accent>

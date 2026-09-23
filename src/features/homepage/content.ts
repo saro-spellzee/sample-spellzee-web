@@ -27,7 +27,8 @@ const img = (name: string, alt: string, width: number, height: number): ImageAss
 });
 
 export const meta = {
-  title: "Spellzee — Help Your Child Read, Write and Speak with Confidence | CLM",
+  // ≤60 chars so search results show it in full.
+  title: "Spellzee: Help Your Child Read, Write & Speak Confidently",
   description:
     "Cognitive Literacy Mapping pinpoints where your child needs support — then a dedicated 1:1 mentor takes them forward. Book a free assessment.",
 };

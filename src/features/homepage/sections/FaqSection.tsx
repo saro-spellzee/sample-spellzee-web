@@ -15,7 +15,7 @@ export function FaqSection() {
       <Container className="grid grid-cols-1 items-start gap-14 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
         <div className="lg:sticky lg:top-[110px]">
           <Heading look="display" size="text-[56px] leading-[1.02] tracking-[-0.045em]">
-            {faq.title.line1}
+            {faq.title.line1}{" "}
             <br />
             <Accent className="text-[1.1em] text-tone-rose">{faq.title.accent}</Accent>
           </Heading>
