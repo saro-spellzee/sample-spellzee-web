@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Design exports (x-dc runtime + vendored React) and agent tooling are not app code.
+    "screens/**",
+    ".claude/**",
   ]),
 ]);
 

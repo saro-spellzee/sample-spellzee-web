@@ -1,0 +1,43 @@
+/**
+ * Stroke icon paths (24x24 viewBox). Source: the `I` table in the homepage
+ * export's logic class, plus the inline SVGs repeated in its markup.
+ */
+export const iconPaths = {
+  user: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1-4 4-6 8-6s7 2 8 6",
+  users:
+    "M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21c.8-3.6 3.6-6 7-6s6.2 2.4 7 6M16 3.5a4 4 0 0 1 0 7.5M18 15c2.2.6 3.6 2.8 4 6",
+  userPair: "M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21c.8-3.6 3.6-6 7-6s6.2 2.4 7 6",
+  book: "M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2zM22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z",
+  chat: "M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12z",
+  chart: "M3 20h18M6 16v-4M11 16V8M16 16v-6M21 16V4",
+  bars: "M7 20v-6M12 20V4M17 20v-10",
+  ear: "M6 9a6 6 0 0 1 12 0c0 3-2 4-3 5s-1 3-3 4-4 0-4-2M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-1.5 2-2 3",
+  layers: "M12 3l9 5-9 5-9-5zM3 13l9 5 9-5M3 17.5l9 5 9-5",
+  bulb: "M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z",
+  pencil: "M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4",
+  spell: "M4 18L8 6l4 12M5.5 14h5M15 6h3.5a2.5 2.5 0 0 1 0 5H15zM15 11h4a2.5 2.5 0 0 1 0 5h-4z",
+  mic: "M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3",
+  stage:
+    "M10.6 8.6a4.6 4.6 0 1 0 9.2 0a4.6 4.6 0 1 0-9.2 0M12 5.4l6.4 6.4M18.4 5.4 12 11.8M11.6 12.1l1.4 1.4M12.3 12.8 5.2 19.9",
+  bell: "M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4",
+  loop: "M4 12a8 8 0 0 1 14-5.3L20 9M20 4v5h-5M20 12a8 8 0 0 1-14 5.3L4 15M4 20v-5h5",
+  shield: "M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4",
+  shieldOutline: "M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z",
+  heart: "M12 20s-8-4.6-8-10.2A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 2.8C20 15.4 12 20 12 20z",
+  star: "M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z",
+  live: "M3 5h18v12H3zM8 21h8M12 17v4",
+  calendar: "M4 5h16v15H4zM4 10h16M9 3v4M15 3v4",
+  refund:
+    "M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 8v8M9.5 10.5h4a1.5 1.5 0 0 1 0 3h-3a1.5 1.5 0 0 0 0 3h4",
+  clip: "M9 4h6v3H9zM7 5.5H5v15h14v-15h-2M9 12h6M9 16h4",
+  trend: "M3 17l6-6 4 4 8-8M15 7h6v6",
+  arrowRight: "M5 12h14M13 6l6 6-6 6",
+  check: "M5 12l5 5L19 7",
+  chevronDown: "M6 9l6 6 6-6",
+  institution: "M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18",
+  route: "M5 18a2 2 0 1 0 0-.01M19 6a2 2 0 1 0 0-.01M7 18h7a3.5 3.5 0 0 0 0-7h-4a3.5 3.5 0 0 1 0-7h7",
+  question:
+    "M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0M9.6 9.3a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.4M12 16.8v.2",
+} as const;
+
+export type IconName = keyof typeof iconPaths;

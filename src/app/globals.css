@@ -1,26 +1,258 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ------------------------------------------------------------------
+   Design tokens (from screens/homepage/Main.dc.html)
+   ------------------------------------------------------------------ */
+@theme {
+  /* Breakpoints: the export is desktop-first (max-width 1000px / 640px).
+     Base classes = phone, sm = tablet and up, lg = desktop. */
+  --breakpoint-*: initial;
+  --breakpoint-sm: 40.0625rem; /* 641px: above the export's 640px phone query */
+  --breakpoint-lg: 62.5625rem; /* 1001px: above the export's 1000px tablet query */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Surfaces + text */
+  --color-cream: #fcf8f4; /* page background */
+  --color-ink: #0e1a3a; /* primary text (x38) */
+  --color-ink-2: #26325a; /* secondary headings, labels */
+  --color-ink-soft: #4b5575; /* lead copy */
+  --color-slate: #39436a; /* nav, body copy on white */
+  --color-muted: #5d6789; /* descriptions (x11) */
+  --color-faint: #6a7394; /* meta text */
+  --color-line: #ece4d9; /* card borders, hairlines */
+  --color-line-2: #eae2d6; /* kicker border */
+  --color-rule: #d6deee; /* segment/option borders, used tiles */
+  --color-brand: #1557d6; /* links, primary (x41) */
+  --color-brand-hover: #0f45ae;
+  --color-brand-tint: #eef3fe;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* Dark (navy) surfaces */
+  --color-night: #0b1530; /* footer */
+  --color-night-line: #2b3862; /* borders on navy */
+  --color-mist: #aeb7d3; /* secondary text on navy */
+  --color-haze: #c7cee6; /* tertiary text on navy */
+  --color-dusk: #7f8ab0; /* labels on navy */
+  --color-periwinkle: #9db8ff; /* accent on navy */
+
+  /* Tones: fg + soft background pairs used by per-item data (see components/ui/tones.ts) */
+  --color-tone-blue: #1557d6;
+  --color-tone-blue-soft: #e3ecfe;
+  --color-tone-rose: #d0335f;
+  --color-tone-rose-soft: #fce3ec;
+  --color-tone-green: #12855a;
+  --color-tone-green-soft: #ddf1e6;
+  --color-tone-amber: #c2620a;
+  --color-tone-amber-soft: #fbf0d2;
+  --color-tone-violet: #6d3fd6;
+  --color-tone-violet-soft: #ece5fa;
+  --color-tone-sky: #0b5c86;
+  --color-tone-sky-soft: #dceffa;
+  /* deeper text variants on the same soft backgrounds (chips) */
+  --color-tone-rose-deep: #a51e45;
+  --color-tone-amber-deep: #7a4d05;
+  --color-tone-green-deep: #0b6242;
+  --color-tone-violet-deep: #5530b8;
+  /* the six CLM skill colours */
+  --color-tone-cobalt: #2f6bf2;
+  --color-tone-cobalt-soft: #e3ecfe;
+  --color-tone-iris: #7c4de8;
+  --color-tone-iris-soft: #eee7fd;
+  --color-tone-emerald: #12a57a;
+  --color-tone-emerald-soft: #ddf3ea;
+  --color-tone-orchid: #9a55e0;
+  --color-tone-orchid-soft: #f1e6fb;
+  --color-tone-azure: #2f8be8;
+  --color-tone-azure-soft: #e1effc;
+  --color-tone-pink: #e0317a;
+  --color-tone-pink-soft: #fce4ee;
+
+  /* Type scale that recurs */
+  --text-body: 14.5px;
+  --text-meta: 13px;
+  --text-fine: 12.5px;
+
+  /* Radii + shadows */
+  --radius-card: 24px;
+  --shadow-card: 0 20px 50px -34px rgb(14 26 58 / 0.35);
+  --shadow-card-hover: 0 28px 60px -34px rgb(14 26 58 / 0.45);
+  --shadow-soft: 0 8px 20px -14px rgb(70 45 20 / 0.35);
+  --shadow-feat: 0 20px 40px -28px rgb(70 45 20 / 0.45);
+
+  /* Motion */
+  --animate-ping-ring: ping-ring 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  --animate-floaty: floaty 6s ease-in-out infinite;
+  --animate-floaty-fast: floaty 5s ease-in-out infinite;
+  --animate-grow: grow 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-flow: flow 1.4s linear infinite;
+  --animate-flow-slow: flow 3s linear infinite;
+  --animate-fade-up: fade-up 0.45s ease both;
+  --animate-shake: shake 0.35s ease;
+  --animate-brain: glow 5s ease-in-out infinite, brain-hover 3.5s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+
+  @keyframes ping-ring {
+    0% { transform: scale(0.6); opacity: 1; }
+    100% { transform: scale(2); opacity: 0; }
+  }
+  @keyframes floaty {
+    0%, 100% { transform: translate(-50%, -50%); }
+    50% { transform: translate(-50%, calc(-50% - 6px)); }
+  }
+  @keyframes grow {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+  @keyframes flow {
+    to { stroke-dashoffset: -60; }
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes shake {
+    0%, 100% { transform: none; }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+  @keyframes glow {
+    0%, 100% { filter: drop-shadow(0 0 18px rgb(124 92 255 / 0.35)); }
+    50% { filter: drop-shadow(0 0 34px rgb(124 92 255 / 0.6)); }
+  }
+  @keyframes brain-hover {
+    from { transform: translateY(0); }
+    to { transform: translateY(-2.3%); }
+  }
+  @keyframes swoosh {
+    from { background-size: 0% var(--swoosh-h, 10px); }
+    to { background-size: 100% var(--swoosh-h, 10px); }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@theme inline {
+  --font-sans: var(--font-jakarta), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: var(--font-instrument), Georgia, serif;
+  --font-hand: var(--font-caveat), cursive;
+}
+
+/* ------------------------------------------------------------------
+   Base
+   ------------------------------------------------------------------ */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-cream font-sans text-ink antialiased;
+    /* the export relies on the browser default, not Tailwind's 1.5 */
+    line-height: normal;
+  }
+  a {
+    @apply text-brand hover:text-brand-hover;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+}
+
+/* ------------------------------------------------------------------
+   Bespoke effects (multi-declaration, reused)
+   ------------------------------------------------------------------ */
+
+/* Silk texture background used by five sections. Pair with bg-center/top/bottom. */
+@utility silk {
+  background-color: var(--color-cream);
+  background-image: url(/images/homepage/silk-texture.jpg);
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+@utility silk-lavender {
+  background-color: var(--color-cream);
+  background-image:
+    radial-gradient(ellipse 42% 38% at 50% 64%, rgb(139 92 246 / 0.12), rgb(139 92 246 / 0) 72%),
+    url(/images/homepage/silk-texture.jpg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Hand-drawn gradient underline that draws itself in.
+   Set --swoosh-h (default 10px) for its thickness; padding-bottom is set by the caller. */
+@utility swoosh {
+  background-image: url(/images/homepage/swoosh-underline.svg);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% var(--swoosh-h, 10px);
+  animation: swoosh 0.9s cubic-bezier(0.6, 0.05, 0.25, 1) 0.6s both;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* Gradient hairline border (padding-box / border-box trick). */
+@utility gradient-border {
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(90deg, #2f6bf2, #8b4fe8, #d0508f) border-box;
+}
+
+/* Blue-to-violet gradient text. */
+@utility text-gradient {
+  background: linear-gradient(90deg, #2f6bf2, #8b4fe8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Frosted glass card with a soft gradient border (hero accreditation bar). */
+@utility glass-gradient {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(rgb(255 255 255 / 0.86), rgb(255 255 255 / 0.86)) padding-box,
+    linear-gradient(120deg, rgb(47 107 242 / 0.35), rgb(139 79 232 / 0.25), rgb(208 80 143 / 0.3)) border-box;
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 22px 44px -30px rgb(60 40 140 / 0.45),
+    inset 0 1px 0 #fff;
+}
+
+/* Kicker dot: brand dot on a blue-lilac disc. */
+@utility kicker-dot {
+  background:
+    radial-gradient(circle, #1557d6 0 3.5px, transparent 4.5px),
+    linear-gradient(135deg, #e3ecfe, #eee7fd);
+}
+
+/* Hero artwork: covers the stage height, capped at 2.2x, anchored right, faded in from the left.
+   Requires a size container (container-type: size) on the parent. */
+@utility hero-art {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(max(100cqw, calc(100cqh * 1.7768)), calc(100cqh * 2.2));
+  aspect-ratio: 1672 / 941;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 16%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 16%);
+}
+
+/* Light sweep across the primary button on hover. */
+@utility btn-shine {
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -70%;
+    width: 45%;
+    background: linear-gradient(100deg, rgb(255 255 255 / 0), rgb(255 255 255 / 0.32), rgb(255 255 255 / 0));
+    transform: skewX(-20deg);
+    transition: left 0.8s cubic-bezier(0.3, 0.6, 0.2, 1);
+    pointer-events: none;
+    z-index: -1;
+  }
+  &:hover::after {
+    left: 130%;
+  }
 }
