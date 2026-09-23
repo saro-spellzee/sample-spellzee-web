@@ -1,3 +1,5 @@
+import "server-only";
+
 /**
  * Hands a newsletter sign-up to whatever service collects them. Server-side only:
  * imported by `actions.ts` and nothing else.
