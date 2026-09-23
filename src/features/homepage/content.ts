@@ -30,8 +30,6 @@ export const meta = {
   title: "Spellzee — Help Your Child Read, Write and Speak with Confidence | CLM",
   description:
     "Cognitive Literacy Mapping pinpoints where your child needs support — then a dedicated 1:1 mentor takes them forward. Book a free assessment.",
-  ogImageAlt:
-    "A thoughtful child smiling upward, surrounded by a glowing map linking icons for Sound Recognition, Blending, Fluency and Comprehension",
 };
 
 export const header = {

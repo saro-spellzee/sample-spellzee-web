@@ -85,6 +85,9 @@
   --animate-flow: flow 1.4s linear infinite;
   --animate-flow-slow: flow 3s linear infinite;
   --animate-fade-up: fade-up 0.45s ease both;
+  /* Above-the-fold entrance: movement only. Starting at opacity 0 hides the text from
+     LCP (Chrome ignores invisible paints), which pushed mobile LCP onto the logo. */
+  --animate-rise: rise 0.45s ease both;
   --animate-shake: shake 0.35s ease;
   --animate-brain: glow 5s ease-in-out infinite, brain-hover 3.5s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
 
@@ -106,6 +109,10 @@
   @keyframes fade-up {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: none; }
+  }
+  @keyframes rise {
+    from { transform: translateY(10px); }
+    to { transform: none; }
   }
   @keyframes shake {
     0%, 100% { transform: none; }

@@ -20,7 +20,10 @@ export function HeroArtwork() {
           src={hero.image.src}
           alt={hero.image.alt}
           fill
-          preload
+          // LCP image: high fetch priority + eager (Next 16 recommends this over `preload`,
+          // whose <link> carries no fetchpriority and competes with other preloads).
+          loading="eager"
+          fetchPriority="high"
           sizes="(min-width: 1001px) 90vw, 100vw"
           className="object-cover object-top"
         />

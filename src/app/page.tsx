@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { meta } from "@/features/homepage/content";
+import { homepageStructuredData } from "@/features/homepage/structured-data";
 import { BookSection } from "@/features/homepage/sections/BookSection";
 import { ClassroomSection } from "@/features/homepage/sections/ClassroomSection";
 import { ClmSection } from "@/features/homepage/sections/ClmSection";
@@ -15,6 +17,7 @@ import { ParentSupportSection } from "@/features/homepage/sections/ParentSupport
 import { ProgramsSection } from "@/features/homepage/sections/ProgramsSection";
 import { StoriesSection } from "@/features/homepage/sections/StoriesSection";
 
+// Share image: app/opengraph-image.tsx + twitter-image.tsx (branded 1200×630 card).
 export const metadata: Metadata = {
   title: { absolute: meta.title },
   description: meta.description,
@@ -22,16 +25,20 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "/",
-    siteName: "Spellzee",
     title: meta.title,
     description: meta.description,
-    images: [{ url: "/images/homepage/hero-child.jpg", width: 1672, height: 941, alt: meta.ogImageAlt }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: meta.title,
+    description: meta.description,
   },
 };
 
 export default function HomePage() {
   return (
     <div className="min-w-90 overflow-x-clip bg-cream">
+      <JsonLd data={homepageStructuredData()} />
       <HomeHeader />
       <main>
         <HeroSection />

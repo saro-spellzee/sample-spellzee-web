@@ -17,7 +17,7 @@ export function HeroCopy() {
   return (
     <div
       data-hero-copy
-      className="relative z-4 order-first animate-fade-up px-7 pt-12 pb-3 lg:order-none lg:ml-[max(40px,calc((100%-1200px)/2+40px))] lg:w-[min(46%,600px)] lg:px-0 lg:pt-9 lg:pb-[84px]"
+      className="relative z-4 order-first animate-rise px-7 pt-12 pb-3 lg:order-none lg:ml-[max(40px,calc((100%-1200px)/2+40px))] lg:w-[min(46%,600px)] lg:px-0 lg:pt-9 lg:pb-[84px]"
     >
       <div className="flex flex-wrap gap-2.5">
         <span className={`${badge} gap-2.5 pl-3.5 text-brand`}>

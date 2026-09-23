@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Caveat, Instrument_Serif, Plus_Jakarta_Sans } from "next/font/google";
+import { site } from "@/lib/site";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -22,19 +23,36 @@ const caveat = Caveat({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://spellzee.in"),
+  metadataBase: new URL(site.url),
   title: {
-    default: "Spellzee",
-    template: "%s | Spellzee",
+    default: site.name,
+    template: `%s | ${site.name}`,
   },
-  description:
-    "Cognitive Literacy Mapping and 1:1 live mentoring that help children read, write and speak with confidence.",
+  description: site.description,
+  applicationName: site.name,
+  publisher: site.legalName,
+  creator: site.legalName,
+  category: "education",
+  formatDetection: { telephone: false, email: false, address: false },
+  openGraph: { siteName: site.name, locale: site.locale, type: "website" },
+  twitter: { card: "summary_large_image" },
+  // Full-length snippets and large image previews: what search and AI answer engines quote from.
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-snippet": -1, "max-image-preview": "large", "max-video-preview": -1 },
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: site.themeColor,
+  colorScheme: "light",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="en"
+      lang={site.language}
       className={`${jakarta.variable} ${instrument.variable} ${caveat.variable}`}
     >
       <body>{children}</body>
