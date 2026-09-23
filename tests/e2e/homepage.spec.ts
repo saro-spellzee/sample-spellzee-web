@@ -83,6 +83,8 @@ test.describe("homepage", () => {
     const skip = page.getByRole("link", { name: header.skipLink.label });
     await expect(skip).toBeFocused();
     await expect(skip).toBeInViewport();
+    // Tailwind v4's not-sr-only resets padding; the pill must keep its own.
+    expect(await skip.evaluate((el) => getComputedStyle(el).paddingLeft)).toBe("20px");
 
     await page.keyboard.press("Enter");
 

@@ -21,5 +21,7 @@ export default defineConfig({
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
+    // Never deliver to a real list from E2E: a set env var beats .env.local.
+    env: { NEWSLETTER_WEBHOOK_URL: "" },
   },
 });

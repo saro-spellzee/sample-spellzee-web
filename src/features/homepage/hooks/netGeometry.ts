@@ -6,7 +6,7 @@ export type Dust = { x: number; y: number; vx: number; vy: number; r: number; c:
 export type Signal = { a: Neuron; b: Neuron; p: number; v: number; e: number };
 export type Ring = { x: number; y: number; c: string; p: number };
 
-/** Neuron colours. Same values as the `--color-vivid-*` tokens (the canvas needs hex for `hexA`). */
+/** Neuron colours from the design (the canvas needs hex for `hexA`). Four match `--color-vivid-*`; #DB2777 is canvas-only. */
 export const PALETTE = ["#7C3AED", "#0891B2", "#DB2777", "#D97706", "#2563EB"];
 /** Hero photo intrinsic size (the artwork's pixel space). */
 export const IW = 1672;

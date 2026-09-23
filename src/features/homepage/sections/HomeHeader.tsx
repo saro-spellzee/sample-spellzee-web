@@ -11,7 +11,7 @@ export function HomeHeader() {
       {/* Skip link: first tab stop, visible only while focused. */}
       <a
         href={header.skipLink.href}
-        className="sr-only rounded-full bg-ink px-5 py-3 text-sm font-bold text-white no-underline focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-60 focus:outline-3 focus:outline-offset-2 focus:outline-brand hover:text-white"
+        className="sr-only rounded-full bg-ink px-5 py-3 text-sm font-bold text-white no-underline focus:not-sr-only focus:px-5 focus:py-3 focus:fixed focus:top-3 focus:left-3 focus:z-60 focus:outline-3 focus:outline-offset-2 focus:outline-brand hover:text-white"
       >
         {header.skipLink.label}
       </a>
