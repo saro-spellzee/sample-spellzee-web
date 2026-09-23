@@ -1,6 +1,6 @@
 ---
 name: ship-screen
-description: End-to-end pipeline that takes a design export in `screens/<screen>/` to production-ready Next.js code and then hardens it in a fixed order (convert → build gate → tests → structure/tokens/types → accessibility → performance → SEO/GEO/AEO → forms → security → error handling → code review → final regression → report), each phase run by a dedicated subagent that audits, fixes, verifies and commits on a feature branch. Use this whenever the user wants a screen converted, built, shipped or "made production ready", runs `/screen-to-nextjs` or `/ship-screen`, says "convert screens/pricing", "run the full pipeline on the homepage", "quality-check / harden / audit this screen", or asks to re-run one phase ("just the a11y and perf phases on /about"). Prefer this over invoking the individual quality skills one by one for anything under `screens/` or an already-converted screen.
+description: End-to-end pipeline that takes a design export in `screens/<screen>/` to production-ready Next.js code and then hardens it in a fixed order (convert → build gate → tests → structure/tokens/types → accessibility → SEO/GEO/AEO → forms → security → error handling → performance → code review → final regression → report), each phase run by a dedicated subagent that audits, fixes, verifies and commits on a feature branch, with a regression check after every phase. Use this whenever the user wants a screen converted, built, shipped or "made production ready", runs `/screen-to-nextjs` or `/ship-screen`, says "convert screens/pricing", "run the full pipeline on the homepage", "quality-check / harden / audit this screen", or asks to re-run one phase ("just the a11y and perf phases on /about"). Prefer this over invoking the individual quality skills one by one for anything under `screens/` or an already-converted screen.
 ---
 
 # ship-screen
@@ -31,7 +31,7 @@ commits and the final story. Keep your own context lean: read reports, not code.
 | `--fix-contrast` | Let the a11y phase apply AA-compliant colour replacements instead of only proposing them |
 | `--no-commit` | Don't commit per phase. Everything stays in the working tree, and there's no rollback point, so the run **stops at the first failed phase** instead of parking it |
 
-Phase ids: `preflight convert build tests structure a11y perf seo forms security errors review final report`
+Phase ids: `preflight convert build tests structure a11y seo forms security errors perf review final report`
 (`node .claude/skills/ship-screen/scripts/state.mjs phases` prints the table).
 
 ## Before you start
@@ -62,14 +62,36 @@ form controls, otherwise it's recorded as skipped):
 4. **Verify, don't trust**: run `node .claude/skills/ship-screen/scripts/gates.mjs --tests`
    yourself (test gates are reported as skipped until phase 3 adds them). The agent's
    claim of green isn't evidence; this is.
-5. **Settle the phase**:
+5. **Check for regressions** (agent phases, gates green): unless the phase changed
+   nothing or only test files, run the regression check on the build the gates just made
+   (details and noise allowances: "The regression check" in `phases.md`):
+
+   ```
+   node .claude/skills/ship-screen/scripts/audit.mjs --quick --routes <route> \
+     --original screens/<screen>/Main.dc.html --baseline .quality/<screen>/baseline.json \
+     --phase <id> --out .quality/<screen>/NN-check
+   ```
+
+   Drop `--original` if the export is gone; after `perf`, add `--modes mobile,desktop`.
+   - Exit 0 → no regressions; settle the phase.
+   - Exit 1 → it lists each regression as `before → now`. Continue the **same** agent
+     with `SendMessage` (it still has its context) and paste the list: `Regression check
+     after your phase: <list>. Fix it without undoing your phase's work, or reply with
+     TRADE-OFF: and the numbers on both sides.` Then run gates and the check again.
+     - Clean now → settle the phase.
+     - Trade-off → add it to the decisions with both numbers, accept it into the baseline
+       with `node .claude/skills/ship-screen/scripts/baseline.mjs accept .quality/<screen>/NN-check/audit.json .quality/<screen>/baseline.json --phase <id> --note "<what and why>"`,
+       and settle the phase with the trade-off in its note.
+     - Still regressed and no trade-off → treat it like red gates: park the attempt.
+6. **Settle the phase**:
    - Gates green and the agent changed files → commit (see Commits), then
      `state.mjs set <screen> <phase> <status> --note "<one line>" --commit <sha>`.
    - Gates green, nothing changed → `state.mjs set … <status> --note …`.
    - Gates red, or `STATUS: fail` with changes → **park the attempt** (see Failure
      handling), mark the phase `fail`, and continue if the phase is non-blocking. Stop if
      it's blocking (`preflight`, `convert`, `build`, `final`).
-6. **Tell the user** one line: `✅ 5/13 a11y: pass, 3 axe issues fixed, 1 decision needed`.
+7. **Tell the user** one line: `✅ 5/13 a11y: pass, 3 axe issues fixed, 1 decision needed`
+   (add `, 1 regression fixed` or `, 1 trade-off` when the check had something to say).
    Don't paste the whole report.
 
 | phase | agent (`subagent_type`) | skills it applies |
@@ -78,11 +100,11 @@ form controls, otherwise it's recorded as skipped):
 | 3 tests | `test-engineer` | testing-frontend |
 | 4 structure | `architecture-auditor` | component-architecture, design-tokens, typescript-patterns |
 | 5 a11y | `a11y-auditor` | accessibility, animation-motion |
-| 6 perf | `perf-auditor` | performance-optimization |
-| 7 seo | `seo-auditor` | seo-metadata |
-| 8 forms | `form-auditor` | form-handling-validation |
-| 9 security | `security-auditor` | security-practices |
-| 10 errors | `error-handling-auditor` | error-observability |
+| 6 seo | `seo-auditor` | seo-metadata |
+| 7 forms | `form-auditor` | form-handling-validation |
+| 8 security | `security-auditor` | security-practices |
+| 9 errors | `error-handling-auditor` | error-observability |
+| 10 perf | `perf-auditor` | performance-optimization |
 | 11 review | `code-reviewer` | code-review-checklist |
 
 If an agent type isn't available in this session (agents added after the session
@@ -164,7 +186,8 @@ Phase 13 writes `.quality/<screen>/REPORT.md`. Your final message to the user:
 
 1. The phase table (status + one-line note each).
 2. Headline evidence: tests (count, pass), axe (violations), Lighthouse desktop/mobile
-   (perf, LCP, CLS, TBT), security headers, design capture drift, gates.
+   (perf, LCP, CLS, TBT), security headers, design capture drift, gates, and any
+   regression the per-phase check caught (fixed, or accepted as a trade-off).
 3. **Decisions needed**: merged list, each with the concrete proposal.
 4. Branch, commits, any parked attempts, and next steps: review the branch, merge into
    the main branch, push. Offer to do the merge; never push.

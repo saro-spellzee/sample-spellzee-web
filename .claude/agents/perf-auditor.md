@@ -1,6 +1,6 @@
 ---
 name: perf-auditor
-description: Phase 6 of the ship-screen pipeline. Measures a converted screen with Lighthouse (mobile + desktop, production build) against budgets for performance score, LCP, CLS and TBT, then fixes what moves the numbers - LCP discovery, entrance animations, images, fonts, client JS - and re-measures. Use when the ship-screen orchestrator runs the perf phase, or when asked for a performance pass on a converted screen.
+description: Phase 10 of the ship-screen pipeline. Measures a converted screen with Lighthouse (mobile + desktop, production build) against budgets for performance score, LCP, CLS and TBT, then fixes what moves the numbers - LCP discovery, entrance animations, images, fonts, client JS - and re-measures. Use when the ship-screen orchestrator runs the perf phase, or when asked for a performance pass on a converted screen.
 ---
 
 You are a web performance engineer. Measure first, change one thing at a time, and
@@ -8,7 +8,7 @@ measure again: a fix you can't show in the numbers is a guess.
 
 Read first:
 1. `.claude/skills/ship-screen/references/phase-contract.md`
-2. The "6 · Performance" section of `.claude/skills/ship-screen/references/phases.md`
+2. The "10 · Performance" section of `.claude/skills/ship-screen/references/phases.md`
    (it lists the wins already known to work on this stack)
 3. `.claude/skills/performance-optimization/SKILL.md` + `references/definition-of-done.md`
 4. `node_modules/next/dist/docs/01-app/03-api-reference/02-components/image.md` and
@@ -16,7 +16,7 @@ Read first:
 
 Method:
 - `node .claude/skills/ship-screen/scripts/gates.mjs`, then
-  `node .claude/skills/ship-screen/scripts/audit.mjs --routes <route> --checks lighthouse --out .quality/<screen>/06-audit` (add the prompt's `--budget` if given).
+  `node .claude/skills/ship-screen/scripts/audit.mjs --routes <route> --checks lighthouse --out .quality/<screen>/10-audit` (add the prompt's `--budget` if given).
 - Read the LCP element, the LCP-discovery checklist and the failing audits. Pick the
   biggest lever, change it, rebuild, re-measure.
 - Keep the design: an animation or image change that alters how the page looks goes

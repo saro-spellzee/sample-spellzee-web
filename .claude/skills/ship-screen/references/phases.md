@@ -5,8 +5,53 @@ are relative to the project root. `$Q` = `.quality/<screen>`, `$S` =
 `.claude/skills/ship-screen/scripts`.
 
 ## Contents
-0 preflight · 1 convert · 2 build · 3 tests · 4 structure · 5 a11y · 6 perf · 7 seo ·
-8 forms · 9 security · 10 errors · 11 review · 12 final · 13 report
+0 preflight · 1 convert · 2 build · 3 tests · 4 structure · 5 a11y · 6 seo · 7 forms ·
+8 security · 9 errors · 10 perf · 11 review · 12 final · 13 report
+
+Perf comes after security and errors on purpose: it should measure the page with its
+final headers, error boundaries and form code. (On the homepage trial, a security header
+added after the perf phase cost mobile perf ~26 points and wasn't noticed until final.)
+
+## The regression check
+
+After every agent phase the orchestrator runs a quick check against a **baseline**, the
+best value each metric has reached so far in this run (`$Q/baseline.json`, see
+`$S/baseline.mjs`):
+
+```
+node $S/audit.mjs --quick --routes <route> --original screens/<screen>/Main.dc.html \
+  --baseline $Q/baseline.json --phase <id> --out $Q/NN-check
+```
+
+`--quick` = console errors, full-page axe, security headers, design capture at 1440/390
+and mobile Lighthouse, on the build the gates just made: about 2 minutes, a bit more when
+Lighthouse re-measures. These are the things that can get worse without a unit or E2E
+test failing. A metric regresses when it gets worse than its baseline by more than the
+noise allowance:
+
+| metric | allowed to get worse by |
+|---|---|
+| console errors, axe serious/critical, axe rules violated, broken links | 0 |
+| a security header that was present | 0 (must stay) |
+| capture height drift / pixel diff, per width | 1.5 points |
+| capture landmark count, overflow, page errors | 0 |
+| Lighthouse perf score | 8 points (a run that looks regressed is re-measured once; the better comparable run counts) |
+| Lighthouse SEO score | 0 |
+| LCP / TBT / CLS | 500ms / 250ms / 0.05 |
+
+**Machine speed.** Lighthouse numbers follow the laptop's speed at that moment (thermal
+throttling, power mode, background work). Lighthouse reports that speed as a CPU benchmark
+index, and on this laptop it has ranged ~930-2060; mobile perf once moved 16 points on
+identical code. So each Lighthouse value is stored with the CPU benchmark of its run, and
+a worse value only counts when the two runs are within 15% of each other's speed. Outside
+that it's reported as *not comparable* (a warning, never a regression) and the Lighthouse
+baseline is re-based on the new run so later phases can be compared again. The perf phase
+and final still measure properly, so a slowdown can't slip through to the end.
+
+Exit 0: no regressions, and each metric's baseline moves to its new best. Exit 1: the
+regressions are listed (`before → now`, and which phase set the old value) and the baseline
+is left as it was. Agents can run the same command **without `--phase`** to compare
+without recording anything.
 
 ---
 
@@ -45,6 +90,11 @@ Skipped with `--no-convert` (screen already converted).
 `node $S/gates.mjs --out $Q/02-gates.md` (without `--tests`: tests don't exist yet on a
 first run). Blocking. If it fails right after conversion, resume the converter once with
 the gate output. Still red → stop.
+
+Then start this run's baseline: the regression-check command with `--phase build
+--reset-baseline --out $Q/02-check`. Its exit code doesn't matter here: whatever the
+screen scores now is the starting point. (Every run that passes through the build gate,
+including `--only`, starts a fresh baseline; a `--from` resume keeps the existing one.)
 
 ## 3 · Tests (`test-engineer`)
 
@@ -106,31 +156,7 @@ Skills: `accessibility`, `animation-motion`.
 Done: 0 serious/critical axe violations (other than design-colour decisions), keyboard
 walkthrough clean.
 
-## 6 · Performance (`perf-auditor`)
-
-Skills: `performance-optimization`.
-
-- `node $S/gates.mjs` (fresh build), then
-  `node $S/audit.mjs --routes <route> --checks lighthouse --out $Q/06-audit`.
-  Budgets (override with `--budget`): desktop perf ≥90, LCP ≤2.5s; mobile perf ≥80,
-  LCP ≤4s; CLS ≤0.1; TBT ≤200ms desktop / 300ms mobile.
-- Known wins on this stack:
-  - LCP image: `loading="eager"` + `fetchPriority="high"`, not `preload` (Next 16's
-    `preload` link has no fetchpriority and competes with other preloads).
-  - LCP text must not start at `opacity: 0`. Chrome ignores invisible paints, so a fade-in
-    hero pushes LCP onto another element. Use a transform-only entrance (`animate-rise`).
-  - Only one image may be eager/high above the fold. Logos stay small.
-  - `sizes` on every `next/image`; `next/font` with only the weights used, and
-    `preload: false` for secondary display/handwriting fonts.
-  - Heavy client widgets below the fold (canvas animations): start work on idle or on
-    visibility; `next/dynamic` for large client-only components.
-  - Oversized PNG/JPG sources: let `next/image` serve AVIF/WebP (`images.formats`).
-- Localhost Lighthouse varies ±5. Re-run once before chasing a small miss; report the
-  median of what you ran.
-
-Done: budgets met, or `partial` with the measured numbers and what would move them.
-
-## 7 · SEO / GEO / AEO (`seo-auditor`)
+## 6 · SEO / GEO / AEO (`seo-auditor`)
 
 Skills: `seo-metadata`.
 
@@ -148,7 +174,7 @@ Skills: `seo-metadata`.
   page doesn't exist yet).
 - Lighthouse SEO ≥95 (`canonical` failing on localhost is expected: it points at the production domain).
 
-## 8 · Forms (`form-auditor`, conditional)
+## 7 · Forms (`form-auditor`, conditional)
 
 Runs only when `scan.mjs` finds form controls on the screen.
 Skills: `form-handling-validation`, `security-practices` (rules 13, 24).
@@ -164,7 +190,7 @@ Skills: `form-handling-validation`, `security-practices` (rules 13, 24).
 - Children's personal data (DPDP): collect the minimum, and put a consent checkbox linked to the privacy policy on forms collecting a child's data.
 - Tests for valid, invalid and pending states.
 
-## 9 · Security (`security-auditor`)
+## 8 · Security (`security-auditor`)
 
 Skills: `security-practices`. Next docs: `02-guides/content-security-policy.md`.
 
@@ -186,7 +212,7 @@ Skills: `security-practices`. Next docs: `02-guides/content-security-policy.md`.
   values); third-party scripts vetted.
 - `npm audit --omit=dev`: fix high/critical by updating. Report what's left.
 
-## 10 · Error handling (`error-handling-auditor`)
+## 9 · Error handling (`error-handling-auditor`)
 
 Skills: `error-observability`. Next docs: `03-api-reference/03-file-conventions/error.md`,
 `not-found.md`.
@@ -200,6 +226,37 @@ Skills: `error-observability`. Next docs: `03-api-reference/03-file-conventions/
 - Zero console errors on the route (`audit.mjs --checks console`).
 - No error-monitoring vendor (Sentry etc.) without a decision → `DECISIONS NEEDED`.
 
+## 10 · Performance (`perf-auditor`)
+
+Skills: `performance-optimization`.
+
+Runs this late so it measures the page as it will ship: every header, error boundary,
+form and font is already in place.
+
+- `node $S/gates.mjs` (fresh build), then
+  `node $S/audit.mjs --routes <route> --checks lighthouse --out $Q/10-audit`.
+  Budgets (override with `--budget`): desktop perf ≥90, LCP ≤2.5s; mobile perf ≥80,
+  LCP ≤4s; CLS ≤0.1; TBT ≤200ms desktop / 300ms mobile.
+- Known wins on this stack:
+  - LCP image: `loading="eager"` + `fetchPriority="high"`, not `preload` (Next 16's
+    `preload` link has no fetchpriority and competes with other preloads).
+  - LCP text must not start at `opacity: 0`. Chrome ignores invisible paints, so a fade-in
+    hero pushes LCP onto another element. Use a transform-only entrance (`animate-rise`).
+  - Only one image may be eager/high above the fold. Logos stay small.
+  - `sizes` on every `next/image`; `next/font` with only the weights used, and
+    `preload: false` for secondary display/handwriting fonts.
+  - Heavy client widgets below the fold (canvas animations): start work on idle or on
+    visibility; `next/dynamic` for large client-only components.
+  - Oversized PNG/JPG sources: let `next/image` serve AVIF/WebP (`images.formats`).
+  - A security header or CSP rule that costs performance is a trade-off, not a perf fix:
+    don't remove it, put both numbers under `DECISIONS NEEDED`.
+- Localhost Lighthouse varies ±5. Re-run once before chasing a small miss; report the
+  median of what you ran.
+- The orchestrator's regression check after this phase adds `--modes mobile,desktop`, so
+  desktop numbers join the baseline too.
+
+Done: budgets met, or `partial` with the measured numbers and what would move them.
+
 ## 11 · Code review (`code-reviewer`, read-only)
 
 Skills: `code-review-checklist` (+ the security/a11y/perf cross-checks it names).
@@ -210,17 +267,22 @@ and commits `fix(<screen>): address review`. One re-review of the fix diff at mo
 ## 12 · Final regression (orchestrator)
 
 1. `node $S/gates.mjs --tests --out $Q/12-gates.md` (fresh production build + all tests)
-2. `node $S/audit.mjs --routes <route> --original screens/<screen>/Main.dc.html --out $Q/12-audit`:
-   every check, including the design capture against the export at 1440/1000/390 on the
-   production build. Drop `--original` if the export no longer exists.
+2. `node $S/audit.mjs --routes <route> --original screens/<screen>/Main.dc.html --baseline $Q/baseline.json --phase final --out $Q/12-audit`:
+   every check, including links, desktop Lighthouse and the design capture at
+   1440/1000/390 on the production build. Drop `--original` if the export no longer exists.
 
-Compare with each phase's evidence. A regression (something a phase fixed that is broken
-again) → hand it back to the owning phase agent **once**, then re-run this phase. Still
-failing → report it. Blocking only for red gates.
+Every phase was already checked against the baseline, so this is a confirmation, not a
+search. A regression here comes from the review fixes or from something the quick check
+doesn't cover (links, the 1000px capture). Hand it back **once** to the agent that owns
+that area (perf for Lighthouse, a11y for axe, security for headers, structure or the
+converter for the capture, seo for links), then re-run this phase. Still failing → report
+it. Blocking only for red gates.
 
 ## 13 · Report (orchestrator)
 
-`node $S/state.mjs report <screen>` → `$Q/REPORT.md`, then tell the user:
-per-phase table, the headline numbers (tests, axe, Lighthouse, headers, capture), every
+`node $S/state.mjs report <screen>` → `$Q/REPORT.md` (phase table plus the per-phase
+regression-check trend from the baseline), then tell the user:
+per-phase table, the headline numbers (tests, axe, Lighthouse, headers, capture), any
+trade-off accepted into the baseline, every
 `DECISIONS NEEDED` item merged and de-duplicated, commits on the branch, and next steps
 (review the branch, merge, push). Never push or merge yourself.

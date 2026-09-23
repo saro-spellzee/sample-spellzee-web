@@ -57,6 +57,30 @@ other phases' breakage beyond what you need to verify your own work.
 If an E2E or unit test fails because you *intentionally* changed behaviour, update the
 test and say so in `CHANGED`.
 
+## After you report: the regression check
+
+The orchestrator then compares the page with the best results earlier phases reached
+(console errors, axe, security headers, design capture, mobile Lighthouse; see "The
+regression check" in `phases.md`). If your phase touched something it measures, you can
+run the same command yourself first, **without `--phase`** and with `--out
+.quality/<screen>/NN-precheck` (without `--phase` it only compares and records nothing).
+
+If your change made something worse, you get a message listing it as `before → now`,
+while you still have your context:
+
+- Find which of your changes caused it. If it isn't obvious, undo one change at a time
+  and re-measure.
+- Fix it without undoing your phase's goal, leave the gates green, and reply with the
+  report format again (STATUS and EVIDENCE updated).
+- If the regression is the price of your fix (a security header that costs mobile perf, a
+  contrast fix that moves the design), don't quietly drop your fix and don't keep it
+  silently. Reply with `TRADE-OFF:` lines giving both numbers and what each option buys,
+  and put the choice under `DECISIONS NEEDED`. The orchestrator records it and moves on.
+- The check already ignores Lighthouse runs made at a different machine speed, so a
+  Lighthouse regression it reports was measured at a similar speed. If your change really
+  can't affect what it measures, re-run the check (without `--phase`) and report both
+  results; the orchestrator's re-check decides.
+
 ## Report format (your final message, exactly this shape)
 
 ```

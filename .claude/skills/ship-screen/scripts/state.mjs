@@ -11,7 +11,10 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { load as loadBaseline, trendMarkdown } from "./baseline.mjs";
 
+// Perf runs after security and errors so it measures the page with its final headers,
+// error boundaries and form code (a security header once cost mobile perf ~26 points).
 export const PHASES = [
   { n: 0, id: "preflight", title: "Pre-flight", owner: "orchestrator", blocking: true },
   { n: 1, id: "convert", title: "Convert design → code", owner: "screen-converter", blocking: true },
@@ -19,11 +22,11 @@ export const PHASES = [
   { n: 3, id: "tests", title: "Tests", owner: "test-engineer", blocking: false },
   { n: 4, id: "structure", title: "Structure, tokens, types", owner: "architecture-auditor", blocking: false },
   { n: 5, id: "a11y", title: "Accessibility", owner: "a11y-auditor", blocking: false },
-  { n: 6, id: "perf", title: "Performance", owner: "perf-auditor", blocking: false },
-  { n: 7, id: "seo", title: "SEO / GEO / AEO", owner: "seo-auditor", blocking: false },
-  { n: 8, id: "forms", title: "Forms", owner: "form-auditor", blocking: false },
-  { n: 9, id: "security", title: "Security", owner: "security-auditor", blocking: false },
-  { n: 10, id: "errors", title: "Error handling", owner: "error-handling-auditor", blocking: false },
+  { n: 6, id: "seo", title: "SEO / GEO / AEO", owner: "seo-auditor", blocking: false },
+  { n: 7, id: "forms", title: "Forms", owner: "form-auditor", blocking: false },
+  { n: 8, id: "security", title: "Security", owner: "security-auditor", blocking: false },
+  { n: 9, id: "errors", title: "Error handling", owner: "error-handling-auditor", blocking: false },
+  { n: 10, id: "perf", title: "Performance", owner: "perf-auditor", blocking: false },
   { n: 11, id: "review", title: "Code review", owner: "code-reviewer", blocking: false },
   { n: 12, id: "final", title: "Final regression", owner: "orchestrator", blocking: true },
   { n: 13, id: "report", title: "Report", owner: "orchestrator", blocking: false },
@@ -91,12 +94,13 @@ switch (cmd) {
   case "report": {
     const s = load();
     const icon = { pass: "✅", partial: "🟡", fail: "❌", skipped: "⏭️", pending: "·", running: "…" };
+    const trend = trendMarkdown(loadBaseline(path.join(dir, "baseline.json")));
     const md = [
       `# ship-screen report: ${s.screen}`,
       ``,
       `- Route: \`${s.route}\` · branch: \`${s.branch}\` · base: \`${s.base.slice(0, 8)}\``,
       `- Started: ${s.startedAt}${s.resumedAt ? ` · resumed: ${s.resumedAt}` : ""} · finished: ${now()}`,
-      s.flags ? `- Flags: ${s.flags}` : "",
+      ...(s.flags ? [`- Flags: ${s.flags}`] : []),
       ``,
       `| # | phase | result | commit | notes |`,
       `|---|---|---|---|---|`,
@@ -105,8 +109,9 @@ switch (cmd) {
         return `| ${p.n} | ${p.title} | ${icon[r.status] ?? ""} ${r.status} | ${r.commit ? `\`${r.commit.slice(0, 8)}\`` : ""} | ${(r.note ?? "").replace(/\|/g, "/")} |`;
       }),
       ``,
+      ...(trend ? [trend] : []),
       `Phase reports: \`${dir.replace(/\\/g, "/")}/NN-<phase>.md\`. Audit, capture and Lighthouse output are in the same folder.`,
-    ].filter((l) => l !== "");
+    ];
     fs.writeFileSync(path.join(dir, "REPORT.md"), md.join("\n"));
     console.log(md.join("\n"));
     break;

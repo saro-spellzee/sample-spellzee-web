@@ -5,15 +5,24 @@
 //   links      every internal link resolves (status + #anchor target exists)
 //   axe        axe-core WCAG 2.2 AA scan (1440 + 390)
 //   headers    security response headers
-//   lighthouse Lighthouse mobile + desktop, checked against budgets
+//   lighthouse Lighthouse mobile + desktop (--modes), checked against budgets
 //   capture    design fidelity vs the screens/ export (needs --original), via screen-to-nextjs/capture.mjs
 // Writes <out>/audit.md + audit.json and prints the markdown.
 //
 // Usage (from the project root, after `npm run build`):
 //   node .claude/skills/ship-screen/scripts/audit.mjs --routes / [--checks console,links,axe,headers,lighthouse,capture]
-//        [--original screens/<screen>/Main.dc.html] [--widths 1440,1000,390]
+//        [--original screens/<screen>/Main.dc.html] [--widths 1440,1000,390] [--modes mobile,desktop]
 //        [--out .quality/<screen>/audit] [--url http://localhost:3000] [--budget mobile.perf=85,desktop.lcp=2000] [--strict]
+//        [--quick] [--baseline .quality/<screen>/baseline.json [--phase <id>] [--reset-baseline]]
 // Default checks: everything except capture (capture is added automatically when --original is given).
+//
+// --quick is the per-phase regression check: console, axe, headers, capture (with --original)
+// and Lighthouse, at 1440 + 390 and mobile only, in about 2 minutes.
+// --baseline compares every tracked metric with the best value earlier phases reached (see
+// baseline.mjs) and exits 1 on a regression. A Lighthouse run that looks regressed is measured
+// once more and the better run kept, so localhost noise doesn't count. --phase also records the
+// result in the baseline (keeping each metric's best value when nothing regressed);
+// --reset-baseline starts a fresh one from this result.
 //
 // Needs `playwright` (and `axe-core` for the axe check) resolvable from the project.
 
@@ -22,6 +31,7 @@ import { createRequire } from "node:module";
 import fs from "node:fs";
 import net from "node:net";
 import path from "node:path";
+import { compare, describe, load, metricsOf, record, save } from "./baseline.mjs";
 
 const argv = process.argv.slice(2);
 const opt = (n, d) => {
@@ -41,9 +51,14 @@ const normalizeRoute = (r) => {
   return route.startsWith("/") ? route : `/${route}`;
 };
 const routes = opt("routes", "/").split(",").map((r) => r.trim()).filter(Boolean).map(normalizeRoute);
-const checks = new Set(opt("checks", `console,links,axe,headers,lighthouse${opt("original") ? ",capture" : ""}`).split(","));
+const quick = flag("quick");
+const checks = new Set(opt("checks", `console,${quick ? "" : "links,"}axe,headers,lighthouse${opt("original") ? ",capture" : ""}`).split(","));
+const modes = opt("modes", quick ? "mobile" : "mobile,desktop").split(",");
+const widths = opt("widths", quick ? "1440,390" : "1440,1000,390");
 const outDir = opt("out", ".quality/audit");
 fs.mkdirSync(outDir, { recursive: true });
+const baselineFile = opt("baseline");
+const baselineBefore = baselineFile && !flag("reset-baseline") ? load(baselineFile) : null;
 
 const budgets = {
   desktop: { perf: 90, a11y: 95, bp: 95, seo: 95, lcp: 2500, cls: 0.1, tbt: 200 },
@@ -142,6 +157,72 @@ const md = [`# Audit`, ``, `Server: ${base} · routes: ${routes.join(", ")}`, ``
 const summary = [];
 const add = (check, route, status, note) => summary.push({ check, route, status, note });
 
+let lighthouseEnv;
+function findChrome() {
+  const env = { ...process.env };
+  if (!env.CHROME_PATH) {
+    const candidates = [
+      "C:/Program Files/Google/Chrome/Application/chrome.exe",
+      "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
+      `${process.env.LOCALAPPDATA}/Google/Chrome/Application/chrome.exe`,
+      "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+      "/usr/bin/google-chrome",
+      "/usr/bin/chromium",
+    ];
+    try {
+      candidates.unshift(chromium.executablePath());
+    } catch {}
+    const found = candidates.find((p) => p && fs.existsSync(p));
+    if (found) env.CHROME_PATH = found;
+  }
+  return env;
+}
+
+/** One Lighthouse run → { scores, metrics, lcpElement, lcpChecklist, failing, report } or { error }. */
+function lighthouse(route, mode, file) {
+  lighthouseEnv ??= findChrome();
+  const cmd = `npx -y lighthouse@12 "${base + route}" --output=json --output-path="${file}" --quiet --chrome-flags="--headless=new" ${mode === "desktop" ? "--preset=desktop" : ""}`;
+  const run = spawnSync(cmd, { shell: true, env: lighthouseEnv, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  if (!fs.existsSync(file)) return { error: (run.stderr || "").split("\n").filter(Boolean).slice(-2).join(" ") };
+  const lh = JSON.parse(fs.readFileSync(file, "utf8"));
+  const a = lh.audits;
+  const cat = (k) => Math.round((lh.categories[k]?.score ?? 0) * 100);
+  const scores = { perf: cat("performance"), a11y: cat("accessibility"), bp: cat("best-practices"), seo: cat("seo") };
+  const metrics = {
+    lcp: Math.round(a["largest-contentful-paint"]?.numericValue ?? 0),
+    cls: Math.round((a["cumulative-layout-shift"]?.numericValue ?? 0) * 1000) / 1000,
+    tbt: Math.round(a["total-blocking-time"]?.numericValue ?? 0),
+    fcp: Math.round(a["first-contentful-paint"]?.numericValue ?? 0),
+  };
+  const findSnippet = (o) => {
+    if (!o || typeof o !== "object") return "";
+    if (typeof o.snippet === "string") return o.snippet.slice(0, 160);
+    for (const v of Object.values(o)) {
+      const s = findSnippet(v);
+      if (s) return s;
+    }
+    return "";
+  };
+  const lcpElement = findSnippet(a["largest-contentful-paint-element"]?.details);
+  const lcpChecklist = [];
+  const walk = (o) => {
+    if (!o || typeof o !== "object") return;
+    if (o.type === "checklist") for (const v of Object.values(o.items)) lcpChecklist.push({ ok: !!v.value, label: v.label });
+    for (const v of Object.values(o)) walk(v);
+  };
+  walk(a["lcp-discovery-insight"]?.details);
+  // The canonical/hreflang audits compare against the production domain, so they fail on localhost by design.
+  const localNoise = new Set(["canonical", "hreflang"]);
+  const failing = Object.values(a)
+    .filter((x) => typeof x.score === "number" && x.score < 0.9 && ["binary", "numeric", "metricSavings"].includes(x.scoreDisplayMode))
+    .sort((x, y) => x.score - y.score)
+    .map((x) => ({ id: x.id, title: x.title, score: x.score, value: x.displayValue ?? "", expectedOnLocalhost: localNoise.has(x.id) }));
+  // How fast this machine was during the run; baseline.mjs only compares runs at similar speeds.
+  const benchmarkIndex = Math.round(lh.environment?.benchmarkIndex ?? 0) || undefined;
+  return { scores, metrics, benchmarkIndex, lcpElement, lcpChecklist, failing: failing.slice(0, 15), report: file };
+}
+
 for (const route of routes) {
   const r = (report.results[route] = {});
 
@@ -232,16 +313,16 @@ for (const route of routes) {
     const h = Object.fromEntries(res.headers.entries());
     const csp = h["content-security-policy"] ?? "";
     const expect = [
-      ["content-security-policy", !!csp],
-      ["strict-transport-security", !!h["strict-transport-security"]],
-      ["x-content-type-options: nosniff", h["x-content-type-options"] === "nosniff"],
-      ["referrer-policy", !!h["referrer-policy"]],
-      ["permissions-policy", !!h["permissions-policy"]],
-      ["clickjacking (x-frame-options or frame-ancestors)", !!h["x-frame-options"] || /frame-ancestors/.test(csp)],
-      ["no x-powered-by", !h["x-powered-by"]],
+      ["csp", "content-security-policy", !!csp],
+      ["hsts", "strict-transport-security", !!h["strict-transport-security"]],
+      ["nosniff", "x-content-type-options: nosniff", h["x-content-type-options"] === "nosniff"],
+      ["referrer", "referrer-policy", !!h["referrer-policy"]],
+      ["permissions", "permissions-policy", !!h["permissions-policy"]],
+      ["clickjacking", "clickjacking (x-frame-options or frame-ancestors)", !!h["x-frame-options"] || /frame-ancestors/.test(csp)],
+      ["no-powered-by", "no x-powered-by", !h["x-powered-by"]],
     ];
-    r.headers = { present: h, expect: expect.map(([name, ok]) => ({ name, ok })) };
-    const missing = expect.filter(([, ok]) => !ok).map(([n]) => n);
+    r.headers = { present: h, expect: expect.map(([id, name, ok]) => ({ id, name, ok })) };
+    const missing = expect.filter(([, , ok]) => !ok).map(([, n]) => n);
     add("headers", route, missing.length ? "FAIL" : "PASS", missing.length ? `missing: ${missing.join("; ")}` : "all present");
   }
 
@@ -254,7 +335,7 @@ for (const route of routes) {
     } else {
       const slug = route === "/" ? "home" : route.replace(/^\/|\/$/g, "").replace(/\//g, "_");
       const capOut = path.join(outDir, `capture-${slug}`);
-      spawnSync(process.execPath, [capture, "--original", original, "--url", base + route, "--out", capOut, "--widths", opt("widths", "1440,1000,390")], { cwd, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+      spawnSync(process.execPath, [capture, "--original", original, "--url", base + route, "--out", capOut, "--widths", widths], { cwd, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
       const repFile = path.join(capOut, "report.json");
       if (!fs.existsSync(repFile)) {
         add("capture", route, "SKIP", "capture.mjs produced no report");
@@ -283,72 +364,36 @@ for (const route of routes) {
 
   // ---------- lighthouse ----------
   if (checks.has("lighthouse")) {
-    const env = { ...process.env };
-    if (!env.CHROME_PATH) {
-      const candidates = [
-        "C:/Program Files/Google/Chrome/Application/chrome.exe",
-        "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
-        `${process.env.LOCALAPPDATA}/Google/Chrome/Application/chrome.exe`,
-        "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
-        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-        "/usr/bin/google-chrome",
-        "/usr/bin/chromium",
-      ];
-      try {
-        candidates.unshift(chromium.executablePath());
-      } catch {}
-      const found = candidates.find((p) => p && fs.existsSync(p));
-      if (found) env.CHROME_PATH = found;
-    }
     r.lighthouse = {};
-    for (const mode of ["mobile", "desktop"]) {
-      const slug = route === "/" ? "home" : route.replace(/^\/|\/$/g, "").replace(/\//g, "_");
-      const file = path.join(outDir, `lighthouse-${slug}-${mode}.json`);
-      const cmd = `npx -y lighthouse@12 "${base + route}" --output=json --output-path="${file}" --quiet --chrome-flags="--headless=new" ${mode === "desktop" ? "--preset=desktop" : ""}`;
-      const run = spawnSync(cmd, { shell: true, env, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
-      if (!fs.existsSync(file)) {
-        add(`lighthouse ${mode}`, route, "SKIP", `lighthouse failed: ${(run.stderr || "").split("\n").filter(Boolean).slice(-2).join(" ")}`);
+    const slug = route === "/" ? "home" : route.replace(/^\/|\/$/g, "").replace(/\//g, "_");
+    for (const mode of modes) {
+      let l = lighthouse(route, mode, path.join(outDir, `lighthouse-${slug}-${mode}.json`));
+      if (l.error) {
+        add(`lighthouse ${mode}`, route, "SKIP", `lighthouse failed: ${l.error}`);
         continue;
       }
-      const lh = JSON.parse(fs.readFileSync(file, "utf8"));
-      const a = lh.audits;
-      const cat = (k) => Math.round((lh.categories[k]?.score ?? 0) * 100);
-      const scores = { perf: cat("performance"), a11y: cat("accessibility"), bp: cat("best-practices"), seo: cat("seo") };
-      const metrics = {
-        lcp: Math.round(a["largest-contentful-paint"]?.numericValue ?? 0),
-        cls: Math.round((a["cumulative-layout-shift"]?.numericValue ?? 0) * 1000) / 1000,
-        tbt: Math.round(a["total-blocking-time"]?.numericValue ?? 0),
-        fcp: Math.round(a["first-contentful-paint"]?.numericValue ?? 0),
-      };
-      const findSnippet = (o) => {
-        if (!o || typeof o !== "object") return "";
-        if (typeof o.snippet === "string") return o.snippet.slice(0, 160);
-        for (const v of Object.values(o)) {
-          const s = findSnippet(v);
-          if (s) return s;
+      // One slow localhost run isn't a regression: when a run looks worse than the baseline
+      // (or ran at a different machine speed), measure again. Keep the better run among those
+      // at a comparable speed, or the better of both if neither was.
+      const verdict = (x) => (baselineBefore ? compare(metricsOf({ results: { [route]: { lighthouse: { [mode]: x } } } }), baselineBefore) : { regressions: [], incomparable: [] });
+      const suspect = (v) => v.regressions.length + v.incomparable.length > 0;
+      if (suspect(verdict(l))) {
+        const again = lighthouse(route, mode, path.join(outDir, `lighthouse-${slug}-${mode}-2.json`));
+        if (!again.error) {
+          const both = [l, again];
+          const comparable = both.filter((x) => !verdict(x).incomparable.length);
+          const pool = comparable.length ? comparable : both;
+          l = pool.reduce((a, x) => (x.scores.perf > a.scores.perf ? x : a));
+          l.runs = both.map((x) => `perf ${x.scores.perf} at CPU ${x.benchmarkIndex ?? "?"}`);
         }
-        return "";
-      };
-      const lcpEl = findSnippet(a["largest-contentful-paint-element"]?.details);
-      const lcpChecklist = [];
-      const walk = (o) => {
-        if (!o || typeof o !== "object") return;
-        if (o.type === "checklist") for (const v of Object.values(o.items)) lcpChecklist.push({ ok: !!v.value, label: v.label });
-        for (const v of Object.values(o)) walk(v);
-      };
-      walk(a["lcp-discovery-insight"]?.details);
+      }
       const b = budgets[mode];
       const over = [];
-      for (const k of ["perf", "a11y", "bp", "seo"]) if (scores[k] < b[k]) over.push(`${k} ${scores[k]} < ${b[k]}`);
-      for (const k of ["lcp", "cls", "tbt"]) if (metrics[k] > b[k]) over.push(`${k} ${metrics[k]} > ${b[k]}`);
-      // The canonical/hreflang audits compare against the production domain, so they fail on localhost by design.
-      const localNoise = new Set(["canonical", "hreflang"]);
-      const failing = Object.values(a)
-        .filter((x) => typeof x.score === "number" && x.score < 0.9 && ["binary", "numeric", "metricSavings"].includes(x.scoreDisplayMode))
-        .sort((x, y) => x.score - y.score)
-        .map((x) => ({ id: x.id, title: x.title, score: x.score, value: x.displayValue ?? "", expectedOnLocalhost: localNoise.has(x.id) }));
-      r.lighthouse[mode] = { scores, metrics, lcpElement: lcpEl, lcpChecklist, overBudget: over, failing: failing.slice(0, 15), report: file };
-      add(`lighthouse ${mode}`, route, over.length ? "FAIL" : "PASS", `perf ${scores.perf} a11y ${scores.a11y} bp ${scores.bp} seo ${scores.seo} · LCP ${metrics.lcp}ms CLS ${metrics.cls} TBT ${metrics.tbt}ms${over.length ? ` · over budget: ${over.join(", ")}` : ""}`);
+      for (const k of ["perf", "a11y", "bp", "seo"]) if (l.scores[k] < b[k]) over.push(`${k} ${l.scores[k]} < ${b[k]}`);
+      for (const k of ["lcp", "cls", "tbt"]) if (l.metrics[k] > b[k]) over.push(`${k} ${l.metrics[k]} > ${b[k]}`);
+      r.lighthouse[mode] = { ...l, overBudget: over };
+      const { scores, metrics } = l;
+      add(`lighthouse ${mode}`, route, over.length ? "FAIL" : "PASS", `perf ${scores.perf} a11y ${scores.a11y} bp ${scores.bp} seo ${scores.seo} · LCP ${metrics.lcp}ms CLS ${metrics.cls} TBT ${metrics.tbt}ms · CPU benchmark ${l.benchmarkIndex ?? "?"}${l.runs ? ` (2 runs: ${l.runs.join(", ")})` : ""}${over.length ? ` · over budget: ${over.join(", ")}` : ""}`);
     }
   }
 }
@@ -356,10 +401,36 @@ for (const route of routes) {
 await browser?.close();
 stop();
 
+// ---------- baseline ----------
+let regressions = [];
+let incomparable = [];
+const baselineMd = [];
+if (baselineFile) {
+  const current = metricsOf(report);
+  let action = "compared";
+  if (opt("phase")) {
+    const res = record(load(baselineFile), current, { phase: opt("phase"), reset: flag("reset-baseline") });
+    save(baselineFile, res.baseline);
+    ({ regressions, incomparable, action } = res);
+  } else if (baselineBefore) {
+    ({ regressions, incomparable } = compare(current, baselineBefore));
+  } else {
+    action = "no baseline yet";
+  }
+  report.regressions = regressions;
+  report.incomparable = incomparable;
+  const note = { created: "baseline created", ok: "no regressions, baseline updated", regressed: "baseline left as it was", compared: "compared only (no --phase)", "no baseline yet": `nothing to compare: ${baselineFile} doesn't exist` }[action];
+  const speed = incomparable.length ? ` · ${incomparable.length} Lighthouse value(s) not comparable (machine speed changed)${action === "ok" ? ", re-based" : ""}` : "";
+  add("regressions", routes.join(", "), regressions.length ? "FAIL" : incomparable.length ? "WARN" : "PASS", `${regressions.length} vs baseline${speed} · ${note}`);
+  if (regressions.length) baselineMd.push(``, `## Regressions vs baseline`, ...regressions.map((r) => `- ${describe(r)}`));
+  if (incomparable.length) baselineMd.push(``, `## Not comparable (machine speed changed)`, ...incomparable.map((r) => `- ${describe(r)}`));
+}
+
 // ---------- markdown ----------
 const icon = { PASS: "✅", WARN: "⚠️", FAIL: "❌", SKIP: "⏭️" };
 md.push(`| check | route | result | notes |`, `|---|---|---|---|`);
 for (const s of summary) md.push(`| ${s.check} | ${s.route} | ${icon[s.status]} ${s.status} | ${s.note} |`);
+md.push(...baselineMd);
 
 for (const [route, r] of Object.entries(report.results)) {
   if (r.console?.length) {
@@ -390,6 +461,7 @@ for (const [route, r] of Object.entries(report.results)) {
     md.push(``, `## Lighthouse ${mode}: ${route}`);
     md.push(`- Scores: perf ${l.scores.perf} · a11y ${l.scores.a11y} · best-practices ${l.scores.bp} · seo ${l.scores.seo}`);
     md.push(`- LCP ${l.metrics.lcp}ms · CLS ${l.metrics.cls} · TBT ${l.metrics.tbt}ms · FCP ${l.metrics.fcp}ms`);
+    if (l.runs) md.push(`- Measured twice because the first run looked like a regression or ran at a different machine speed (${l.runs.join("; ")}); these numbers are from the run kept.`);
     if (l.lcpElement) md.push(`- LCP element: \`${l.lcpElement.replace(/`/g, "'")}\``);
     for (const c of l.lcpChecklist) md.push(`- LCP discovery: ${c.ok ? "✅" : "❌"} ${c.label}`);
     if (l.failing.length) {
@@ -404,4 +476,4 @@ md.push(``, `Lighthouse on localhost varies ±5 points run to run; re-run before
 fs.writeFileSync(path.join(outDir, "audit.json"), JSON.stringify(report, null, 2));
 fs.writeFileSync(path.join(outDir, "audit.md"), md.join("\n"));
 console.log(md.join("\n"));
-process.exit(flag("strict") && summary.some((s) => s.status === "FAIL") ? 1 : 0);
+process.exit((flag("strict") && summary.some((s) => s.status === "FAIL")) || regressions.length ? 1 : 0);

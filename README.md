@@ -95,14 +95,19 @@ The full rules are in [.claude/skills/screen-to-nextjs/references/conventions.md
    | 3 | Tests | Vitest + Testing Library + axe per client component, Playwright E2E |
    | 4 | Structure | Component boundaries, tokens instead of hex, strict types, no hard-coded copy |
    | 5 | Accessibility | axe WCAG 2.2 AA in a real browser, keyboard walkthrough, reduced motion |
-   | 6 | Performance | Lighthouse budgets on mobile and desktop (LCP, CLS, TBT) |
-   | 7 | SEO / GEO / AEO | Metadata, JSON-LD from content, sitemap, llms.txt, working links |
-   | 8 | Forms | RHF + Zod with server re-validation (only if the screen has forms) |
-   | 9 | Security | Security headers, a CSP that keeps pages static, XSS sinks, npm audit |
-   | 10 | Error handling | error / global-error / not-found pages, soft-failing widgets |
+   | 6 | SEO / GEO / AEO | Metadata, JSON-LD from content, sitemap, llms.txt, working links |
+   | 7 | Forms | RHF + Zod with server re-validation (only if the screen has forms) |
+   | 8 | Security | Security headers, a CSP that keeps pages static, XSS sinks, npm audit |
+   | 9 | Error handling | error / global-error / not-found pages, soft-failing widgets |
+   | 10 | Performance | Lighthouse budgets on mobile and desktop (LCP, CLS, TBT), measured with the final headers in place |
    | 11 | Code review | Independent read-only review of the whole diff; must-fixes applied |
    | 12 | Final regression | Everything above re-run together, nothing broke |
    | 13 | Report | `.quality/<screen>/REPORT.md` plus the decisions only you can make |
+
+   After every phase a quick regression check (console, axe, security headers, design
+   capture, mobile Lighthouse; about 2 minutes) compares the page with the best results
+   earlier phases reached. If a phase made something worse, it goes straight back to that
+   phase's agent to fix, or it's recorded as a trade-off for you to decide.
 
    It never pushes or merges. Review the branch, then merge it yourself.
 3. Answer the **decisions needed** it lists: colours that fail contrast (with proposed
@@ -130,6 +135,9 @@ S=.claude/skills/ship-screen/scripts
 node $S/gates.mjs --tests     # typegen, tsc, lint, build, unit + e2e tests
 node $S/audit.mjs --routes / --original screens/homepage/Main.dc.html --out .quality/manual
                               # console, links, axe, headers, Lighthouse, design capture
+node $S/audit.mjs --quick --routes / --original screens/homepage/Main.dc.html \
+  --baseline .quality/homepage/baseline.json --out .quality/manual-check
+                              # the per-phase regression check (compare only, no --phase)
 node $S/scan.mjs --paths src  # static scan: big files, hex, any, XSS sinks, hard-coded copy
 ```
 

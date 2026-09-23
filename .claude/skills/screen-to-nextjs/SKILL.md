@@ -24,7 +24,7 @@ Exact values, idiomatic structure.
 ## How this skill runs: pipeline by default
 
 Conversion is phase 1 of a longer sequence (tests → structure → accessibility →
-performance → SEO/GEO/AEO → forms → security → error handling → code review → final
+SEO/GEO/AEO → forms → security → error handling → performance → code review → final
 regression). Which part you do depends on who invoked you:
 
 - **The user asked for a screen** (`/screen-to-nextjs <screen>`, "convert screens/pricing",
