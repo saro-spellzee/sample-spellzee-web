@@ -139,13 +139,30 @@ test.describe("homepage", () => {
     await expect(page.getByText(faq.items[1].answer)).toBeVisible();
   });
 
-  test("newsletter accepts an email and clears the field", async ({ page }) => {
+  test("newsletter shows a linked error for an invalid email", async ({ page }) => {
+    await page.goto("/");
+    const input = page.getByLabel(footer.newsletter.label);
+
+    await input.fill("not-an-email");
+    await page.getByRole("button", { name: footer.newsletter.submit }).click();
+
+    await expect(page.getByText(footer.newsletter.errors.invalid)).toBeVisible();
+    await expect(input).toHaveAttribute("aria-invalid", "true");
+    await expect(input).toBeFocused();
+  });
+
+  // The E2E server is a production build with no NEWSLETTER_WEBHOOK_URL, so the Server
+  // Action must fail loudly: a generic error, the email kept, and never a fake "subscribed".
+  test("newsletter never claims success in production when no webhook is configured", async ({ page }) => {
+    test.skip(!!process.env.NEWSLETTER_WEBHOOK_URL, "a webhook is configured for this run");
     await page.goto("/");
     const input = page.getByLabel(footer.newsletter.label);
 
     await input.fill("parent@example.com");
-    await page.getByRole("button", { name: footer.newsletter.submit }).click();
+    await input.press("Enter");
 
-    await expect(input).toHaveValue("");
+    await expect(page.getByRole("status").filter({ hasText: footer.newsletter.errors.failed })).toBeVisible();
+    await expect(page.getByText(footer.newsletter.success)).toHaveCount(0);
+    await expect(input).toHaveValue("parent@example.com");
   });
 });

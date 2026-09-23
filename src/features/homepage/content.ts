@@ -353,6 +353,16 @@ export const footer = {
     placeholder: "Your email address",
     submit: "Subscribe",
     pending: "Subscribing…",
+    success: "Thanks! You're on the list.",
+    errors: {
+      required: "Enter your email address.",
+      invalid: "Enter a valid email address, like name@example.com.",
+      tooLong: "That email address is too long.",
+      /** Shown for any delivery failure; the detail goes to the server log only. */
+      failed: "Sorry, we couldn't subscribe you just now. Please try again in a moment.",
+    },
+    /** Honeypot: visually hidden and aria-hidden, so only bots fill it in. */
+    honeypotLabel: "Leave this field empty",
   },
   columns: [
     {

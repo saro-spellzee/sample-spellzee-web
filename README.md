@@ -33,6 +33,8 @@ npm run dev        # http://localhost:3000
 | `npm run lint` | ESLint (ignores `screens/**` and `.claude/**`) |
 | `npx tsc --noEmit` | Type-check. Run `npx next typegen` first on a fresh clone, so `LayoutProps`/`PageProps` exist |
 
+> **Environment:** copy `.env.example` to `.env.local`. All values are optional for local work.
+
 > **Seeing no animations?** The site respects `prefers-reduced-motion`. If your OS has
 > animations turned off (Windows: Settings → Accessibility → Visual effects → Animation
 > effects), the page is intentionally static.
@@ -161,7 +163,9 @@ structured data the same way. Validate with the
 
 - **Placeholder links:** CTA buttons point at `#cta`, footer Contact/Privacy/Terms/Refund/Parent
   Resources point at `#top`, and program cards link to routes that don't exist yet (`/phonics`…).
-- **Newsletter form:** no backend yet. Submit only resets the form.
+- **Newsletter form:** no backend yet. It posts to `NEWSLETTER_WEBHOOK_URL` (see `.env.example`).
+  Without it, `npm run dev` logs a masked address and reports success; a production build shows
+  the visitor a generic error and logs `NEWSLETTER_WEBHOOK_URL is not set`.
 - **Story "Play" button:** no video wired up.
 - **Site URL** is `https://spellzee.in` in `src/lib/site.ts` (override with `NEXT_PUBLIC_SITE_URL`).
   Confirm the production domain, and add official social profiles to `site.sameAs`.
