@@ -1,0 +1,1276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Spellzee — Help Your Child Read, Write and Speak with Confidence | CLM</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Instrument+Serif:ital@0;1&amp;family=Caveat:wght@500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FCF8F4;color:#0E1A3A;font-family:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#1557D6}a:hover{color:#0F45AE}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+.silk{background-color:#FCF8F4;background-image:url(./assets/692a386c27adf9c956c7884fc24475ce.jpg);background-size:cover;background-position:center;background-repeat:no-repeat}
+.silk-t{background-position:center top}
+.silk-b{background-position:center bottom}
+.silk-lav{background-image:radial-gradient(ellipse 42% 38% at 50% 64%,rgba(139,92,246,.12),rgba(139,92,246,0) 72%),url(./assets/692a386c27adf9c956c7884fc24475ce.jpg)}
+.hero-fade{position:absolute;left:0;right:0;bottom:0;height:120px;background:linear-gradient(180deg,rgba(252,248,244,0),#FCF8F4);pointer-events:none;z-index:3}
+.one-stage{position:relative}
+.one-top{position:relative;height:270px}
+.one-node{position:absolute;left:50%;top:13%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:#1557D6;box-shadow:0 0 0 8px rgba(21,87,214,.12)}
+.one-avatar{position:absolute;top:50%;transform:translate(-50%,-50%);overflow:visible;animation:floaty 6s ease-in-out infinite;width:88px;height:88px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:4px solid #fff;box-shadow:0 20px 40px -18px rgba(14,26,58,.55)}
+.one-avatar span{position:absolute;top:calc(100% + 12px);left:50%;transform:translateX(-50%);white-space:nowrap;font-size:13px;font-weight:700;color:#26325A}
+.one-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+.one-colon{display:inline-flex;flex-direction:column;justify-content:center;gap:.2em;height:.66em;margin:0 .1em;vertical-align:.06em}
+.one-colon i{display:block;width:.105em;height:.105em;border-radius:50%;background:#0E1A3A}
+.one-g2{grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr) !important}
+.one-num{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-size:128px;line-height:1;color:#0E1A3A;letter-spacing:-.02em;white-space:nowrap}
+.one-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;gap:12px;margin-top:14px}
+.one-feat{height:100%;display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.86);border:1px solid #fff;box-shadow:0 20px 40px -28px rgba(70,45,20,.45);backdrop-filter:blur(10px);}
+.mark{color:#0E1A3A;font-weight:600;background-image:url(./assets/ee67938d8d4ae3e721f66138c1eb2fa5.svg);background-repeat:no-repeat;background-position:0 100%;background-size:100% 10px;padding-bottom:9px;animation:swoosh .9s cubic-bezier(.6,.05,.25,1) .6s both;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.clm-badge{display:inline-flex;align-items:center;gap:12px;padding:6px 20px 6px 6px;border-radius:999px;border:1.5px solid transparent;background:linear-gradient(#fff,#fff) padding-box,linear-gradient(90deg,#2F6BF2,#8B4FE8,#D0508F) border-box;box-shadow:0 14px 34px -18px rgba(124,77,232,.55)}
+.clm-badge-ic{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff;box-shadow:inset 0 0 0 1px #ECE4D9,0 0 0 4px rgba(139,92,246,.1)}
+.clm-badge-t{font-size:14.5px;font-weight:700;letter-spacing:.01em;color:#0E1A3A}
+.clm-grad{background:linear-gradient(90deg,#2F6BF2,#8B4FE8);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800}
+.skill-card{transition:border-color .45s ease,box-shadow .45s ease}
+.wave-div{position:absolute;top:0;left:0;width:100%;height:clamp(56px,7vw,100px);display:block;z-index:1;pointer-events:none;filter:drop-shadow(0 12px 16px rgba(110,80,160,.07))}
+.wave-div.wave-bot{top:auto;bottom:-1px;filter:drop-shadow(0 -10px 14px rgba(110,80,160,.06))}
+.pcard{display:flex;flex-direction:column;align-items:stretch;text-align:left;width:100%;height:100%;padding:22px;border-radius:22px;border:1.5px solid #ECE4D9;background:#fff;cursor:pointer;font-family:inherit;color:#0E1A3A;text-decoration:none;transition:border-color .3s ease,box-shadow .3s ease,transform .3s ease}
+.pcard:hover,.pcard:focus-visible{color:#0E1A3A;transform:translateY(-4px);border-color:var(--c);box-shadow:var(--glow);outline:none}
+.pc-tile{background:var(--bg);color:var(--c);transition:background .3s ease,color .3s ease}
+.pcard:hover .pc-tile,.pcard:focus-visible .pc-tile{background:var(--c);color:#fff}
+.pc-foot{display:block;margin-top:auto;padding-top:18px}
+.pc-go-t{min-width:0;line-height:1.25}
+.pc-go{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:48px;padding:8px 8px 8px 12px;border-radius:14px;background:var(--bg);color:var(--c);font-size:13px;letter-spacing:-.005em;font-weight:800;transition:background .3s ease,color .3s ease}
+.pc-arr{width:28px;height:28px;border-radius:50%;background:var(--c);display:inline-flex;align-items:center;justify-content:center;transition:transform .3s cubic-bezier(.3,1.4,.5,1)}
+.pcard:hover .pc-go,.pcard:focus-visible .pc-go{background:var(--c);color:#fff}
+.pcard:hover .pc-arr,.pcard:focus-visible .pc-arr{transform:translateX(4px);background:rgba(255,255,255,.25)}
+.cred-bar{display:inline-block;padding:12px 18px 14px;border-radius:22px;border:1px solid transparent;background:linear-gradient(rgba(255,255,255,.86),rgba(255,255,255,.86)) padding-box,linear-gradient(120deg,rgba(47,107,242,.35),rgba(139,79,232,.25),rgba(208,80,143,.3)) border-box;backdrop-filter:blur(12px);box-shadow:0 22px 44px -30px rgba(60,40,140,.45),inset 0 1px 0 #fff}
+.cred-label{display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#5D6789}
+.cred-row{display:flex;align-items:center;gap:18px;margin-top:10px;flex-wrap:wrap}
+.cred-item{display:flex;align-items:center;gap:12px;transition:transform .3s ease}
+.cred-item:hover{transform:translateY(-2px)}
+.cred-logo{width:54px;height:54px;flex:none;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px #EDE6DB,0 0 0 5px rgba(139,92,246,.07),0 10px 20px -12px rgba(14,26,58,.4);overflow:hidden}
+.cred-t{display:flex;align-items:center;gap:6px;font-size:16px;font-weight:800;letter-spacing:-.01em;color:#0E1A3A}
+.cred-s{font-size:12.5px;font-weight:600;color:#5D6789;margin-top:1px}
+.cred-tick{width:15px;height:15px;border-radius:50%;background:linear-gradient(135deg,#22C07A,#0F8A55);box-shadow:0 0 0 2px #E4F5EC;display:inline-flex;align-items:center;justify-content:center}
+.cred-div{width:1px;height:38px;background:linear-gradient(180deg,transparent,#E4DACC,transparent)}
+.wrap{max-width:1200px;margin:0 auto;padding:0 40px}
+.h1{margin:0;font-weight:800;letter-spacing:-0.045em;line-height:1.0;color:#0E1A3A}
+.h2{margin:0;font-weight:800;font-size:46px;line-height:1.08;letter-spacing:-0.035em;color:#0E1A3A;text-wrap:balance}
+.acc{font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-weight:400;letter-spacing:-0.01em}
+.hand{font-family:'Caveat',cursive;font-weight:500}
+.lead{font-size:18px;line-height:1.65;color:#4B5575}
+.kicker,.caps{display:inline-flex;align-items:center;gap:9px;padding:6px 15px 6px 6px;border-radius:999px;background:#fff;border:1px solid #EAE2D6;box-shadow:0 8px 20px -14px rgba(70,45,20,.35);font-size:13.5px;font-weight:700;letter-spacing:.005em;text-transform:none;color:#0E1A3A}
+.kicker::before,.caps::before{content:"";width:24px;height:24px;border-radius:50%;flex:none;background:radial-gradient(circle,#1557D6 0 3.5px,transparent 4.5px),linear-gradient(135deg,#E3ECFE,#EEE7FD)}
+.btn{display:inline-flex;align-items:center;gap:12px;min-height:52px;padding:0 8px 0 26px;border-radius:999px;font:700 15.5px/1 'Plus Jakarta Sans',system-ui,sans-serif;text-decoration:none;cursor:pointer;border:0;transition:transform .25s ease,box-shadow .25s ease,background .25s ease}
+.btn .arr{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);display:inline-flex;align-items:center;justify-content:center;transition:transform .3s cubic-bezier(.3,1.4,.5,1),background .3s ease}
+.btn:hover .arr{transform:translateX(3px)}
+.btn-primary{position:relative;overflow:hidden;isolation:isolate;color:#fff;background:linear-gradient(135deg,#2A6BF0 0%,#1557D6 48%,#5A3FDA 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -2px 0 rgba(10,20,60,.14),0 14px 30px -12px rgba(21,87,214,.7),0 4px 12px -6px rgba(90,63,218,.5)}
+.btn-primary::after{content:"";position:absolute;top:0;bottom:0;left:-70%;width:45%;background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.32),rgba(255,255,255,0));transform:skewX(-20deg);transition:left .8s cubic-bezier(.3,.6,.2,1);pointer-events:none;z-index:-1}
+.btn-primary .arr{background:#fff;box-shadow:0 4px 10px -4px rgba(10,20,60,.45)}
+.btn-primary .arr svg{stroke:#1557D6}
+.btn-primary:active{transform:translateY(0) scale(.98)}
+.btn:focus-visible{outline:3px solid rgba(21,87,214,.35);outline-offset:3px}
+.btn-primary:hover{color:#fff;transform:translateY(-2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -2px 0 rgba(10,20,60,.14),0 20px 40px -14px rgba(21,87,214,.85),0 6px 16px -6px rgba(90,63,218,.6)}
+.btn-primary:hover::after{left:130%}
+.btn-primary:hover .arr{transform:translateX(4px)}
+.btn-ghost{background:#fff;color:#0E1A3A;border:1px solid #DCE1EC;padding:0 22px}
+.btn-ghost:hover{color:#1557D6;border-color:#1557D6;transform:translateY(-2px);box-shadow:0 12px 26px -16px rgba(21,87,214,.6)}
+.btn-sm{min-height:44px;padding:0 20px;font-size:14px}
+.nav a{color:#39436A;text-decoration:none;font-size:14.5px;font-weight:600}
+.nav a:hover{color:#1557D6}
+.card{background:#fff;border:1px solid #ECE4D9;border-radius:24px;box-shadow:0 20px 50px -34px rgba(14,26,58,.35)}
+.lift{transition:transform .3s ease,box-shadow .3s ease}
+.lift:hover{transform:translateY(-4px);box-shadow:0 28px 60px -34px rgba(14,26,58,.45)}
+.tile{width:48px;height:48px;flex:none;border-radius:14px;display:flex;align-items:center;justify-content:center}
+.pulse{width:8px;height:8px;border-radius:50%;background:#E0316F;position:relative;flex:none}
+.pulse::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:1.5px solid currentColor;color:inherit;animation:ping 2.2s cubic-bezier(0,0,.2,1) infinite}
+@keyframes ping{0%{transform:scale(.6);opacity:1}100%{transform:scale(2);opacity:0}}
+@keyframes floaty{0%,100%{transform:translate(-50%,-50%)}50%{transform:translate(-50%,calc(-50% - 6px))}}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes flow{to{stroke-dashoffset:-60}}
+@keyframes swoosh14{from{background-size:0% 14px}to{background-size:100% 14px}}
+.mark.mark-xl{font-weight:inherit;background-size:100% 14px;padding-bottom:10px;animation-name:swoosh14}
+@keyframes swoosh12{from{background-size:0% 12px}to{background-size:100% 12px}}
+.mark.mark-lg{font-weight:inherit;background-size:100% 12px;padding-bottom:10px;animation-name:swoosh12}
+@keyframes brainHover{from{transform:translateY(0)}to{transform:translateY(-2.3%)}}
+@keyframes swoosh{from{background-size:0% 10px}to{background-size:100% 10px}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 18px rgba(124,92,255,.35))}50%{filter:drop-shadow(0 0 34px rgba(124,92,255,.6))}}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.fade{animation:fadeUp .45s ease both}
+.tag{position:absolute;transform:translate(-50%,-50%);animation:floaty 5s ease-in-out infinite;z-index:3}
+.tag-chip{display:inline-flex;align-items:center;gap:8px;padding:8px 14px 8px 11px;border-radius:999px;background:rgba(255,255,255,.85);backdrop-filter:blur(10px);border:1px solid #fff;box-shadow:0 10px 30px -14px rgba(14,26,58,.35);font-size:13px;font-weight:700;color:#0E1A3A;white-space:nowrap}
+.tag .tip{position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%) translateY(-4px);width:210px;padding:12px 14px;border-radius:14px;background:#0E1A3A;color:#E4E8F5;font-size:12.5px;line-height:1.5;opacity:0;pointer-events:none;transition:all .25s ease;text-align:left}
+.tag:hover .tip{opacity:1;transform:translateX(-50%)}
+.tag:hover{animation-play-state:paused}
+.hero-sec{display:flex;flex-direction:column;min-height:calc(100vh - 75px)}
+.hero-box{position:relative;width:100%;flex:1 0 auto;min-height:560px;display:flex;align-items:center}
+.hero-img{overflow:hidden;container-type:size}
+.hero-art{position:absolute;top:0;right:0;width:min(max(100cqw,calc(100cqh * 1.7768)),calc(100cqh * 2.2));aspect-ratio:1672/941;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 16%);mask-image:linear-gradient(90deg,transparent 0,#000 16%)}
+.hero-ledger{position:relative;z-index:6;margin-top:-54px;padding-bottom:28px}
+.hero-copy{position:relative;margin-left:max(40px,calc((100% - 1200px)/2 + 40px));width:min(46%,600px);padding:36px 0 84px;z-index:4}
+.g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:56px;align-items:center}
+.pill{position:absolute;top:0;display:flex;align-items:center;gap:12px;padding:10px 20px 10px 10px;border-radius:18px;background:rgba(255,255,255,.75);border:1.5px solid #fff;box-shadow:0 12px 30px -18px rgba(60,40,140,.45);font:700 14.5px 'Plus Jakarta Sans',system-ui,sans-serif;color:#0E1A3A;cursor:pointer;backdrop-filter:blur(8px);transition:all .3s ease;min-height:52px}
+.pill:hover{background:#fff}
+.pill .ic{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center}
+.slot{width:64px;height:60px;border-radius:14px;border:1.5px dashed #C9D3E6;background:#fff;display:flex;align-items:center;justify-content:center;font:800 22px 'Plus Jakarta Sans',system-ui,sans-serif;color:#0E1A3A}
+.slot.fill{border-style:solid;border-color:#1557D6;color:#1557D6;background:#EEF3FE}
+.slot.res{width:96px}
+.slot.ok{border-style:solid;border-color:#12855A;background:#E4F5EC;color:#0B6242}
+.slot.no{border-style:solid;border-color:#D0335F;background:#FDECF1;color:#A51E45;animation:shake .35s ease}
+.stile{min-width:60px;height:52px;padding:0 14px;border-radius:14px;border:0;background:#1557D6;color:#fff;font:800 20px 'Plus Jakarta Sans',system-ui,sans-serif;cursor:pointer;box-shadow:0 8px 18px -10px rgba(21,87,214,.9);transition:all .2s ease}
+.stile:hover{transform:translateY(-2px)}
+.stile.used{background:#D6DEEE;color:#8A95B3;box-shadow:none;cursor:default;transform:none}
+.seg{min-height:40px;padding:0 16px;border-radius:999px;border:1px solid #D6DEEE;background:#fff;color:#39436A;font:700 13.5px 'Plus Jakarta Sans',system-ui,sans-serif;cursor:pointer}
+.seg.on{background:#1557D6;border-color:#1557D6;color:#fff}
+.opt{min-height:46px;padding:0 18px;border-radius:14px;border:1.5px solid #D6DEEE;background:#fff;font:600 14.5px 'Plus Jakarta Sans',system-ui,sans-serif;color:#0E1A3A;cursor:pointer}
+.opt:hover{border-color:#1557D6}
+.opt.good{background:#E4F5EC;border-color:#12855A;color:#0B6242}
+.opt.bad{background:#FDECF1;border-color:#D0335F;color:#A51E45}
+.chipc{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:999px;font-size:12.5px;font-weight:700}
+.prog{text-align:left;width:100%;padding:24px;border-radius:22px;border:1.5px solid #ECE4D9;background:#fff;cursor:pointer;font-family:inherit;color:#0E1A3A;transition:all .25s ease}
+.prog:hover{border-color:#A9C0F2}
+.prog.on{border-color:#1557D6;box-shadow:0 20px 44px -26px rgba(21,87,214,.7)}
+.faq{border-radius:18px;overflow:hidden;transition:box-shadow .3s ease,background .3s ease}
+.faq-q{width:100%;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:18px 20px;border:0;cursor:pointer;text-align:left;font:700 15.5px/1.4 'Plus Jakarta Sans',system-ui,sans-serif;color:#0E1A3A;min-height:56px;background:transparent}
+.fc{width:340px;max-width:100%}
+.mcard{position:absolute;width:92px;height:104px;border-radius:14px;background:#fff;border:1px solid #ECE4D9;box-shadow:0 14px 28px -16px rgba(14,26,58,.45);display:flex;align-items:center;justify-content:center;font:800 32px 'Plus Jakarta Sans',system-ui,sans-serif;transition:transform .3s ease}
+.mcards:hover .m1{transform:rotate(-14deg) translateX(-14px)}
+.mcards:hover .m3{transform:rotate(14deg) translateX(14px)}
+.foot a{color:#AEB7D3;text-decoration:none;font-size:14px}.foot a:hover{color:#fff}
+.inp{min-height:48px;flex:1;min-width:0;padding:0 18px;border-radius:999px;border:1px solid #2B3862;background:#16244C;color:#fff;font:500 14px 'Plus Jakarta Sans',system-ui,sans-serif}
+.inp::placeholder{color:#8C97BD}
+.clm-stage{position:relative;width:100%;max-width:1080px;margin:0 auto;aspect-ratio:1080/440}
+.clm-brain{position:absolute;left:31.48%;top:10.45%;width:37.04%;animation:glow 5s ease-in-out infinite,brainHover 3.5s cubic-bezier(.45,0,.55,1) infinite alternate;-webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 52%,#000 68%,transparent 100%);mask-image:radial-gradient(ellipse 50% 50% at 50% 52%,#000 68%,transparent 100%)}
+@media (max-width:1000px){
+.hero-sec{min-height:0}
+.hero-box{min-height:0;flex-direction:column;align-items:stretch}
+.hero-copy{order:-1;margin-left:0;width:auto;padding:48px 28px 12px}
+.hero-img{position:relative !important;aspect-ratio:1672/941}
+.g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3,.g2{grid-template-columns:repeat(1,minmax(0,1fr));gap:36px}
+.nav,.hide-sm{display:none !important}
+.clm-stage{aspect-ratio:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.clm-svg{display:none}
+.clm-brain{position:relative;left:auto;top:auto;width:60%;margin:0 auto;grid-column:1 / -1}
+.pill{position:relative;left:auto !important;top:auto !important;transform:none !important}
+.h2{font-size:36px}
+#clm h2{white-space:normal !important}
+.skill-card{margin-top:24px !important}
+.one-stage{height:auto}
+.one-g2{grid-template-columns:1fr !important}
+
+.ledger-item{border-left:0 !important;padding:10px 14px !important}
+.cls-grid,.faq-grid{grid-template-columns:repeat(1,minmax(0,1fr)) !important}
+.faq-grid > div:first-child{position:static !important}
+}
+@media (max-width:640px){
+.wrap{padding:0 20px}
+.g4{grid-template-columns:repeat(1,minmax(0,1fr))}
+.tag{display:none}
+.clm-stage{grid-template-columns:repeat(1,minmax(0,1fr))}
+.one-grid{grid-template-columns:repeat(1,minmax(0,1fr))}
+.one-num{font-size:110px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+
+<div style="width: 100%; min-width: 360px; background: #FCF8F4; overflow-x: clip;">
+
+<!-- HEADER -->
+<header style="position: sticky; top: 0; z-index: 50; background: rgba(252,248,244,0.85); backdrop-filter: blur(16px) saturate(1.2); border-bottom: 1px solid rgba(160,130,100,0.12);">
+<div class="wrap" style="display: flex; align-items: center; justify-content: space-between; gap: 24px; height: 74px;">
+<a href="#top" aria-label="Spellzee — Cognitive Literacy Mapping for kids" style="display: flex; align-items: center; text-decoration: none;"><img src="./assets/61a2a0aa5fdc0b5d56d50e71655d4543.png" alt="Spellzee — Cognitive Literacy Mapping for kids" style="height: 40px; width: auto; display: block;"></a>
+<nav class="nav" aria-label="Main" style="display: flex; gap: 30px;">
+<a href="#clm">Approach</a><a href="#programs">Programs</a><a href="#stories">Stories</a><a href="#educators">Educators</a><a href="#faq">FAQ</a>
+</nav>
+<a class="btn btn-primary btn-sm" href="#book">Book a Free Assessment</a>
+</div>
+</header>
+
+<!-- HERO -->
+<section id="top" class="hero-sec" style="position: relative; background: #FCF8F4;">
+<div class="hero-box" ref="{{ heroRef }}">
+<div class="hero-img" style="position: absolute; inset: 0;">
+<div class="hero-art"><img src="./assets/e4d2c10ac3920250f69cea4f49fd98eb.jpg" alt="A thoughtful child smiling upward, surrounded by a glowing map linking icons for Sound Recognition, Blending, Fluency and Comprehension" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top;"></div>
+<div class="hero-fade"></div>
+<canvas ref="{{ heroCanvas }}" aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none; z-index: 2;"></canvas>
+<div class="hero-art" style="z-index: 3;">
+<div class="tag" style="left: 53.4%; top: 14%;"><span class="tag-chip"><span class="pulse" style="background: #2563EB; color: #2563EB;"></span>Sound Recognition</span><span class="tip">Hearing, separating and blending the individual sounds in spoken words.</span></div>
+<div class="tag" style="left: 55.5%; top: 58.5%;"><span class="tag-chip"><span class="pulse" style="background: #D97706; color: #D97706;"></span>Fluency</span><span class="tip">Reading and speaking smoothly, clearly and with confidence.</span></div>
+<div class="tag" style="left: 89.5%; top: 38.5%;"><span class="tag-chip"><span class="pulse" style="background: #7C3AED; color: #7C3AED;"></span>Blending</span><span class="tip">Turning letters into sounds and blending them into words.</span></div>
+<div class="tag" style="left: 90.5%; top: 60.5%;"><span class="tag-chip"><span class="pulse" style="background: #0891B2; color: #0891B2;"></span>Comprehension</span><span class="tip">Understanding, interpreting and answering questions about what's been read.</span></div>
+</div>
+</div>
+<div class="hero-copy fade" ref="{{ heroCopy }}">
+<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+<span style="display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px 8px 14px; border-radius: 999px; background: rgba(255,255,255,0.8); border: 1px solid #E3E8F4; font-size: 13px; font-weight: 700; color: #1557D6;"><span class="pulse" style="color: #E0316F;"></span>Introducing CLM</span>
+<span style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px 8px 12px; border-radius: 999px; background: rgba(255,255,255,0.8); border: 1px solid #E3E8F4; font-size: 13px; font-weight: 700; color: #0E1A3A;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0E1A3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"></path></svg>IITM Incubated</span>
+</div>
+<h1 class="h1" style="margin-top: 18px; font-size: clamp(36px, 3.6vw, 52px); line-height: 1.08;">Let’s help your child<br>read, write and speak<br>with <span class="acc" style="color: #1557D6; font-size: 1.14em; padding-left: 0.04em;">confidence.</span></h1>
+<p class="lead" style="margin: 20px 0 0; max-width: 520px;"><strong style="font-weight: 700; color: #0E1A3A;">Cognitive Literacy Mapping</strong> pinpoints where your child needs support — then a <span class="mark">dedicated 1:1 mentor</span> takes them forward.</p>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin-top: 22px; font-size: 13.5px; font-weight: 700; color: #26325A;">
+<span style="display: inline-flex; align-items: center; gap: 9px;"><span class="tile" style="width: 28px; height: 28px; border-radius: 9px; background: #E3ECFE;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1557D6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1-4 4-6 8-6s7 2 8 6"></path></svg></span><span><span style="color: #1557D6;">1:1</span> Expert-Led Learning</span></span>
+<span style="display: inline-flex; align-items: center; gap: 9px;"><span class="tile" style="width: 28px; height: 28px; border-radius: 9px; background: #FCE3EC;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#D0335F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 18a2 2 0 1 0 0-.01M19 6a2 2 0 1 0 0-.01M7 18h7a3.5 3.5 0 0 0 0-7h-4a3.5 3.5 0 0 1 0-7h7"></path></svg></span>Personalised Learning Path</span>
+<span style="display: inline-flex; align-items: center; gap: 9px;"><span class="tile" style="width: 28px; height: 28px; border-radius: 9px; background: #DDF1E6;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#12855A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"></path></svg></span>Progress You Can See</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px;">
+<a class="btn btn-primary" href="#book">Get a Free Improvement Plan <span class="arr" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span></a>
+<a class="btn btn-ghost" href="#clm">See how CLM works</a>
+</div>
+<div style="margin-top: 26px;">
+<div class="cred-bar">
+<div class="cred-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1557D6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path><path d="M9 12l2 2 4-4"></path></svg>Accreditations &amp; Recognition</div>
+<div class="cred-row">
+<div class="cred-item">
+<span class="cred-logo"><img src="./assets/39d73f53be23c4266ff6e86000064838.png" alt="IITM Incubation Cell logo" style="width: 46px; height: 46px; display: block;"></span>
+<div><div class="cred-t">IITM<span class="cred-tick" aria-hidden="true"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L19 7"></path></svg></span></div><div class="cred-s">Incubated Company</div></div>
+</div>
+<span class="cred-div" aria-hidden="true"></span>
+<div class="cred-item">
+<span class="cred-logo"><img src="./assets/80afcc1d297f5bfe2edd789a5c997598.png" alt="ACTD accreditation emblem" style="width: 40px; height: 40px; object-fit: contain; display: block;"></span>
+<div><div class="cred-t">ACTD<span class="cred-tick" aria-hidden="true"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L19 7"></path></svg></span></div><div class="cred-s">Accredited</div></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="hero-ledger">
+<div class="wrap">
+<div class="g4 ledger" style="gap: 0; padding: 18px 6px; border-radius: 24px; background: rgba(255,255,255,0.8); backdrop-filter: blur(18px) saturate(1.2); border: 1px solid #FFFFFF; box-shadow: 0 34px 70px -40px rgba(70,45,20,0.4), 0 2px 0 rgba(255,255,255,0.8) inset;">
+<sc-for list="{{ ledger }}" as="l" hint-placeholder-count="4">
+<div class="ledger-item" style="display: flex; gap: 14px; align-items: flex-start; padding: 2px 18px; border-left: {{ l.sep }};">
+<span class="tile" style="width: 38px; height: 38px; border-radius: 11px; background: {{ l.bg }};"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{ l.c }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ l.icon }}"></path></svg></span>
+<div><div style="font-weight: 800; font-size: 14.5px; white-space: nowrap;">{{ l.t }}</div><div style="margin-top: 2px; font-size: 13px; line-height: 1.45; color: #5D6789;">{{ l.d }}</div></div>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</section>
+
+<!-- CLM -->
+<section id="clm" ref="{{ clmSec }}" class="silk silk-lav" style="position: relative; padding: 112px 0 132px; overflow: hidden;">
+<svg class="wave-div" viewBox="0 0 1440 100" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="waveG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2F6BF2" stop-opacity="0.15"></stop><stop offset="0.5" stop-color="#8B4FE8" stop-opacity="0.55"></stop><stop offset="1" stop-color="#D0508F" stop-opacity="0.15"></stop></linearGradient></defs><path d="M0 0 H1440 V40 C1200 96 960 96 720 60 C480 24 240 20 0 66 Z" fill="#FCF8F4"></path><path d="M0 66 C240 20 480 24 720 60 C960 96 1200 96 1440 40" fill="none" stroke="url(#waveG)" stroke-width="1.6" vector-effect="non-scaling-stroke"></path></svg>
+<div class="wrap" style="position: relative; z-index: 2;">
+<div style="text-align: center; max-width: 900px; margin: 0 auto;">
+<div class="clm-badge"><span class="clm-badge-ic" aria-hidden="true"><img src="./assets/3fef1b47b8ce3b58c1941b57a48140d8.png" alt="" style="height: 22px; width: auto; display: block;"></span><span class="clm-badge-t">Spellzee’s <span class="clm-grad">CLM</span> Methodology</span></div>
+<h2 class="h1" style="margin-top: 16px; font-size: clamp(34px, 4vw, 56px); white-space: nowrap;">Cognitive Literacy <span style="background: linear-gradient(90deg, #2F6BF2, #8B4FE8); -webkit-background-clip: text; background-clip: text; color: transparent;">Mapping</span><sup style="font-size: 0.3em; vertical-align: super;">™</sup></h2>
+<p style="margin: 10px 0 0; font-size: clamp(20px, 1.8vw, 24px); line-height: 1.25; font-weight: 700; letter-spacing: -0.02em; color: #0E1A3A;">Before we teach, we <span class="mark mark-lg">understand.</span></p>
+<p class="lead" style="margin: 14px auto 0; font-size: 16px; line-height: 1.7; max-width: 760px;">Every child processes language differently. <strong style="font-weight: 700; color: #0E1A3A;">Cognitive Literacy Mapping</strong> is Spellzee’s structured way of finding your child’s strengths and gaps across reading, writing and speaking — so we know where to begin, what to strengthen, and how to move forward.</p>
+</div>
+
+<div class="clm-stage" style="margin-top: 16px; max-width: 1000px;">
+<svg class="clm-svg" viewBox="0 0 1080 440" width="100%" height="100%" aria-hidden="true" style="position: absolute; inset: 0; overflow: visible;">
+<path d="M262 110 C 352.3 110, 352.3 179.9, 442.6 179.9" fill="none" stroke="{{ K0.c }}" stroke-width="{{ K0.w }}" opacity="{{ K0.o }}" stroke-linecap="round"><animate attributeName="d" values="M262 110 C 352.3 110, 352.3 179.9, 442.6 179.9;M262 110 C 352.3 110, 352.3 171.9, 442.6 171.9;M262 110 C 352.3 110, 352.3 179.9, 442.6 179.9" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="7s" repeatCount="indefinite"></animate></path>
+<path d="M262 110 C 352.3 110, 352.3 179.9, 442.6 179.9" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="6 54" opacity="{{ K0.flow }}" stroke-linecap="round" style="animation: flow 1.4s linear infinite;"><animate attributeName="d" values="M262 110 C 352.3 110, 352.3 179.9, 442.6 179.9;M262 110 C 352.3 110, 352.3 171.9, 442.6 171.9;M262 110 C 352.3 110, 352.3 179.9, 442.6 179.9" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="7s" repeatCount="indefinite"></animate></path>
+<circle cx="262" cy="110" r="5.5" fill="{{ K0.c }}" stroke="#fff" stroke-width="2"></circle>
+<circle cx="442.6" cy="179.9" r="3.5" fill="#fff" stroke="{{ K0.c }}" stroke-width="1.5"><animate attributeName="cy" values="179.9;171.9;179.9" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="7s" repeatCount="indefinite"></animate></circle>
+<path d="M262 220 C 325.35 220, 325.35 242.5, 388.7 242.5" fill="none" stroke="{{ K1.c }}" stroke-width="{{ K1.w }}" opacity="{{ K1.o }}" stroke-linecap="round"><animate attributeName="d" values="M262 220 C 325.35 220, 325.35 242.5, 388.7 242.5;M262 220 C 325.35 220, 325.35 234.5, 388.7 234.5;M262 220 C 325.35 220, 325.35 242.5, 388.7 242.5" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="7s" repeatCount="indefinite"></animate></path>
+<path d="M262 220 C 325.35 220, 325.35 242.5, 388.7 242.5" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="6 54" opacity="{{ K1.flow }}" stroke-linecap="round" style="animation: flow 1.4s linear infinite;"><animate attributeName="d" values="M262 220 C 325.35 220, 325.35 242.5, 388.7 242.5;M262 220 C 325.35 220, 325.35 234.5, 388.7 234.5;M262 220 C 325.35 220, 325.35 242.5, 388.7 242.5" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="7s" repeatCount="indefinite"></animate></path>
+<circle cx="262" cy="220" r="5.5" fill="{{ K1.c }}" stroke="#fff" stroke-width="2"></circle>
+<circle cx="388.7" cy="242.5" r="3.5" fill="#fff" stroke="{{ K1.c }}" stroke-width="1.5"><animate attributeName="cy" values="242.5;234.5;242.5" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="7s" repeatCount="indefinite"></animate></circle>
+<path d="M262 330 C 344.5 330, 344.5 296.4, 427 296.4" fill="none" stroke="{{ K2.c }}" stroke-width="{{ K2.w }}" opacity="{{ K2.o }}" stroke-linecap="round"><animate attributeName="d" values="M262 330 C 344.5 330, 344.5 296.4, 427 296.4;M262 330 C 344.5 330, 344.5 288.4, 427 288.4;M262 330 C 344.5 330, 344.5 296.4, 427 296.4" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="7s" repeatCount="indefinite"></animate></path>
+<path d="M262 330 C 344.5 330, 344.5 296.4, 427 296.4" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="6 54" opacity="{{ K2.flow }}" stroke-linecap="round" style="animation: flow 1.4s linear infinite;"><animate attributeName="d" values="M262 330 C 344.5 330, 344.5 296.4, 427 296.4;M262 330 C 344.5 330, 344.5 288.4, 427 288.4;M262 330 C 344.5 330, 344.5 296.4, 427 296.4" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="7s" repeatCount="indefinite"></animate></path>
+<circle cx="262" cy="330" r="5.5" fill="{{ K2.c }}" stroke="#fff" stroke-width="2"></circle>
+<circle cx="427" cy="296.4" r="3.5" fill="#fff" stroke="{{ K2.c }}" stroke-width="1.5"><animate attributeName="cy" values="296.4;288.4;296.4" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="7s" repeatCount="indefinite"></animate></circle>
+<path d="M818 110 C 733.75 110, 733.75 195.6, 649.5 195.6" fill="none" stroke="{{ K3.c }}" stroke-width="{{ K3.w }}" opacity="{{ K3.o }}" stroke-linecap="round"><animate attributeName="d" values="M818 110 C 733.75 110, 733.75 195.6, 649.5 195.6;M818 110 C 733.75 110, 733.75 187.6, 649.5 187.6;M818 110 C 733.75 110, 733.75 195.6, 649.5 195.6" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="7s" repeatCount="indefinite"></animate></path>
+<path d="M818 110 C 733.75 110, 733.75 195.6, 649.5 195.6" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="6 54" opacity="{{ K3.flow }}" stroke-linecap="round" style="animation: flow 1.4s linear infinite;"><animate attributeName="d" values="M818 110 C 733.75 110, 733.75 195.6, 649.5 195.6;M818 110 C 733.75 110, 733.75 187.6, 649.5 187.6;M818 110 C 733.75 110, 733.75 195.6, 649.5 195.6" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="7s" repeatCount="indefinite"></animate></path>
+<circle cx="818" cy="110" r="5.5" fill="{{ K3.c }}" stroke="#fff" stroke-width="2"></circle>
+<circle cx="649.5" cy="195.6" r="3.5" fill="#fff" stroke="{{ K3.c }}" stroke-width="1.5"><animate attributeName="cy" values="195.6;187.6;195.6" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="7s" repeatCount="indefinite"></animate></circle>
+<path d="M818 220 C 747.7 220, 747.7 272, 677.4 272" fill="none" stroke="{{ K4.c }}" stroke-width="{{ K4.w }}" opacity="{{ K4.o }}" stroke-linecap="round"><animate attributeName="d" values="M818 220 C 747.7 220, 747.7 272, 677.4 272;M818 220 C 747.7 220, 747.7 264, 677.4 264;M818 220 C 747.7 220, 747.7 272, 677.4 272" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="7s" repeatCount="indefinite"></animate></path>
+<path d="M818 220 C 747.7 220, 747.7 272, 677.4 272" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="6 54" opacity="{{ K4.flow }}" stroke-linecap="round" style="animation: flow 1.4s linear infinite;"><animate attributeName="d" values="M818 220 C 747.7 220, 747.7 272, 677.4 272;M818 220 C 747.7 220, 747.7 264, 677.4 264;M818 220 C 747.7 220, 747.7 272, 677.4 272" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="7s" repeatCount="indefinite"></animate></path>
+<circle cx="818" cy="220" r="5.5" fill="{{ K4.c }}" stroke="#fff" stroke-width="2"></circle>
+<circle cx="677.4" cy="272" r="3.5" fill="#fff" stroke="{{ K4.c }}" stroke-width="1.5"><animate attributeName="cy" values="272;264;272" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="7s" repeatCount="indefinite"></animate></circle>
+<path d="M818 330 C 724.2 330, 724.2 319, 630.4 319" fill="none" stroke="{{ K5.c }}" stroke-width="{{ K5.w }}" opacity="{{ K5.o }}" stroke-linecap="round"><animate attributeName="d" values="M818 330 C 724.2 330, 724.2 319, 630.4 319;M818 330 C 724.2 330, 724.2 311, 630.4 311;M818 330 C 724.2 330, 724.2 319, 630.4 319" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="7s" repeatCount="indefinite"></animate></path>
+<path d="M818 330 C 724.2 330, 724.2 319, 630.4 319" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="6 54" opacity="{{ K5.flow }}" stroke-linecap="round" style="animation: flow 1.4s linear infinite;"><animate attributeName="d" values="M818 330 C 724.2 330, 724.2 319, 630.4 319;M818 330 C 724.2 330, 724.2 311, 630.4 311;M818 330 C 724.2 330, 724.2 319, 630.4 319" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="7s" repeatCount="indefinite"></animate></path>
+<circle cx="818" cy="330" r="5.5" fill="{{ K5.c }}" stroke="#fff" stroke-width="2"></circle>
+<circle cx="630.4" cy="319" r="3.5" fill="#fff" stroke="{{ K5.c }}" stroke-width="1.5"><animate attributeName="cy" values="319;311;319" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="7s" repeatCount="indefinite"></animate></circle>
+</svg>
+<div class="clm-brain"><img src="./assets/6621091f2d89a375c5363e5eb6c5b9f0.png" alt="A glowing brain with neural pathways, representing how CLM maps a child's literacy skills" style="display: block; width: 100%;"><canvas ref="{{ brainCanvas }}" aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none;"></canvas></div>
+<sc-for list="{{ skills }}" as="sk" hint-placeholder-count="6">
+<button class="pill" style="{{ sk.style }}" onClick="{{ sk.pick }}" onMouseEnter="{{ sk.pick }}" onFocus="{{ sk.pick }}" aria-pressed="{{ sk.pressed }}">
+<span class="ic" style="background: {{ sk.bg }};"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{ sk.c }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ sk.icon }}"></path></svg></span>
+<span>{{ sk.name }}</span>
+</button>
+</sc-for>
+</div>
+
+<div class="card skill-card" style="position: relative; z-index: 3; max-width: 480px; margin: -52px auto 0; padding: 20px 26px 22px; text-align: center; border-radius: 20px; border: 1.5px solid {{ activeSkill.border }}; box-shadow: {{ activeSkill.glow }};">
+<div style="display: inline-flex; align-items: center; gap: 10px;"><span class="tile" style="width: 34px; height: 34px; border-radius: 10px; background: {{ activeSkill.bg }};"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="{{ activeSkill.c }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ activeSkill.icon }}"></path></svg></span><h3 style="margin: 0; font-size: 17px; font-weight: 800; color: {{ activeSkill.c }};">{{ activeSkill.name }}</h3></div>
+<sc-if value="{{ activeSkill.hasAlt }}" hint-placeholder-val="{{ true }}"><div style="margin-top: 8px;"><span class="chipc" style="background: {{ activeSkill.bg }}; color: {{ activeSkill.c }}; padding: 4px 11px; font-size: 12px;"><span>Also called {{ activeSkill.alt }}</span></span></div></sc-if>
+<p style="margin: 8px 0 0; font-size: 14.5px; line-height: 1.6; color: #4B5575;">{{ activeSkill.d }}</p>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; margin-top: 30px;">
+<sc-for list="{{ clmSteps }}" as="st" hint-placeholder-count="4">
+<span class="chipc" style="background: {{ st.bg }}; color: {{ st.c }}; font-size: 14px; padding: 9px 16px 9px 9px;"><span style="width: 22px; height: 22px; border-radius: 50%; background: {{ st.c }}; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 12px;">{{ st.n }}</span>{{ st.t }}</span>
+<sc-if value="{{ st.more }}" hint-placeholder-val="{{ true }}"><span aria-hidden="true" style="color: #A89CD8;">→</span></sc-if>
+</sc-for>
+</div>
+<p style="margin: 16px 0 0; text-align: center; font-size: 17px; font-weight: 500; color: #39436A;">Because meaningful progress starts with <strong style="font-weight: 800; color: #0E1A3A;">understanding the learner</strong> first.</p>
+<div style="text-align: center; margin-top: 26px;"><a class="btn btn-primary" href="#book">Map My Child’s Learning <span class="arr" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span></a></div>
+</div>
+<svg class="wave-div wave-bot" viewBox="0 0 1440 100" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="waveG2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#D0508F" stop-opacity="0.15"></stop><stop offset="0.5" stop-color="#8B4FE8" stop-opacity="0.55"></stop><stop offset="1" stop-color="#2F6BF2" stop-opacity="0.15"></stop></linearGradient></defs><path d="M0 100 V58 C240 18 480 22 720 48 C960 74 1200 80 1440 36 V100 Z" fill="#FCF8F4"></path><path d="M0 58 C240 18 480 22 720 48 C960 74 1200 80 1440 36" fill="none" stroke="url(#waveG2)" stroke-width="1.6" vector-effect="non-scaling-stroke"></path></svg>
+</section>
+
+<!-- PROGRAMS -->
+<section id="programs" style="padding: 100px 0 110px;">
+<div class="wrap">
+<div style="max-width: 900px;">
+<div class="kicker">Tailored Support</div>
+<h2 class="h2" style="margin-top: 16px;">Select the <span class="mark mark-xl">difficulty</span> your child is facing</h2>
+<p class="lead" style="margin: 12px 0 0; font-size: 16.5px;">Choose the area where your child needs the most support.</p>
+</div>
+<div class="g4" style="margin-top: 40px;">
+<sc-for list="{{ programs }}" as="p" hint-placeholder-count="4">
+<a class="pcard" href="{{ p.href }}" style="--c: {{ p.c }}; --bg: {{ p.bg }}; --glow: {{ p.glow }};" aria-label="{{ p.t }} — explore the {{ p.page }} programme">
+<span style="display: flex; justify-content: space-between; align-items: center;">
+<span class="tile pc-tile"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ p.icon }}"></path></svg></span>
+<span style="font-size: 13px; font-weight: 800; letter-spacing: 0.08em; color: #A7AEC4;">0{{ p.n }}</span>
+</span>
+<span style="display: block; margin-top: 20px; font-size: 18px; font-weight: 800;">{{ p.t }}</span>
+<span style="display: block; margin-top: 8px; font-size: 14.5px; line-height: 1.6; min-height: 4.8em; color: #5D6789;">{{ p.d }}</span>
+<span style="display: block; margin-top: 16px; padding-top: 14px; border-top: 1px dashed #ECE4D9;">
+<span style="display: block; font-size: 10.5px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: #8A93AE;">Focus skills</span>
+<span style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
+<sc-for list="{{ p.skills }}" as="k" hint-placeholder-count="2">
+<span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 8px; border-radius: 999px; background: {{ k.bg }}; color: {{ k.c }}; font-size: 12px; font-weight: 700;"><span style="width: 6px; height: 6px; border-radius: 50%; background: {{ k.c }};"></span>{{ k.t }}</span>
+</sc-for>
+</span>
+</span>
+<span class="pc-foot"><span class="pc-go"><span class="pc-go-t">Explore {{ p.page }}</span><span class="pc-arr"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span></span></span>
+</a>
+</sc-for>
+</div>
+<div class="card" style="margin-top: 18px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px; padding: 18px 20px 18px 18px; border-radius: 22px;">
+<div style="display: flex; align-items: center; gap: 16px; min-width: 0; flex: 1;">
+<span class="tile" style="width: 52px; height: 52px; border-radius: 15px; background: #EEF3FE;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1557D6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M9.6 9.3a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.4M12 16.8v.2"></path></svg></span>
+<div style="min-width: 0;">
+<div style="font-size: 17px; font-weight: 800;">Not sure which difficulty fits?</div>
+<div style="margin-top: 3px; font-size: 14.5px; color: #4B5575;">A free assessment maps your child's reading, writing and speaking — then we recommend the right programme.</div>
+</div>
+</div>
+<a class="btn btn-primary btn-sm" href="#book" style="padding: 0 6px 0 20px;">Book a Free Assessment <span class="arr" style="width: 32px; height: 32px;" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span></a>
+</div>
+</div>
+</section>
+
+<!-- 1:1 LIVE LEARNING -->
+<section class="silk silk-t" style="position: relative; padding: 140px 0 150px; overflow: hidden;">
+<svg class="wave-div" viewBox="0 0 1440 100" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="waveG3" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2F6BF2" stop-opacity="0.15"></stop><stop offset="0.5" stop-color="#8B4FE8" stop-opacity="0.55"></stop><stop offset="1" stop-color="#D0508F" stop-opacity="0.15"></stop></linearGradient></defs><path d="M0 0 H1440 V40 C1200 96 960 96 720 60 C480 24 240 20 0 66 Z" fill="#FCF8F4"></path><path d="M0 66 C240 20 480 24 720 60 C960 96 1200 96 1440 40" fill="none" stroke="url(#waveG3)" stroke-width="1.6" vector-effect="non-scaling-stroke"></path></svg>
+<div class="wrap g2 one-g2" style="gap: 48px; position: relative; z-index: 2;">
+<div>
+<div class="kicker">Why 1:1 works</div>
+<h2 class="h2" style="margin-top: 16px; font-size: clamp(30px, 2.7vw, 38px);">1:1 live learning for your child to reach their <span class="acc" style="color: #1557D6; font-size: 1.12em;">full potential</span></h2>
+<p style="margin: 22px 0 0; font-size: 20px; font-weight: 700; color: #0E1A3A;">One child. One mentor. Real attention. Clear progress.</p>
+<p class="lead" style="margin: 12px 0 0; font-size: 16.5px; max-width: 520px;">Personalised 1:1 live sessions give your child the space to learn at their own pace, ask questions freely, overcome learning gaps, and build confidence step by step.</p>
+<div style="display: flex; flex-direction: column; gap: 12px; margin-top: 30px;">
+<div style="display: flex; align-items: center; gap: 12px; font-size: 14.5px; font-weight: 600; color: #26325A;"><span class="tile" style="width: 30px; height: 30px; border-radius: 9px; background: #DDF1E6;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#12855A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path></svg></span>Safe &amp; Secure Learning</div>
+<div style="display: flex; align-items: center; gap: 12px; font-size: 14.5px; font-weight: 600; color: #26325A;"><span class="tile" style="width: 30px; height: 30px; border-radius: 9px; background: #DCEFFA;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0B5C86" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21c.8-3.6 3.6-6 7-6s6.2 2.4 7 6"></path></svg></span>Trusted by 10,000+ Learners · Parent Approved</div>
+<div style="display: flex; align-items: center; gap: 12px; font-size: 14.5px; font-weight: 600; color: #26325A;"><span class="tile" style="width: 30px; height: 30px; border-radius: 9px; background: #ECE5FA;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5530B8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"></path></svg></span>Proven Improvement in Reading &amp; Communication</div>
+</div>
+</div>
+
+<div class="one-stage">
+<div class="one-top">
+<svg viewBox="0 0 520 300" preserveAspectRatio="none" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible;">
+<path d="M118 150 C 190 30, 330 30, 402 150" fill="none" stroke="#AFC0EC" stroke-width="1.6" stroke-dasharray="4 7" vector-effect="non-scaling-stroke" style="animation: flow 3s linear infinite;"></path>
+</svg>
+<span class="one-node" aria-hidden="true"></span>
+<div class="one-avatar" style="left: 22.7%; background: #0E1A3A;"><img src="./assets/0c9078bb872a988f45aa1c9dab8080c7.jpg" alt="A Spellzee mentor"><span>One mentor</span></div>
+<div class="one-avatar" style="left: 77.3%; background: #E0316F; animation-delay: -3s;"><img src="./assets/ebb9e5b8ea5a807ac17665fd39eb850f.jpg" alt="A Spellzee student"><span>One child</span></div>
+<div class="one-num" aria-hidden="true">1<span class="one-colon"><i></i><i></i></span>1</div>
+</div>
+<div class="one-grid">
+<sc-for list="{{ features }}" as="f" hint-placeholder-count="4">
+<div class="one-feat" style="animation-delay: {{ f.delay }};">
+<span class="tile" style="width: 38px; height: 38px; border-radius: 11px; background: {{ f.bg }};"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{ f.c }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ f.icon }}"></path></svg></span>
+<div><h3 style="margin: 0; font-size: 14.5px; font-weight: 800;">{{ f.t }}</h3><div style="font-size: 12.5px; line-height: 1.45; color: #5D6789; margin-top: 3px;">{{ f.d }}</div></div>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+<svg class="wave-div wave-bot" viewBox="0 0 1440 100" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="waveG4" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#D0508F" stop-opacity="0.15"></stop><stop offset="0.5" stop-color="#8B4FE8" stop-opacity="0.55"></stop><stop offset="1" stop-color="#2F6BF2" stop-opacity="0.15"></stop></linearGradient></defs><path d="M0 100 V58 C240 18 480 22 720 48 C960 74 1200 80 1440 36 V100 Z" fill="#FCF8F4"></path><path d="M0 58 C240 18 480 22 720 48 C960 74 1200 80 1440 36" fill="none" stroke="url(#waveG4)" stroke-width="1.6" vector-effect="non-scaling-stroke"></path></svg>
+</section>
+
+<!-- CLASSROOM + MATERIALS -->
+<section style="padding: 100px 0 110px;">
+<div class="wrap">
+<div style="text-align: center; max-width: 720px; margin: 0 auto;">
+<div class="caps">Live 1:1 Learning Experience</div>
+<h2 class="h2" style="margin-top: 14px;">Inside a Spellzee <span class="acc" style="color: #1557D6; font-size: 1.1em;">classroom</span></h2>
+<p class="lead" style="margin: 14px 0 0; font-size: 16.5px;">Real teachers. Real interaction. Real progress. Try the activities below to see how your child learns in a 1:1 live session.</p>
+</div>
+<div style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 24px; margin-top: 48px;" class="cls-grid">
+<div class="card" style="padding: 22px; border-radius: 28px;">
+<h3 style="margin: 0; font-size: 18px; font-weight: 800; padding: 4px 4px 14px;">Classroom Experience</h3>
+<div style="position: relative; border-radius: 20px; overflow: hidden; aspect-ratio: 400/244; background: #E9EEF7;">
+<img src="./assets/33cb27ee506d7e40228c25cbfeb19275.jpg" alt="A Spellzee mentor holding up an 'sh' flashcard during a live 1:1 video class with a young student" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+<span style="position: absolute; top: 12px; left: 12px; display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 999px; background: #0E1A3A; color: #fff; font-size: 12.5px; font-weight: 700;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #FF4D6D; box-shadow: 0 0 0 3px rgba(255,77,109,.3);"></span>Live 1:1 class</span>
+</div>
+<div style="margin-top: 16px; padding: 22px; border-radius: 20px; background: #F2F6FD; border: 1px solid #E1E8F5; min-height: 236px;">
+<div style="display: flex; gap: 8px;" role="tablist" aria-label="Classroom activities">
+<sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="2">
+<button class="{{ tb.cls }}" role="tab" aria-selected="{{ tb.pressed }}" onClick="{{ tb.pick }}">{{ tb.t }}</button>
+</sc-for>
+</div>
+<sc-if value="{{ isBlend }}" hint-placeholder-val="{{ true }}">
+<div class="fade">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 18px;">
+<span class="{{ slot0.cls }}">{{ slot0.t }}</span><span style="font-weight: 800; color: #6A7394;">+</span>
+<span class="{{ slot1.cls }}">{{ slot1.t }}</span><span style="font-weight: 800; color: #6A7394;">+</span>
+<span class="{{ slot2.cls }}">{{ slot2.t }}</span><span style="font-weight: 800; color: #6A7394;">=</span>
+<span class="{{ resCls }}">{{ resText }}</span>
+</div>
+<div style="display: flex; gap: 10px; margin-top: 16px;">
+<sc-for list="{{ blendTiles }}" as="bt" hint-placeholder-count="3">
+<button class="{{ bt.cls }}" onClick="{{ bt.tap }}" aria-label="Sound {{ bt.t }}">{{ bt.t }}</button>
+</sc-for>
+</div>
+<p style="margin: 14px 0 0; font-size: 14px; color: #4B5575;">{{ blendMsg }}</p>
+<div style="display: flex; gap: 8px; margin-top: 12px;">
+<button class="seg" onClick="{{ resetBlend }}">↻ Try again</button>
+<button class="seg" onClick="{{ nextBlend }}">Next word →</button>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ isRead }}" hint-placeholder-val="{{ false }}">
+<div class="fade" style="margin-top: 18px;">
+<p style="margin: 0; font-size: 16px; line-height: 1.65; color: #0E1A3A;">Mia saw a red kite stuck in the old tree. She asked her brother Arjun to help. He climbed up and passed it down to her.</p>
+<div style="margin-top: 14px; font-size: 15px; font-weight: 800;">Who helped Mia get the kite?</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
+<sc-for list="{{ readOpts }}" as="ro" hint-placeholder-count="3">
+<button class="{{ ro.cls }}" onClick="{{ ro.pick }}">{{ ro.t }}</button>
+</sc-for>
+</div>
+<div style="margin-top: 12px; font-size: 14px; font-weight: 700; color: {{ readFbColor }}; min-height: 20px;">{{ readFb }}</div>
+</div>
+</sc-if>
+</div>
+<div style="padding: 18px 4px 4px;">
+<div style="font-size: 13px; font-weight: 800; color: #39436A;">During the Class</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+<span class="chipc" style="background: #DCEFFA; color: #0B5C86;">Interactive learning activities</span>
+<span class="chipc" style="background: #FCE3EC; color: #A51E45;">Real-time correction</span>
+<span class="chipc" style="background: #FBF0D2; color: #7A4D05;">Guided practice</span>
+<span class="chipc" style="background: #DDF1E6; color: #0B6242;">Visual learning support</span>
+</div>
+</div>
+</div>
+
+<div class="card" style="padding: 30px; border-radius: 28px; display: flex; flex-direction: column; background: linear-gradient(180deg, #FFFFFF, #F7F9FE);">
+<h3 style="margin: 0; font-size: 21px; font-weight: 800;">Learning Materials</h3>
+<p style="margin: 6px 0 0; font-size: 14px; line-height: 1.55; color: #5D6789;">Matched to your child's stage, so every session has something to build on.</p>
+<div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+<sc-for list="{{ materials }}" as="m" hint-placeholder-count="5">
+<div class="lift" style="display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 16px; background: #fff; border: 1px solid #ECE4D9;">
+<span class="tile" style="width: 38px; height: 38px; border-radius: 11px; background: {{ m.bg }};"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{ m.c }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ m.icon }}"></path></svg></span>
+<span style="font-size: 14.5px; font-weight: 700;">{{ m.t }}</span>
+</div>
+</sc-for>
+</div>
+<div class="mcards" style="position: relative; height: 140px; margin: 26px auto 0; width: 240px;">
+<span class="mcard m1" style="left: 20px; top: 16px; transform: rotate(-9deg); color: #D0335F;">sh</span>
+<span class="mcard m2" style="left: 74px; top: 8px; z-index: 1; color: #1557D6;">ch</span>
+<span class="mcard m3" style="left: 128px; top: 16px; transform: rotate(9deg); color: #C2620A;">th</span>
+</div>
+<div style="margin-top: auto; padding-top: 18px; display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 600; color: #5D6789;">
+<span>Beginner</span><span style="flex: 1; height: 5px; border-radius: 5px; background: linear-gradient(90deg, #1557D6, #D0335F, #E08A12, #12855A);"></span><span>Advanced</span>
+</div>
+</div>
+</div>
+<p style="margin: 36px 0 0; text-align: center; font-size: 16px; font-weight: 700; color: #39436A;">Learn live. Practise better. Progress continuously.</p>
+</div>
+</section>
+
+<!-- STORIES -->
+<section id="stories" class="silk silk-b" style="padding: 110px 0;">
+<div class="wrap">
+<div style="max-width: 640px;">
+<div class="kicker">Parent Voices</div>
+<h2 class="h2" style="margin-top: 14px;">Stories of <span class="acc" style="color: #7C3AED; font-size: 1.1em;">progress</span></h2>
+<p class="lead" style="margin: 14px 0 0; font-size: 16.5px;">Watch real parents share their child's learning journey with Spellzee.</p>
+</div>
+<div class="g2" style="margin-top: 40px; align-items: stretch; gap: 24px;">
+<div class="fade" style="border-radius: 26px; background: #0E1A3A; color: #fff; padding: 44px; display: flex; flex-direction: column; justify-content: space-between; min-height: 340px;">
+<svg width="44" height="34" viewBox="0 0 56 44" fill="#7C9BFF" aria-hidden="true"><path d="M0 44V26C0 11 8 2 22 0l2 6C15 9 11 15 11 22h11v22zm32 0V26C32 11 40 2 54 0l2 6c-9 3-13 9-13 16h11v22z"></path></svg>
+<p class="acc" style="margin: 24px 0 0; font-size: 42px; line-height: 1.15;">{{ activeStory.q }}</p>
+<div style="margin-top: 28px; display: flex; align-items: center; gap: 14px;">
+<button aria-label="Play parent story video" style="width: 54px; height: 54px; border-radius: 50%; border: 0; background: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="#0E1A3A" aria-hidden="true"><path d="M7 4l14 8-14 8z"></path></svg></button>
+<div><div style="font-weight: 800;">Parent story</div><div style="font-size: 14px; color: #AEB7D3;">{{ activeStory.p }}</div></div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 12px;">
+<sc-for list="{{ stories }}" as="sy" hint-placeholder-count="4">
+<button class="{{ sy.cls }}" onClick="{{ sy.pick }}" aria-pressed="{{ sy.pressed }}" style="display: flex; align-items: center; gap: 16px; padding: 18px 22px;">
+<span class="tile" style="width: 40px; height: 40px; border-radius: 12px; background: {{ sy.bg }}; font: 400 30px 'Instrument Serif', Georgia, serif; color: {{ sy.c }};">“</span>
+<span style="flex: 1;"><span style="display: block; font-size: 16.5px; font-weight: 700;">{{ sy.q }}</span><span style="display: block; margin-top: 3px; font-size: 13px; color: #6A7394;">{{ sy.p }}</span></span>
+</button>
+</sc-for>
+</div>
+</div>
+</div>
+</section>
+
+<!-- EDUCATORS -->
+<section id="educators" style="padding: 110px 0 40px;">
+<div class="wrap">
+<div style="max-width: 640px;">
+<div class="kicker">Our Educators</div>
+<h2 class="h2" style="margin-top: 14px;">Behind the classroom</h2>
+<p class="lead" style="margin: 14px 0 0; font-size: 16.5px;">Meet the educators who guide, support, and shape every child's learning journey.</p>
+</div>
+<div class="g2" style="margin-top: 40px; gap: 24px; align-items: stretch;">
+<div class="card" style="padding: 30px; display: flex; gap: 30px; align-items: center; flex-wrap: wrap;">
+<div style="position: relative; width: 150px; height: 186px; flex: none; border-radius: 80px 80px 22px 22px; background: linear-gradient(180deg, #EFE8FD, #DCCFF8); display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 6px #fff, 0 20px 40px -26px rgba(85,48,184,.6);">
+<img src="./assets/0d4fa812aacf413074e565f09508517d.jpg" alt="Ms. Ananya Rao, Phonics &amp; Reading Specialist" style="position: absolute; inset: 6px; width: calc(100% - 12px); height: calc(100% - 12px); object-fit: cover; object-position: center top; border-radius: 74px 74px 16px 16px; display: block;">
+<span style="position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: #0E1A3A; color: #fff; font-size: 11.5px; font-weight: 700;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9DB8FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L19 7"></path></svg>Spellzee Certified</span>
+</div>
+<div style="flex: 1; min-width: 220px;">
+<span class="chipc" style="background: #ECE5FA; color: #5530B8;">Phonics &amp; Reading Specialist</span>
+<h3 style="margin: 14px 0 0; font-size: 26px; font-weight: 800; letter-spacing: -0.02em;">Ms. Ananya Rao</h3>
+<div style="display: flex; flex-direction: column; gap: 10px; margin-top: 16px; font-size: 14.5px; font-weight: 500; color: #39436A;">
+<div style="display: flex; gap: 10px; align-items: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1557D6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><path d="M5 12l5 5L19 7"></path></svg>M.A. English, B.Ed.</div>
+<div style="display: flex; gap: 10px; align-items: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1557D6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><path d="M5 12l5 5L19 7"></path></svg>8+ Years of Teaching Experience</div>
+<div style="display: flex; gap: 10px; align-items: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1557D6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><path d="M5 12l5 5L19 7"></path></svg>Spellzee Certified Educator</div>
+</div>
+</div>
+</div>
+<div style="border-radius: 24px; background: #0E1A3A; color: #fff; padding: 34px; display: flex; flex-direction: column; gap: 12px;">
+<div style="font-size: 56px; font-weight: 800; letter-spacing: -0.04em; line-height: 1;">300+</div>
+<div style="font-size: 17px; font-weight: 700;">Trained Educators. One shared goal — meaningful progress for every child.</div>
+<div style="font-size: 14.5px; line-height: 1.6; color: #AEB7D3;">Every Spellzee educator is trained to teach, guide and support children one-to-one.</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px;">
+<span style="padding: 7px 13px; border-radius: 999px; border: 1px solid #2B3862; font-size: 13px;">Reading &amp; Spelling</span>
+<span style="padding: 7px 13px; border-radius: 999px; border: 1px solid #2B3862; font-size: 13px;">Comprehension</span>
+<span style="padding: 7px 13px; border-radius: 999px; border: 1px solid #2B3862; font-size: 13px;">Communication</span>
+<span style="padding: 7px 13px; border-radius: 999px; border: 1px solid #2B3862; font-size: 13px;">Public Speaking</span>
+</div>
+</div>
+</div>
+
+</div>
+</section>
+
+<!-- MORE THAN CLASSES -->
+<section style="padding: 40px 0 110px;">
+<div class="wrap">
+<div class="g2" style="padding: 48px; border-radius: 26px; background: #FFFFFF; border: 1px solid #ECE4D9; align-items: start;">
+<div>
+<div class="kicker">More than classes</div>
+<h2 class="h2" style="margin-top: 14px; font-size: 36px;">We don't disappear after enrollment.</h2>
+<p class="lead" style="margin: 14px 0 0; font-size: 17px;">At Spellzee, we stay involved, keep parents informed, monitor progress, and support every stage of the child's learning journey — setting a higher standard in Parent–Student first learning.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 20px;">
+<sc-for list="{{ parentItems }}" as="pi" hint-placeholder-count="4">
+<div style="display: flex; gap: 16px; align-items: center;">
+<span class="tile" style="width: 46px; height: 46px; background: {{ pi.bg }};"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{ pi.c }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ pi.icon }}"></path></svg></span>
+<div><h3 style="margin: 0; font-size: 17px; font-weight: 800;">{{ pi.t }}</h3><div style="font-size: 14.5px; color: #5D6789; margin-top: 2px;">{{ pi.d }}</div></div>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</section>
+
+<!-- COMMUNITY -->
+<section class="silk" style="position: relative; padding: 110px 0 100px; overflow: hidden;">
+<div class="hand hide-sm" style="position: absolute; left: 4%; top: 190px; font-size: 30px; line-height: 1.05; color: #0E1A3A; transform: rotate(-12deg);">Real<br>Families<br>Real Progress<svg width="90" height="14" viewBox="0 0 90 14" aria-hidden="true" style="display: block; margin-top: 8px;"><path d="M2 10 Q 45 0 88 6" stroke="#1557D6" stroke-width="2.5" fill="none" stroke-linecap="round"></path></svg></div>
+<div class="hand hide-sm" style="position: absolute; right: 4%; top: 200px; font-size: 30px; line-height: 1.05; color: #0E1A3A; transform: rotate(-10deg); text-align: right;"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#E0A817" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true" style="display: block; margin-left: auto;"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z"></path></svg>A brighter<br>tomorrow<br>together</div>
+<div class="wrap" style="text-align: center; position: relative;">
+<div class="caps">Our Learning Community</div>
+<h2 class="h1" style="margin: 16px auto 0; max-width: 880px; font-size: clamp(36px, 4.2vw, 54px); line-height: 1.1; letter-spacing: -0.035em;">Thousands of parents.<br>One shared goal: <span class="acc" style="color: #1557D6; font-size: 1.12em;">better learning</span> for their child.</h2>
+<p class="lead" style="margin: 18px auto 0; max-width: 620px;">Be part of a growing community of families helping their children learn with confidence, clarity, and the right support.</p>
+<div style="display: flex; flex-wrap: wrap; justify-content: center; margin-top: 40px;">
+<sc-for list="{{ community }}" as="cm" hint-placeholder-count="4">
+<div style="display: flex; align-items: center; gap: 14px; padding: 8px 26px; border-left: {{ cm.border }}; text-align: left;">
+<span class="tile" style="width: 50px; height: 50px; border-radius: 50%; background: {{ cm.bg }};"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{ cm.c }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ cm.icon }}"></path></svg></span>
+<div><div style="font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: {{ cm.c }};">{{ cm.n }}</div><div style="font-size: 13.5px; color: #5D6789;">{{ cm.l }}</div></div>
+</div>
+</sc-for>
+</div>
+<a class="btn btn-primary" href="#book" style="margin-top: 36px;">Book a Free Assessment <span class="arr" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span></a>
+</div>
+<div style="max-width: 1320px; margin: 52px auto 0; padding: 0 24px;">
+<img src="./assets/d582272a45b111a4d128bdfff936d84a.jpg" alt="A mosaic of Spellzee families and children smiling together" style="width: 100%; display: block; border-radius: 18px; box-shadow: 0 30px 60px -40px rgba(14,26,58,0.5);">
+</div>
+<div class="wrap g4" style="margin-top: 44px; gap: 16px;">
+<sc-for list="{{ trustStrip }}" as="ts" hint-placeholder-count="4">
+<div style="display: flex; align-items: center; gap: 14px; justify-content: center;">
+<span class="tile" style="width: 50px; height: 50px; border-radius: 50%; background: {{ ts.bg }};"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{ ts.c }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ ts.icon }}"></path></svg></span>
+<div><div style="font-size: 15px; font-weight: 800;">{{ ts.t }}</div><div style="font-size: 13px; color: #5D6789;">{{ ts.d }}</div></div>
+</div>
+</sc-for>
+</div>
+</section>
+
+<!-- AFTER YOU BOOK -->
+<section id="book" style="padding: 110px 0;">
+<div class="wrap g2" style="align-items: center;">
+<div>
+<div class="kicker">After you book</div>
+<h2 class="h2" style="margin-top: 14px; font-size: 40px;">No sales pitch. Just clarity on where your child stands.</h2>
+<p class="lead" style="margin: 14px 0 0;">Here's exactly what happens when you book a free assessment — nothing more, nothing hidden.</p>
+<div style="margin-top: 34px; display: flex; flex-direction: column; gap: 26px;">
+<sc-for list="{{ bookSteps }}" as="b" hint-placeholder-count="3">
+<div style="display: flex; gap: 20px;">
+<span style="width: 44px; height: 44px; flex: none; border-radius: 50%; background: #0E1A3A; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800;">{{ b.n }}</span>
+<div><h3 style="margin: 0; font-size: 18px; font-weight: 800;">{{ b.t }}</h3><div style="font-size: 15px; line-height: 1.6; color: #4B5575; margin-top: 4px;">{{ b.d }}</div></div>
+</div>
+</sc-for>
+</div>
+<a class="btn btn-primary" href="#cta" style="margin-top: 34px;">Book a Free Assessment <span class="arr" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span></a>
+</div>
+<div class="card" style="padding: 40px; border-radius: 26px;">
+<span class="chipc" style="background: #DDF1E6; color: #0B6242;">Sample report</span>
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-top: 18px; padding-bottom: 22px; border-bottom: 1px solid #EFE8DE;">
+<div><div style="font-size: 24px; font-weight: 800; letter-spacing: -0.02em;">Aarav, age 7</div><div style="font-size: 14.5px; color: #6A7394; margin-top: 4px;">Reading &amp; Spelling diagnostic</div></div>
+<div style="padding: 12px 18px; border-radius: 14px; background: #0E1A3A; text-align: center;"><div style="font-size: 15px; font-weight: 700; color: #C7CEE6;">Early Reader</div><div style="font-size: 12.5px; color: #fff; margin-top: 2px;">Stage 2 of 5</div></div>
+</div>
+<div style="margin-top: 24px; display: flex; flex-direction: column; gap: 20px;">
+<sc-for list="{{ report }}" as="r" hint-placeholder-count="4">
+<div style="display: grid; grid-template-columns: 170px minmax(0, 1fr) 48px; align-items: center; gap: 14px;">
+<span style="font-size: 15px; font-weight: 500;">{{ r.t }}</span>
+<div style="height: 8px; border-radius: 8px; background: #EEF1F7; overflow: hidden;"><div style="height: 100%; width: {{ r.v }}%; border-radius: 8px; background: {{ r.c }}; transform-origin: left; animation: grow 1.4s cubic-bezier(.2,.7,.2,1) both; animation-delay: {{ r.delay }};"></div></div>
+<span style="font-size: 15px; font-weight: 800; text-align: right;">{{ r.v }}%</span>
+</div>
+</sc-for>
+</div>
+<div style="margin-top: 28px; padding: 18px 20px; border-radius: 16px; background: #FBF0D2; font-size: 15px; line-height: 1.6; color: #3A2E0A;"><strong>Recommended focus —</strong> daily 15-minute sound-blending practice, alongside guided comprehension reading, over the next 4 weeks.</div>
+<p style="margin: 18px 0 0; font-size: 13px; color: #7A83A3;">This is a sample for illustration. Every child receives their own report, built from their own assessment.</p>
+</div>
+</div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="silk silk-b" style="padding: 110px 0;">
+<div class="wrap faq-grid" style="display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 56px; align-items: start;">
+<div style="position: sticky; top: 110px;">
+<h2 class="h1" style="font-size: 56px; line-height: 1.02;">Frequently asked<br><span class="acc" style="color: #D0335F; font-size: 1.1em;">questions</span></h2>
+<p class="lead" style="margin: 18px 0 0; font-size: 16px; max-width: 360px;">Everything you need to know about how Spellzee works, our classes, and your child's learning journey — all in one place.</p>
+<div class="card" style="margin-top: 28px; padding: 20px; border-radius: 22px; max-width: 380px;">
+<div style="display: flex; gap: 14px; align-items: flex-start;">
+<span class="tile" style="border-radius: 50%; background: #DCEFFA;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1557D6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12z"></path></svg></span>
+<div><h3 style="margin: 0; font-size: 16px; font-weight: 800;">Still have a question?</h3><div style="font-size: 13.5px; color: #5D6789; margin-top: 3px; line-height: 1.5;">Book a free assessment and we'll walk you through it.</div></div>
+</div>
+<a class="btn btn-primary" href="#book" style="margin-top: 16px; width: 100%; justify-content: space-between; min-height: 48px; font-size: 14.5px; padding: 0 6px 0 20px;">Book a Free Assessment <span class="arr" style="width: 34px; height: 34px;" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span></a>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px;">
+<sc-for list="{{ faqs }}" as="fq" hint-placeholder-count="13">
+<div class="faq" style="background: {{ fq.wrapBg }}; box-shadow: {{ fq.shadow }};">
+<h3 style="margin: 0;">
+<button class="faq-q" style="background: {{ fq.tint }};" onClick="{{ fq.toggle }}" aria-expanded="{{ fq.expanded }}">
+<span>{{ fq.q }}</span>
+<span style="width: 28px; height: 28px; flex: none; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="{{ fq.accent }}" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform: {{ fq.rot }}; transition: transform .3s ease;"><path d="M6 9l6 6 6-6"></path></svg></span>
+</button>
+</h3>
+<sc-if value="{{ fq.open }}" hint-placeholder-val="{{ false }}">
+<div class="fade" style="padding: 16px 20px 20px;">
+<p style="margin: 0; font-size: 14.5px; line-height: 1.7; color: #4B5575;">{{ fq.a }}</p>
+<sc-if value="{{ fq.chips }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px;">
+<sc-for list="{{ clmSteps }}" as="st" hint-placeholder-count="4">
+<span class="chipc" style="background: {{ st.bg }}; color: {{ st.c }}; padding: 6px 12px 6px 6px;"><span style="width: 20px; height: 20px; border-radius: 50%; background: {{ st.c }}; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 11px;">{{ st.n }}</span>{{ st.t }}</span>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</section>
+
+<!-- CTA BAND -->
+<section id="cta" style="padding: 100px 0;">
+<div class="wrap">
+<div style="position: relative; border-radius: 32px; background: #0E1A3A; color: #fff; padding: 76px 56px; text-align: center; overflow: hidden;">
+<svg class="hide-sm" viewBox="0 0 1100 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.5;">
+<g fill="none" stroke-width="1.2"><path d="M-20 300 C 200 180, 300 360, 520 250" stroke="#2F6BF2"></path><path d="M1120 60 C 900 180, 800 0, 600 110" stroke="#8B4FE8"></path><path d="M-20 60 C 150 120, 220 20, 380 90" stroke="#E0316F" opacity="0.7"></path><path d="M1120 300 C 950 240, 900 340, 740 280" stroke="#12A57A" opacity="0.7"></path></g>
+<g><circle cx="520" cy="250" r="4" fill="#2F6BF2"></circle><circle cx="600" cy="110" r="4" fill="#8B4FE8"></circle><circle cx="380" cy="90" r="3.5" fill="#E0316F"></circle><circle cx="740" cy="280" r="3.5" fill="#12A57A"></circle></g>
+</svg>
+<div style="position: relative;">
+<h2 class="h2" style="color: #fff; max-width: 760px; margin: 0 auto; font-size: 44px;">Get Your Child's Free Spellzee <span class="acc" style="color: #9DB8FF; font-size: 1.1em;">Improvement Plan</span></h2>
+<p style="margin: 16px auto 0; max-width: 540px; font-size: 17px; line-height: 1.6; color: #C7CEE6;">Understand where your child stands and what they should focus on next.</p>
+<a class="btn btn-primary" href="#cta" style="margin-top: 32px;">Book a Free Assessment <span class="arr" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span></a>
+</div>
+</div>
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer class="foot" style="background: #0B1530; color: #fff; padding: 80px 0 34px;">
+<div class="wrap">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 40px;">
+<div style="grid-column: span 2; max-width: 420px;">
+<div style="display: flex; align-items: center; gap: 12px;">
+<img src="./assets/3fef1b47b8ce3b58c1941b57a48140d8.png" alt="" style="height: 40px; width: auto; display: block;">
+<span style="font-size: 25px; font-weight: 800; letter-spacing: -0.03em;">Spellzee</span>
+</div>
+<p style="margin: 16px 0 0; font-size: 17px; font-weight: 700;">Happy Learners. <span class="acc" style="font-size: 1.15em; color: #9DB8FF;">Brighter Futures.</span></p>
+<p style="margin: 8px 0 0; font-size: 14.5px; line-height: 1.6; color: #AEB7D3;">Helping children become confident readers, writers, and speakers.</p>
+<div style="margin-top: 24px;">
+<div style="font-size: 15px; font-weight: 800;">Stay in the loop with Spellzee</div>
+<div style="font-size: 13.5px; color: #AEB7D3; margin-top: 4px;">Get learning tips, updates and resources for your child.</div>
+<div style="display: flex; gap: 8px; margin-top: 14px;">
+<label for="nl-email" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Email address</label>
+<input id="nl-email" class="inp" type="email" placeholder="Your email address">
+<button class="btn btn-primary btn-sm" style="min-height: 48px;">Subscribe</button>
+</div>
+</div>
+</div>
+<div>
+<div style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #7F8AB0;">Programs</div>
+<div style="display: flex; flex-direction: column; gap: 12px; margin-top: 18px;"><a href="/phonics">Phonics</a><a href="/comprehension">Comprehension</a><a href="/grammar-and-communication">Grammar &amp; Communication</a><a href="/public-speaking">Public Speaking</a></div>
+</div>
+<div>
+<div style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #7F8AB0;">Explore</div>
+<div style="display: flex; flex-direction: column; gap: 12px; margin-top: 18px;"><a href="#educators">About Spellzee</a><a href="#clm">Our Approach</a><a href="#clm">CLM Methodology</a><a href="#stories">Stories of Progress</a><a href="#educators">Behind the Classroom</a><a href="#faq">Resources</a></div>
+</div>
+<div>
+<div style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #7F8AB0;">Support</div>
+<div style="display: flex; flex-direction: column; gap: 12px; margin-top: 18px;"><a href="#top">Contact Us</a><a href="#faq">FAQ</a><a href="#top">Privacy Policy</a><a href="#top">Terms &amp; Conditions</a><a href="#top">Cancellation &amp; Refund</a><a href="#top">Parent Resources</a></div>
+</div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 52px; padding-top: 26px; border-top: 1px solid #1E2B55;">
+<span style="display: inline-flex; align-items: center; gap: 10px; padding: 5px 14px 5px 5px; border-radius: 999px; border: 1px solid #2B3862; font-size: 12.5px; color: #C7CEE6;"><img src="./assets/39d73f53be23c4266ff6e86000064838.png" alt="IITM Incubation Cell logo" style="width: 30px; height: 30px; display: block;">IITM Incubated Company</span>
+<span style="display: inline-flex; align-items: center; gap: 10px; padding: 5px 14px 5px 5px; border-radius: 999px; border: 1px solid #2B3862; font-size: 12.5px; color: #C7CEE6;"><span style="width: 30px; height: 30px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden;"><img src="./assets/80afcc1d297f5bfe2edd789a5c997598.png" alt="ACTD accreditation emblem" style="width: 24px; height: 24px; object-fit: contain; display: block;"></span>ACTD Accredited</span>
+<span style="padding: 7px 13px; border-radius: 999px; border: 1px solid #2B3862; font-size: 12.5px; color: #C7CEE6;">Safe &amp; Secure Learning</span>
+<span style="padding: 7px 13px; border-radius: 999px; border: 1px solid #2B3862; font-size: 12.5px; color: #C7CEE6;">Trusted by 10,000+ Parents</span>
+<span style="padding: 7px 13px; border-radius: 999px; border: 1px solid #2B3862; font-size: 12.5px; color: #C7CEE6;">Child-Centric Approach</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-top: 26px; font-size: 13px; color: #7F8AB0;">
+<span>© 2026 Spellzee. All rights reserved.</span><span>Spellzee Edutech Solutions Pvt. Ltd.</span>
+</div>
+</div>
+</footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":10400}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { skill: 0, program: 0, tab: 0, bIdx: 0, picked: [], readPick: -1, story: 0, faq: 0 };
+    this.stops = [];
+    this.els = {};
+  }
+
+  componentDidMount() {
+    setTimeout(() => {
+      const e = this.els;
+      if (e.heroCanvas && e.hero) this.stops.push(this.net(e.heroCanvas, e.hero, { copy: e.heroCopy }));
+      if (e.brainCanvas) this.stops.push(this.brainNet(e.brainCanvas));
+    }, 60);
+    this.lastTouch = 0;
+    const auto = setInterval(() => {
+      const sec = this.els.clmSec; if (!sec) return;
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const r = sec.getBoundingClientRect(), vh = window.innerHeight || 800;
+      if (r.bottom < vh * 0.25 || r.top > vh * 0.75) return;
+      if (Date.now() - this.lastTouch < 7000) return;
+      this.setState({ skill: (this.state.skill + 1) % 6 });
+    }, 3600);
+    this.stops.push(() => clearInterval(auto));
+  }
+
+  componentWillUnmount() { this.stops.forEach((s) => s()); }
+
+  net(canvas, host, o) {
+    const ctx = canvas.getContext('2d');
+    const box = canvas.parentElement;
+    const copy = o.copy || null;
+    const palette = ['#7C3AED', '#0891B2', '#DB2777', '#D97706', '#2563EB'];
+    const IW = 1672, IH = 941;
+    const GAP = 84, LINK = 200, K = 2, REFRACT = 110;
+    let w = 0, h = 0, sc = 1, ox = 0, minX = 0, near = [], far = [], signals = [], rings = [], raf = 0, visible = true, t = 0;
+    const mouse = { x: -9999, y: -9999, on: false, px: 0, py: 0 };
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Background only (photo pixel space): wide band above her head, the back-right, never on the child.
+    const inPhoto = (ix, iy) => {
+      const hx = (ix - 1130) / 275, hy = (iy - 385) / 290;
+      if (hx * hx + hy * hy < 1) return 0;
+      if (iy > 460 && ix > 740 && ix < 1610) return 0;
+      if (iy < 170) return 1;
+      if (ix > 1350) return 1;
+      if (ix < 860 && iy < 300) return 1;
+      return 0;
+    };
+    const region = (x, y) => (x < minX ? 0 : inPhoto((x - ox) / sc, y / sc));
+    const scatter = (count, gap, fn) => {
+      const out = []; let tries = 0;
+      while (out.length < count && tries < 4000) {
+        tries++;
+        const x = Math.random() * w, y = Math.random() * h;
+        if (!region(x, y) || out.some((n) => Math.hypot(n.x - x, n.y - y) < gap)) continue;
+        out.push(fn(x, y, out.length));
+      }
+      return out;
+    };
+    const seed = () => {
+      signals = []; rings = [];
+      near = scatter(40, GAP, (x, y, i) => ({ id: i, x, y, vx: (Math.random() - 0.5) * 0.2, vy: (Math.random() - 0.5) * 0.2, r: 1.8 + Math.random() * 1.6, c: palette[i % palette.length], ph: Math.random() * 6.28, fire: 0, rest: 0 }));
+      far = scatter(34, 46, (x, y) => ({ x, y, vx: (Math.random() - 0.5) * 0.1, vy: (Math.random() - 0.5) * 0.1, r: 0.8 + Math.random() * 0.8, c: palette[(Math.random() * 5) | 0] }));
+    };
+    const resize = () => {
+      const r = box.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = r.width; h = r.height;
+      const Wa = Math.min(Math.max(w, h * IW / IH), h * 2.2); sc = Wa / IW; ox = w - Wa;
+      minX = 0;
+      if (copy) { const c = copy.getBoundingClientRect(); if (c.top < r.bottom && c.bottom > r.top && c.right - r.left < w * 0.7) minX = c.right - r.left + 24; }
+      canvas.width = Math.max(1, w * dpr); canvas.height = Math.max(1, h * dpr);
+      canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      seed();
+      if (reduce) draw();
+    };
+    const hexA = (hex, a) => { const n = parseInt(hex.slice(1), 16); return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + Math.max(0, Math.min(1, a)) + ')'; };
+    const glow = (x, y, r, c, a) => { const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, hexA(c, a)); g.addColorStop(1, hexA(c, 0)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); ctx.fill(); };
+    // a gentle, stable bend for every synapse, like the flowing paths in the photo
+    const ctrl = (a, b) => {
+      const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, dx = b.x - a.x, dy = b.y - a.y;
+      const side = ((a.id * 7 + b.id * 13) % 2 ? 1 : -1) * (a.id < b.id ? 1 : -1);
+      return { x: mx - dy * 0.18 * side, y: my + dx * 0.18 * side };
+    };
+    const qpt = (a, c, b, p) => { const u = 1 - p; return { x: u * u * a.x + 2 * u * p * c.x + p * p * b.x, y: u * u * a.y + 2 * u * p * c.y + p * p * b.y }; };
+    const neighbours = new Map();
+    const fire = (n, energy, from) => {
+      if (n.rest > 0) return;
+      n.fire = 1; n.rest = REFRACT;
+      rings.push({ x: n.x, y: n.y, c: n.c, p: 0 });
+      if (energy <= 0) return;
+      const ns = neighbours.get(n) || [];
+      for (const m of ns) {
+        if (m === from || m.rest > 0) continue;
+        if (Math.random() < 0.75) signals.push({ a: n, b: m, p: 0, v: 0.014 + Math.random() * 0.008, e: energy - 1 });
+      }
+    };
+    const draw = () => {
+      t += 1;
+      ctx.clearRect(0, 0, w, h);
+      if (!reduce) {
+        mouse.px += ((mouse.on ? (mouse.x - w * 0.7) * -0.012 : 0) - mouse.px) * 0.05;
+        mouse.py += ((mouse.on ? (mouse.y - h * 0.4) * -0.012 : 0) - mouse.py) * 0.05;
+        for (const n of far) {
+          const nx = n.x + n.vx, ny = n.y + n.vy;
+          if (!region(nx, ny)) { n.vx *= -1; n.vy *= -1; } else { n.x = nx; n.y = ny; }
+        }
+        for (const n of near) {
+          for (const m of near) {
+            if (m === n) continue;
+            const dx = n.x - m.x, dy = n.y - m.y, d = Math.hypot(dx, dy);
+            if (d > 0 && d < GAP) { const f = (GAP - d) / GAP * 0.012; n.vx += dx / d * f; n.vy += dy / d * f; }
+          }
+          n.vx *= 0.985; n.vy *= 0.985;
+          const sp = Math.hypot(n.vx, n.vy);
+          if (sp < 0.07) { n.vx += (Math.random() - 0.5) * 0.03; n.vy += (Math.random() - 0.5) * 0.03; }
+          if (sp > 0.5) { n.vx *= 0.9; n.vy *= 0.9; }
+          const nx = n.x + n.vx, ny = n.y + n.vy;
+          if (nx < 0 || nx > w || ny < 0 || ny > h || !region(nx, ny)) { n.vx *= -1; n.vy *= -1; } else { n.x = nx; n.y = ny; }
+          if (n.rest > 0) n.rest--;
+          n.fire *= 0.94;
+          if (mouse.on && n.rest === 0 && Math.hypot(n.x - mouse.x, n.y - mouse.y) < 55) fire(n, 4, null);
+        }
+        if (Math.random() < 0.012 && near.length) fire(near[(Math.random() * near.length) | 0], 3, null);
+      }
+      // far layer: faint, tiny, drifting with a touch of parallax
+      ctx.save(); ctx.translate(mouse.px, mouse.py);
+      for (let i = 0; i < far.length; i++) {
+        const a = far[i]; let best = null, bd = 120;
+        for (let j = 0; j < far.length; j++) { if (i === j) continue; const d = Math.hypot(a.x - far[j].x, a.y - far[j].y); if (d < bd) { bd = d; best = far[j]; } }
+        if (best) { ctx.strokeStyle = hexA(a.c, 0.08); ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(best.x, best.y); ctx.stroke(); }
+        ctx.fillStyle = hexA(a.c, 0.35); ctx.beginPath(); ctx.arc(a.x, a.y, a.r, 0, 6.283); ctx.fill();
+      }
+      ctx.restore();
+      // near layer: each neuron joins its two nearest neighbours with a soft curve
+      neighbours.clear();
+      const seen = new Set(), edges = [];
+      for (const a of near) {
+        const cand = [];
+        for (const b of near) { if (a === b) continue; const d = Math.hypot(a.x - b.x, a.y - b.y); if (d < LINK) cand.push([d, b]); }
+        cand.sort((p, q) => p[0] - q[0]);
+        for (const [, b] of cand.slice(0, K)) {
+          const key = a.id < b.id ? a.id + '-' + b.id : b.id + '-' + a.id;
+          if (seen.has(key)) continue;
+          if (!region((a.x + b.x) / 2, (a.y + b.y) / 2)) continue;
+          seen.add(key); edges.push([a, b]);
+          if (!neighbours.has(a)) neighbours.set(a, []);
+          if (!neighbours.has(b)) neighbours.set(b, []);
+          neighbours.get(a).push(b); neighbours.get(b).push(a);
+        }
+      }
+      for (const [a, b] of edges) {
+        const c = ctrl(a, b);
+        const hot = Math.max(a.fire, b.fire);
+        const g = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+        g.addColorStop(0, hexA(a.c, 0.2 + hot * 0.45)); g.addColorStop(1, hexA(b.c, 0.2 + hot * 0.45));
+        ctx.strokeStyle = g; ctx.lineWidth = 1 + hot * 0.8;
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.quadraticCurveTo(c.x, c.y, b.x, b.y); ctx.stroke();
+      }
+      // travelling signals, with a short comet tail
+      signals = signals.filter((s) => {
+        s.p += s.v;
+        const c = ctrl(s.a, s.b);
+        for (let k = 0; k < 6; k++) {
+          const q = qpt(s.a, c, s.b, Math.max(0, s.p - k * 0.03));
+          glow(q.x, q.y, 7 - k, s.a.c, 0.8 - k * 0.12);
+        }
+        if (s.p >= 1) { fire(s.b, s.e, s.a); return false; }
+        return true;
+      });
+      // firing rings
+      rings = rings.filter((r) => {
+        r.p += 0.025;
+        ctx.strokeStyle = hexA(r.c, 0.5 * (1 - r.p)); ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.arc(r.x, r.y, 4 + r.p * 22, 0, 6.283); ctx.stroke();
+        return r.p < 1;
+      });
+      // neurons
+      for (const n of near) {
+        const tw = 0.6 + 0.4 * Math.sin(t * 0.025 + n.ph);
+        glow(n.x, n.y, n.r * 4 + n.fire * 12, n.c, 0.16 * tw + n.fire * 0.5);
+        ctx.fillStyle = hexA(n.c, 0.9);
+        ctx.beginPath(); ctx.arc(n.x, n.y, n.r + n.fire * 1.5, 0, 6.283); ctx.fill();
+        if (n.fire > 0.2) { ctx.fillStyle = 'rgba(255,255,255,' + n.fire + ')'; ctx.beginPath(); ctx.arc(n.x, n.y, n.r * 0.6, 0, 6.283); ctx.fill(); }
+      }
+    };
+    const loop = () => { if (visible) draw(); raf = requestAnimationFrame(loop); };
+    const move = (ev) => { const r = box.getBoundingClientRect(); mouse.x = ev.clientX - r.left; mouse.y = ev.clientY - r.top; mouse.on = region(mouse.x, mouse.y) > 0; };
+    const leave = () => { mouse.on = false; };
+    host.addEventListener('pointermove', move);
+    host.addEventListener('pointerleave', leave);
+    let ro = null, io = null;
+    if (window.ResizeObserver) { ro = new ResizeObserver(() => resize()); ro.observe(box); }
+    if (window.IntersectionObserver) { io = new IntersectionObserver((en) => { visible = en[0].isIntersecting; }); io.observe(box); }
+    resize();
+    if (!reduce) raf = requestAnimationFrame(loop);
+    return () => { cancelAnimationFrame(raf); host.removeEventListener('pointermove', move); host.removeEventListener('pointerleave', leave); if (ro) ro.disconnect(); if (io) io.disconnect(); };
+  }
+
+  brainNet(canvas) {
+    const ctx = canvas.getContext('2d');
+    const box = canvas.parentElement;
+    const self = this;
+    const BW = 230, BH = 200;
+    const core = { x: 122, y: 127 };
+    const cols = ['#2F6BF2', '#7C4DE8', '#12A57A', '#9A55E0', '#2F8BE8', '#E0317A'];
+    const dots = [{ x: 59, y: 77 }, { x: 28, y: 113 }, { x: 50, y: 144 }, { x: 178, y: 86 }, { x: 194, y: 130 }, { x: 167, y: 157 }];
+    let seedV = 7;
+    const rnd = () => { seedV = (seedV * 16807) % 2147483647; return seedV / 2147483647; };
+    const nodes = [];
+    while (nodes.length < 34) {
+      const x = 25 + rnd() * 190, y = 40 + rnd() * 130;
+      const ex = (x - 120) / 92, ey = (y - 105) / 64;
+      if (ex * ex + ey * ey < 1 && y < 168) nodes.push({ x, y, ph: rnd() * 6.28, sp: 0.012 + rnd() * 0.016 });
+    }
+    const links = [];
+    for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
+      const d = Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y);
+      if (d < 34) links.push([nodes[i], nodes[j]]);
+    }
+    // each skill's pathway: its dot -> nearest mid node -> core
+    const paths = dots.map((d) => {
+      const mx = (d.x + core.x) / 2, my = (d.y + core.y) / 2;
+      let best = nodes[0], bd = 1e9;
+      for (const n of nodes) { const q = Math.hypot(n.x - mx, n.y - my); if (q < bd) { bd = q; best = n; } }
+      return [d, best, core];
+    });
+    const along = (pts, p) => {
+      const segs = []; let tot = 0;
+      for (let i = 0; i < pts.length - 1; i++) { const l = Math.hypot(pts[i + 1].x - pts[i].x, pts[i + 1].y - pts[i].y); segs.push(l); tot += l; }
+      let d = p * tot;
+      for (let i = 0; i < segs.length; i++) {
+        if (d <= segs[i]) { const f = d / segs[i]; return { x: pts[i].x + (pts[i + 1].x - pts[i].x) * f, y: pts[i].y + (pts[i + 1].y - pts[i].y) * f }; }
+        d -= segs[i];
+      }
+      return pts[pts.length - 1];
+    };
+    const hexA = (hex, a) => { const n = parseInt(hex.slice(1), 16); return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')'; };
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let w = 0, h = 0, s = 1, raf = 0, t = 0, visible = true;
+    let sparks = [], signals = [];
+    const resize = () => {
+      const r = box.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = r.width; h = r.height; s = w / BW;
+      canvas.width = Math.max(1, w * dpr); canvas.height = Math.max(1, h * dpr);
+      canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (reduce) draw();
+    };
+    const glow = (x, y, r, color, a) => {
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, hexA(color, a)); g.addColorStop(1, hexA(color, 0));
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); ctx.fill();
+    };
+    const draw = () => {
+      t += 1;
+      ctx.clearRect(0, 0, w, h);
+      const act = Math.max(0, Math.min(5, self.state.skill | 0));
+      const ac = cols[act];
+      // faint synapse web
+      ctx.lineWidth = 0.6;
+      for (const [a, b] of links) {
+        ctx.strokeStyle = 'rgba(255,255,255,0.16)';
+        ctx.beginPath(); ctx.moveTo(a.x * s, a.y * s); ctx.lineTo(b.x * s, b.y * s); ctx.stroke();
+      }
+      // active pathway
+      const P = paths[act];
+      ctx.strokeStyle = hexA(ac, 0.55); ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.moveTo(P[0].x * s, P[0].y * s);
+      for (let i = 1; i < P.length; i++) ctx.lineTo(P[i].x * s, P[i].y * s);
+      ctx.stroke();
+      // twinkling neurons
+      for (const n of nodes) {
+        const tw = 0.45 + 0.55 * Math.max(0, Math.sin(t * n.sp + n.ph));
+        glow(n.x * s, n.y * s, 5 * s * tw + 2, '#FFFFFF', 0.55 * tw);
+        ctx.fillStyle = 'rgba(255,255,255,' + (0.5 + 0.5 * tw) + ')';
+        ctx.beginPath(); ctx.arc(n.x * s, n.y * s, 0.9 * s, 0, 6.283); ctx.fill();
+      }
+      if (!reduce) {
+        // ambient sparks along random synapses
+        if (sparks.length < 3 && Math.random() < 0.025) {
+          const l = links[(Math.random() * links.length) | 0];
+          const rev = Math.random() < 0.5;
+          sparks.push({ a: rev ? l[1] : l[0], b: rev ? l[0] : l[1], p: 0, v: 0.01 + Math.random() * 0.008 });
+        }
+        sparks = sparks.filter((k) => k.p <= 1);
+        for (const k of sparks) {
+          k.p += k.v;
+          const x = (k.a.x + (k.b.x - k.a.x) * k.p) * s, y = (k.a.y + (k.b.y - k.a.y) * k.p) * s;
+          glow(x, y, 4 * s, '#FFFFFF', 0.9);
+        }
+        // signals from the active skill into the core
+        if (t % 90 === 0) signals.push({ i: act, p: 0 });
+        signals = signals.filter((g) => g.p <= 1 && g.i === act);
+        for (const g of signals) {
+          g.p += 0.011;
+          for (let k = 0; k < 5; k++) {
+            const q = along(paths[g.i], Math.max(0, g.p - k * 0.025));
+            glow(q.x * s, q.y * s, (5 - k * 0.7) * s, cols[g.i], 0.85 - k * 0.15);
+          }
+          const q = along(paths[g.i], g.p);
+          ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(q.x * s, q.y * s, 1.3 * s, 0, 6.283); ctx.fill();
+        }
+      }
+      // core responds in the active colour
+      const beat = 0.55 + 0.45 * Math.sin(t * 0.035);
+      glow(core.x * s, core.y * s, 16 * s * (0.8 + 0.3 * beat), ac, 0.35 * beat);
+      glow(core.x * s, core.y * s, 6 * s, '#FFFFFF', 0.9);
+    };
+    const loop = () => { if (visible) draw(); raf = requestAnimationFrame(loop); };
+    let ro = null, io = null;
+    if (window.ResizeObserver) { ro = new ResizeObserver(() => resize()); ro.observe(box); }
+    if (window.IntersectionObserver) { io = new IntersectionObserver((en) => { visible = en[0].isIntersecting; }); io.observe(box); }
+    resize();
+    if (!reduce) raf = requestAnimationFrame(loop);
+    return () => { cancelAnimationFrame(raf); if (ro) ro.disconnect(); if (io) io.disconnect(); };
+  }
+
+  refFn(key) {
+    if (!this._refs) this._refs = {};
+    if (!this._refs[key]) this._refs[key] = (el) => { this.els[key] = el; };
+    return this._refs[key];
+  }
+
+  renderVals() {
+    const s = this.state;
+    const I = {
+      user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1-4 4-6 8-6s7 2 8 6',
+      users: 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21c.8-3.6 3.6-6 7-6s6.2 2.4 7 6M16 3.5a4 4 0 0 1 0 7.5M18 15c2.2.6 3.6 2.8 4 6',
+      book: 'M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2zM22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z',
+      chat: 'M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12z',
+      chart: 'M3 20h18M6 16v-4M11 16V8M16 16v-6M21 16V4',
+      bars: 'M7 20v-6M12 20V4M17 20v-10',
+      ear: 'M6 9a6 6 0 0 1 12 0c0 3-2 4-3 5s-1 3-3 4-4 0-4-2M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-1.5 2-2 3',
+      layers: 'M12 3l9 5-9 5-9-5zM3 13l9 5 9-5M3 17.5l9 5 9-5',
+      bulb: 'M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z',
+      pencil: 'M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4',
+      spell: 'M4 18L8 6l4 12M5.5 14h5M15 6h3.5a2.5 2.5 0 0 1 0 5H15zM15 11h4a2.5 2.5 0 0 1 0 5h-4z',
+      mic: 'M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3',
+      stage: 'M10.6 8.6a4.6 4.6 0 1 0 9.2 0a4.6 4.6 0 1 0-9.2 0M12 5.4l6.4 6.4M18.4 5.4 12 11.8M11.6 12.1l1.4 1.4M12.3 12.8 5.2 19.9',
+      bell: 'M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4',
+      loop: 'M4 12a8 8 0 0 1 14-5.3L20 9M20 4v5h-5M20 12a8 8 0 0 1-14 5.3L4 15M4 20v-5h5',
+      shield: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4',
+      heart: 'M12 20s-8-4.6-8-10.2A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 2.8C20 15.4 12 20 12 20z',
+      star: 'M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z',
+      live: 'M3 5h18v12H3zM8 21h8M12 17v4',
+      calendar: 'M4 5h16v15H4zM4 10h16M9 3v4M15 3v4',
+      refund: 'M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 8v8M9.5 10.5h4a1.5 1.5 0 0 1 0 3h-3a1.5 1.5 0 0 0 0 3h4',
+      clip: 'M9 4h6v3H9zM7 5.5H5v15h14v-15h-2M9 12h6M9 16h4',
+      trend: 'M3 17l6-6 4 4 8-8M15 7h6v6',
+      cards: 'M12 3l9 5-9 5-9-5zM3 13l9 5 9-5'
+    };
+
+    const skillData = [
+      { name: 'Phonemic Awareness', alt: 'Sound Recognition', d: 'Hearing, separating, and blending the individual sounds in spoken words. Every confident reader builds on this.', c: '#2F6BF2', bg: '#E3ECFE', icon: I.ear, side: 'L', y: 25 },
+      { name: 'Decoding', alt: 'Blending', d: 'Turning letters into sounds and blending them into words.', c: '#7C4DE8', bg: '#EEE7FD', icon: I.book, side: 'L', y: 50 },
+      { name: 'Comprehension', d: "Understanding, interpreting, and answering questions about what's been read.", c: '#12A57A', bg: '#DDF3EA', icon: I.bulb, side: 'L', y: 75 },
+      { name: 'Spelling', d: 'Connecting sounds back to letters and remembering patterns.', c: '#9A55E0', bg: '#F1E6FB', icon: I.spell, side: 'R', y: 25 },
+      { name: 'Writing', d: 'Putting thoughts into clear, well-ordered sentences.', c: '#2F8BE8', bg: '#E1EFFC', icon: I.pencil, side: 'R', y: 50 },
+      { name: 'Communication', alt: 'Fluency', d: 'Speaking clearly and confidently, and listening well.', c: '#E0317A', bg: '#FCE4EE', icon: I.chat, side: 'R', y: 75 }
+    ];
+    const skills = skillData.map((k, i) => {
+      const on = s.skill === i;
+      const pos = k.side === 'L' ? 'left: 23.15%; top: ' + k.y + '%; transform: translate(-100%, -50%);' : 'left: 76.85%; top: ' + k.y + '%; transform: translate(0, -50%);';
+      const act = on ? ' background: #fff; border-color: ' + k.c + '; box-shadow: 0 0 0 4px ' + k.c + '22, 0 16px 34px -18px ' + k.c + ';' : '';
+      return { ...k, style: pos + act, pressed: on ? 'true' : 'false', pick: () => { this.lastTouch = Date.now(); if (this.state.skill !== i) this.setState({ skill: i }); } };
+    });
+    const LK = {};
+    skillData.forEach((k, i) => {
+      const on = s.skill === i;
+      LK['K' + i] = { c: k.c, w: on ? 2.4 : 1.5, o: on ? 1 : 0.5, flow: on ? 1 : 0 };
+    });
+    const activeSkill = { ...skillData[s.skill], hasAlt: !!skillData[s.skill].alt, border: skillData[s.skill].c + '66', glow: '0 0 0 5px ' + skillData[s.skill].c + '14, 0 22px 50px -22px ' + skillData[s.skill].c + 'AA' };
+
+    const clmSteps = [
+      { n: 1, t: 'Assess', c: '#1557D6', bg: '#DCE8FC', more: true },
+      { n: 2, t: 'Map', c: '#D0335F', bg: '#FCE3EC', more: true },
+      { n: 3, t: 'Personalise', c: '#12855A', bg: '#DDF1E6', more: true },
+      { n: 4, t: 'Progress', c: '#6D3FD6', bg: '#ECE5FA', more: false }
+    ];
+
+    const progData = [
+      { t: 'Reading & Spelling', href: '/phonics', page: 'Phonics', lower: 'reading and spelling', d: 'Struggles to read fluently or spell words correctly.', c: '#1557D6', bg: '#E3ECFE', icon: I.book, skills: [{ t: 'Phonemic Awareness', c: '#2F6BF2', bg: '#2F6BF21A' }, { t: 'Decoding', c: '#7C4DE8', bg: '#7C4DE81A' }, { t: 'Spelling', c: '#9A55E0', bg: '#9A55E01A' }] },
+      { t: 'Comprehension', href: '/comprehension', page: 'Comprehension', lower: 'comprehension', d: 'Can read, but finds it difficult to understand, interpret, or answer questions.', c: '#12855A', bg: '#DDF1E6', icon: I.bulb, skills: [{ t: 'Decoding', c: '#7C4DE8', bg: '#7C4DE81A' }, { t: 'Comprehension', c: '#12A57A', bg: '#12A57A1A' }] },
+      { t: 'Communication', href: '/grammar-and-communication', page: 'Communication', lower: 'communication', d: 'Finds it difficult to express thoughts clearly and confidently.', c: '#D0335F', bg: '#FCE3EC', icon: I.mic, skills: [{ t: 'Spoken English', c: '#D0335F', bg: '#D0335F1A' }, { t: 'Grammar', c: '#7C4DE8', bg: '#7C4DE81A' }] },
+      { t: 'Public Speaking', href: '/public-speaking', page: 'Public Speaking', lower: 'public speaking', d: 'Feels hesitant or nervous while speaking in front of others.', c: '#C2620A', bg: '#FBF0D2', icon: I.stage, skills: [{ t: 'Delivery Techniques', c: '#C2620A', bg: '#C2620A1A' }, { t: 'Anxiety Management', c: '#12855A', bg: '#12855A1A' }] }
+    ];
+    const programs = progData.map((p, i) => ({ ...p, n: i + 1, glow: '0 0 0 4px ' + p.c + '14, 0 26px 50px -30px ' + p.c }));
+
+    const tabs = ['Blend sounds', 'Read & answer'].map((t, i) => ({ t, cls: s.tab === i ? 'seg on' : 'seg', pressed: s.tab === i ? 'true' : 'false', pick: () => this.setState({ tab: i }) }));
+
+    const words = [
+      { w: 'ship', parts: ['sh', 'i', 'p'], shown: [2, 0, 1] },
+      { w: 'chat', parts: ['ch', 'a', 't'], shown: [1, 2, 0] },
+      { w: 'thin', parts: ['th', 'i', 'n'], shown: [2, 1, 0] },
+      { w: 'cat', parts: ['c', 'a', 't'], shown: [1, 0, 2] }
+    ];
+    const W = words[s.bIdx];
+    const picked = s.picked;
+    const done = picked.length === 3;
+    const correct = done && picked.every((p, k) => p === k);
+    const slot = (k) => ({ t: picked[k] !== undefined ? W.parts[picked[k]] : '?', cls: picked[k] !== undefined ? 'slot fill' : 'slot' });
+    const blendTiles = W.shown.map((pi) => {
+      const used = picked.indexOf(pi) >= 0;
+      return { t: W.parts[pi], cls: used ? 'stile used' : 'stile', tap: () => { if (!used && picked.length < 3) this.setState({ picked: picked.concat([pi]) }); } };
+    });
+    const blendMsg = !done ? 'Tap the sounds in the order you hear them in “' + W.w + '”.' : (correct ? 'Well blended! That spells “' + W.w + '”.' : 'Not quite — listen again and try a new order.');
+
+    const readOpts = ['Her teacher', 'Her brother Arjun', 'A neighbour'].map((t, i) => ({ t, cls: s.readPick === i ? (i === 1 ? 'opt good' : 'opt bad') : 'opt', pick: () => this.setState({ readPick: i }) }));
+
+    const storyData = [
+      { q: 'She now reads independently.', p: 'Reading & Spelling', c: '#1557D6', bg: '#E3ECFE' },
+      { q: 'His spelling confidence improved.', p: 'Reading & Spelling', c: '#D0335F', bg: '#FCE3EC' },
+      { q: 'She speaks with much more confidence.', p: 'Communication', c: '#12855A', bg: '#DDF1E6' },
+      { q: 'We could see the progress clearly.', p: 'Progress tracking', c: '#C2620A', bg: '#FBF0D2' }
+    ];
+    const stories = storyData.map((st, i) => ({ ...st, cls: s.story === i ? 'prog on' : 'prog', pressed: s.story === i ? 'true' : 'false', pick: () => this.setState({ story: i }) }));
+
+    const faqData = [
+      ['How does Spellzee decide the right learning plan for my child?', "Spellzee first understands your child's current learning stage and areas that need support through Cognitive Literacy Mapping — a live diagnostic that identifies exactly where to begin. The learning path is then personalised around those needs.", true],
+      ['What happens when I book the free assessment?', "You'll get a call from a Spellzee counsellor, followed by a live diagnostic demo class for your child. You'll then receive a personalised report with your child's current level and next steps — no pressure, no obligation."],
+      ['Are Spellzee classes 1:1?', 'Yes. Spellzee offers focused 1:1 live learning experiences with a dedicated mentor who stays with your child throughout their journey — not a rotating roster of teachers.'],
+      ['What is Cognitive Literacy Mapping (CLM)?', "CLM is Spellzee's structured method for understanding a child's current reading, writing and speaking ability before building their learning path — mapping strengths and gaps across six core skills: phonemic awareness, decoding, comprehension, spelling, writing, and communication."],
+      ["How do you track my child's progress?", 'Progress is monitored through learning milestones, educator feedback, practice performance, and regular academic review shared directly with parents.'],
+      ['Do parents receive updates about their child?', "Yes. We don't disappear after enrollment — parents receive regular updates, educator feedback and progress reviews, so you always know how your child is doing and what comes next."],
+      ['What age groups does Spellzee support?', "Spellzee supports children across different learning stages, with programmes designed according to each child's current ability and needs."],
+      ['Can Spellzee help if my child struggles with reading or spelling?', "Yes. Your child's present reading and spelling abilities are assessed first through CLM, so we can identify the right starting point and build the learning path from there."],
+      ['What learning materials are provided?', 'Children receive materials matched to their level, including worksheets, decodable reading resources, practice activities, and flashcards.'],
+      ['Is there any lock-in or long-term commitment?', "No. Spellzee runs on a simple month-to-month subscription. There's no lock-in — you can continue for as long as it's working for your child, and cancel anytime."],
+      ["What if Spellzee isn't the right fit for my child?", "You can claim a full refund within 7 days of your child's first class. Every learning plan we build is backed by our satisfaction guarantee."],
+      ['Do you offer EMI or instalment plans?', "Not currently. Because Spellzee is month-to-month with no lock-in, there's no long-term payment commitment to begin with."],
+      ["How can I get my child's Free Spellzee Improvement Plan?", "Book a free assessment. After a short call with a counsellor and a live diagnostic demo, you'll receive your child's personalised report and improvement plan — free, with no obligation."]
+    ];
+    const tints = [['#FCDCE6', '#D0335F'], ['#FBEFCB', '#B77A06'], ['#DAF0E4', '#12855A'], ['#D8EEFA', '#1577B0'], ['#E8E1FA', '#6D3FD6']];
+    const faqs = faqData.map((f, i) => {
+      const open = s.faq === i;
+      const t = tints[i % 5];
+      return { q: f[0], a: f[1], chips: !!f[2], open, expanded: open ? 'true' : 'false', tint: t[0], accent: t[1], wrapBg: open ? '#fff' : t[0], shadow: open ? '0 22px 44px -26px rgba(14,26,58,.45)' : 'none', rot: open ? 'rotate(180deg)' : 'rotate(0deg)', toggle: () => this.setState({ faq: open ? -1 : i }) };
+    });
+
+    return {
+      heroRef: this.refFn('hero'), clmSec: this.refFn('clmSec'), heroCanvas: this.refFn('heroCanvas'), heroCopy: this.refFn('heroCopy'), brainCanvas: this.refFn('brainCanvas'),
+      ledger: [
+        { t: 'Cancel anytime', d: 'Month-to-month. No lock-in, ever.', c: '#1557D6', bg: '#E3ECFE', icon: I.calendar, sep: '0' },
+        { t: '7-day refund', d: 'Full refund within 7 days of your first class.', c: '#12855A', bg: '#DDF1E6', icon: I.refund, sep: '1px solid #EFE6DA' },
+        { t: 'Satisfaction guaranteed', d: 'We stand behind every learning plan we build with your child.', c: '#D0335F', bg: '#FCE3EC', icon: I.shield, sep: '1px solid #EFE6DA' },
+        { t: '95% parent satisfaction', d: 'Rated across our 1:1 programmes.', c: '#C2620A', bg: '#FBF0D2', icon: I.star }
+      ],
+      features: [
+        { t: 'Dedicated 1:1 Mentor', d: 'The same mentor, every session — not a rotating roster.', c: '#1557D6', bg: '#E3ECFE', icon: I.user, sep: '1px solid #EFE6DA', delay: '-0.0s' },
+        { t: 'Personalised Lessons', d: "As per your child's level.", c: '#D0335F', bg: '#FCE3EC', icon: I.layers, delay: '-1.7s' },
+        { t: 'Doubt-Free Learning', d: 'Ask anything, anytime.', c: '#12855A', bg: '#DDF1E6', icon: I.chat, delay: '-3.4s' },
+        { t: 'Visible Progress', d: 'Regular feedback & reports.', c: '#C2620A', bg: '#FBF0D2', icon: I.chart }
+      ],
+      skills, ...LK, activeSkill, clmSteps,
+      bookSteps: [
+        { n: '1', t: 'A call with a counsellor', d: "We understand your child's current reading, writing and speaking, in plain conversation.", delay: '-5.1s' },
+        { n: '2', t: 'A live diagnostic demo', d: 'Your child joins a real 1:1 session with a mentor, so you see Spellzee in action first.' },
+        { n: '3', t: 'Your personalised report', d: "A written diagnostic report with your child's current level and a recommended learning path." }
+      ],
+      report: [
+        { t: 'Phonemic Awareness', v: 72, c: '#1557D6', delay: '0s' },
+        { t: 'Decoding', v: 65, c: '#6D3FD6', delay: '.15s' },
+        { t: 'Comprehension', v: 58, c: '#12A57A', delay: '.3s' },
+        { t: 'Confidence', v: 80, c: '#E0317A', delay: '.45s' }
+      ],
+      programs,
+      tabs, isBlend: s.tab === 0, isRead: s.tab === 1,
+      slot0: slot(0), slot1: slot(1), slot2: slot(2),
+      resText: done ? (correct ? W.w : '✕') : '?', resCls: done ? (correct ? 'slot res ok' : 'slot res no') : 'slot res',
+      blendTiles, blendMsg,
+      resetBlend: () => this.setState({ picked: [] }),
+      nextBlend: () => this.setState({ bIdx: (s.bIdx + 1) % words.length, picked: [] }),
+      readOpts, readFb: s.readPick < 0 ? '' : (s.readPick === 1 ? 'Spot on — you found the answer in the text.' : 'Not quite — look again at the second sentence.'), readFbColor: s.readPick === 1 ? '#0B6242' : '#A51E45',
+      materials: [
+        { t: 'Level-based worksheets', c: '#1557D6', bg: '#E3ECFE', icon: I.clip },
+        { t: 'Decodable reading resources', c: '#D0335F', bg: '#FCE3EC', icon: I.book },
+        { t: 'Practice activities', c: '#C2620A', bg: '#FBF0D2', icon: I.pencil },
+        { t: 'Flashcards and visual resources', c: '#12855A', bg: '#DDF1E6', icon: I.layers },
+        { t: 'Progress assignments', c: '#6D3FD6', bg: '#ECE5FA', icon: I.trend }
+      ],
+      stories, activeStory: storyData[s.story],
+      parentItems: [
+        { t: 'Teacher guidance', d: 'Personalised support throughout', c: '#1557D6', bg: '#E3ECFE', icon: I.users },
+        { t: 'Academic monitoring', d: 'Track learning progress', c: '#D0335F', bg: '#FCE3EC', icon: I.bars },
+        { t: 'Parent updates', d: 'Stay informed, always', c: '#C2620A', bg: '#FBF0D2', icon: I.bell },
+        { t: 'Continuous progress', d: 'Support at every stage', c: '#12855A', bg: '#DDF1E6', icon: I.loop }
+      ],
+      community: [
+        { n: '10,000+', l: 'Students Guided', c: '#1557D6', bg: '#E3ECFE', icon: I.users, border: '0' },
+        { n: '10,000+', l: 'Parents Trust Spellzee', c: '#D0335F', bg: '#FCE3EC', icon: I.heart, border: '1px solid #EADFCB' },
+        { n: '300+', l: 'Trained Educators', c: '#12855A', bg: '#DDF1E6', icon: I.star, border: '1px solid #EADFCB' },
+        { n: '25,000+', l: 'Live Sessions Every Month', c: '#6D3FD6', bg: '#ECE5FA', icon: I.live, border: '1px solid #EADFCB' }
+      ],
+      trustStrip: [
+        { t: 'Trusted by Parents', d: '95% parent satisfaction', c: '#1557D6', bg: '#E3ECFE', icon: I.shield },
+        { t: 'Diverse Learners', d: 'Every learning stage', c: '#D0335F', bg: '#FCE3EC', icon: I.users },
+        { t: 'Live 1:1 Classes', d: 'One child, one mentor', c: '#12855A', bg: '#DDF1E6', icon: I.live },
+        { t: 'Real Improvements', d: 'Reading, spelling & confidence', c: '#6D3FD6', bg: '#ECE5FA', icon: I.bars }
+      ],
+      faqs
+    };
+  }
+}
+</script>
+</body>
+</html>
