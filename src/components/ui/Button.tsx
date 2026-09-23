@@ -43,8 +43,8 @@ export type ButtonProps = {
   arrow?: boolean;
   className?: string;
 } & (
-  | { href: string; type?: never; disabled?: never }
-  | { href?: undefined; type?: "button" | "submit"; disabled?: boolean }
+  | { href: string; type?: never; disabled?: never; onClick?: never }
+  | { href?: undefined; type?: "button" | "submit"; disabled?: boolean; onClick?: () => void }
 );
 
 /** Pill button (`.btn` + `.btn-primary`/`.btn-ghost`/`.btn-sm`). Renders a link when given `href`. */
@@ -78,7 +78,7 @@ export function Button({ children, variant = "primary", size = "md", arrow, clas
     );
   }
   return (
-    <button type={rest.type ?? "button"} disabled={rest.disabled} className={cn(classes, "disabled:cursor-wait disabled:opacity-70")}>
+    <button type={rest.type ?? "button"} disabled={rest.disabled} onClick={rest.onClick} className={cn(classes, "disabled:cursor-wait disabled:opacity-70")}>
       {content}
     </button>
   );
