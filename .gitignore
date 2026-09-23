@@ -42,3 +42,8 @@ next-env.d.ts
 
 # visual capture output (screen-to-nextjs)
 /.capture/
+
+# ship-screen pipeline output + Playwright artefacts
+/.quality/
+/test-results/
+/playwright-report/
