@@ -1,6 +1,6 @@
 import { iconPaths, type IconName } from "@/lib/icons";
 
-type IconProps = {
+export type IconProps = {
   name: IconName;
   /** Rendered width/height in px (the export sizes icons in px, not rem). */
   size?: number;

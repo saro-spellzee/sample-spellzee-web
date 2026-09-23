@@ -25,7 +25,7 @@ export function CommunitySection() {
           </span>
         ))}
         <svg width="90" height="14" viewBox="0 0 90 14" className="mt-2 block">
-          <path d="M2 10 Q 45 0 88 6" stroke="#1557D6" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+          <path d="M2 10 Q 45 0 88 6" className="stroke-brand" strokeWidth="2.5" fill="none" strokeLinecap="round" />
         </svg>
       </div>
       <div aria-hidden="true" className={cn(note, "top-[200px] right-[4%] -rotate-10 text-right")}>

@@ -9,8 +9,8 @@ const option = {
     "min-h-[46px] cursor-pointer rounded-[14px] border-[1.5px] px-[18px] text-body font-semibold " +
     "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand/35",
   idle: "border-rule bg-white text-ink hover:border-brand",
-  good: "border-tone-green bg-[#E4F5EC] text-tone-green-deep",
-  bad: "border-tone-rose bg-[#FDECF1] text-tone-rose-deep",
+  good: "border-tone-green bg-success-soft text-tone-green-deep",
+  bad: "border-tone-rose bg-error-soft text-tone-rose-deep",
 } as const;
 
 /** Short passage + multiple-choice question with instant feedback. */

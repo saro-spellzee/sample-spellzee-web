@@ -8,11 +8,11 @@ import { ClmStepChips } from "./ClmStepChips";
 
 /** Rotating header tints (tint background + chevron accent), cycled per question. */
 const TINTS = [
-  { bg: "bg-[#FCDCE6]", accent: "text-[#D0335F]" },
+  { bg: "bg-[#FCDCE6]", accent: "text-tone-rose" },
   { bg: "bg-[#FBEFCB]", accent: "text-[#B77A06]" },
-  { bg: "bg-[#DAF0E4]", accent: "text-[#12855A]" },
+  { bg: "bg-[#DAF0E4]", accent: "text-tone-green" },
   { bg: "bg-[#D8EEFA]", accent: "text-[#1577B0]" },
-  { bg: "bg-[#E8E1FA]", accent: "text-[#6D3FD6]" },
+  { bg: "bg-[#E8E1FA]", accent: "text-tone-violet" },
 ] as const;
 
 /** Single-open accordion; the first question starts open. Clicking the open one closes it. */

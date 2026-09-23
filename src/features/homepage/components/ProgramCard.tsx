@@ -7,8 +7,10 @@ import type { Program } from "../types";
 
 const lift = "group-hover:bg-(--tone) group-hover:text-white group-focus-visible:bg-(--tone) group-focus-visible:text-white";
 
+export type ProgramCardProps = { program: Program; /** 1-based position, shown as "01", "02"… */ n: number };
+
 /** Programme card: lifts and fills with its tone on hover/focus (`.pcard`). */
-export function ProgramCard({ program, n }: { program: Program; n: number }) {
+export function ProgramCard({ program, n }: ProgramCardProps) {
   const label = programs.ariaLabel.replace("{title}", program.title).replace("{page}", program.page);
   return (
     <Link

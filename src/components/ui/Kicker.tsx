@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
+export type KickerProps = { children: ReactNode; className?: string };
+
 /** Pill label above a section heading (`.kicker` / `.caps` in the export). */
-export function Kicker({ children, className }: { children: ReactNode; className?: string }) {
+export function Kicker({ children, className }: KickerProps) {
   return (
     <div
       className={cn(

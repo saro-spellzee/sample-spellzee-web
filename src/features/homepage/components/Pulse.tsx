@@ -1,7 +1,9 @@
 import { cn } from "@/lib/cn";
 
 /** Small dot with an expanding ring (`.pulse`). Pass `bg-*` and `text-*` (ring colour). */
-export function Pulse({ className }: { className?: string }) {
+export type PulseProps = { className?: string };
+
+export function Pulse({ className }: PulseProps) {
   return (
     <span
       aria-hidden="true"

@@ -1,21 +1,21 @@
-"use client";
-
 import { useEffect, type RefObject } from "react";
 import { TAU, fitCanvas, glow, hexA, prefersReducedMotion } from "./canvas";
-
-type Neuron = { id: number; x: number; y: number; vx: number; vy: number; r: number; c: string; ph: number; fire: number; rest: number };
-type Dust = { x: number; y: number; vx: number; vy: number; r: number; c: string };
-type Signal = { a: Neuron; b: Neuron; p: number; v: number; e: number };
-type Ring = { x: number; y: number; c: string; p: number };
-type Pt = { x: number; y: number };
-
-const PALETTE = ["#7C3AED", "#0891B2", "#DB2777", "#D97706", "#2563EB"];
-const IW = 1672;
-const IH = 941;
-const GAP = 84;
-const LINK = 200;
-const K = 2;
-const REFRACT = 110;
+import {
+  GAP,
+  IH,
+  IW,
+  PALETTE,
+  REFRACT,
+  curveControl,
+  inPhoto,
+  linkNearest,
+  quadPoint,
+  type Dust,
+  type Neuron,
+  type Pt,
+  type Ring,
+  type Signal,
+} from "./netGeometry";
 
 /**
  * The hero's firing neural network (the export's `net()`), drawn on the photo's
@@ -36,16 +36,6 @@ export function useNetCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
     const mouse = { x: -9999, y: -9999, on: false, px: 0, py: 0 };
     const reduce = prefersReducedMotion();
 
-    // Background only (photo pixel space): wide band above her head, the back-right, never on the child.
-    const inPhoto = (ix: number, iy: number) => {
-      const hx = (ix - 1130) / 275, hy = (iy - 385) / 290;
-      if (hx * hx + hy * hy < 1) return 0;
-      if (iy > 460 && ix > 740 && ix < 1610) return 0;
-      if (iy < 170) return 1;
-      if (ix > 1350) return 1;
-      if (ix < 860 && iy < 300) return 1;
-      return 0;
-    };
     const region = (x: number, y: number) => (x < minX ? 0 : inPhoto((x - ox) / sc, y / sc));
     const scatter = <T extends Pt>(count: number, gap: number, fn: (x: number, y: number, i: number) => T): T[] => {
       const out: T[] = [];
@@ -78,16 +68,6 @@ export function useNetCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
       }
       seed();
       if (reduce) draw();
-    };
-    // a gentle, stable bend for every synapse, like the flowing paths in the photo
-    const ctrl = (a: Neuron, b: Neuron): Pt => {
-      const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, dx = b.x - a.x, dy = b.y - a.y;
-      const side = ((a.id * 7 + b.id * 13) % 2 ? 1 : -1) * (a.id < b.id ? 1 : -1);
-      return { x: mx - dy * 0.18 * side, y: my + dx * 0.18 * side };
-    };
-    const qpt = (a: Pt, c: Pt, b: Pt, p: number): Pt => {
-      const u = 1 - p;
-      return { x: u * u * a.x + 2 * u * p * c.x + p * p * b.x, y: u * u * a.y + 2 * u * p * c.y + p * p * b.y };
     };
     const neighbours = new Map<Neuron, Neuron[]>();
     const fire = (n: Neuron, energy: number, from: Neuron | null) => {
@@ -146,23 +126,9 @@ export function useNetCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
       }
       ctx.restore();
       // near layer: each neuron joins its two nearest neighbours with a soft curve
-      neighbours.clear();
-      const seen = new Set<string>(), edges: [Neuron, Neuron][] = [];
-      for (const a of near) {
-        const cand: [number, Neuron][] = [];
-        for (const b of near) { if (a === b) continue; const d = Math.hypot(a.x - b.x, a.y - b.y); if (d < LINK) cand.push([d, b]); }
-        cand.sort((p, q) => p[0] - q[0]);
-        for (const [, b] of cand.slice(0, K)) {
-          const key = a.id < b.id ? `${a.id}-${b.id}` : `${b.id}-${a.id}`;
-          if (seen.has(key) || !region((a.x + b.x) / 2, (a.y + b.y) / 2)) continue;
-          seen.add(key);
-          edges.push([a, b]);
-          neighbours.set(a, [...(neighbours.get(a) ?? []), b]);
-          neighbours.set(b, [...(neighbours.get(b) ?? []), a]);
-        }
-      }
+      const edges = linkNearest(near, region, neighbours);
       for (const [a, b] of edges) {
-        const c = ctrl(a, b), hot = Math.max(a.fire, b.fire);
+        const c = curveControl(a, b), hot = Math.max(a.fire, b.fire);
         const g = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
         g.addColorStop(0, hexA(a.c, 0.2 + hot * 0.45)); g.addColorStop(1, hexA(b.c, 0.2 + hot * 0.45));
         ctx.strokeStyle = g; ctx.lineWidth = 1 + hot * 0.8;
@@ -171,9 +137,9 @@ export function useNetCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
       // travelling signals, with a short comet tail
       signals = signals.filter((s) => {
         s.p += s.v;
-        const c = ctrl(s.a, s.b);
+        const c = curveControl(s.a, s.b);
         for (let k = 0; k < 6; k++) {
-          const q = qpt(s.a, c, s.b, Math.max(0, s.p - k * 0.03));
+          const q = quadPoint(s.a, c, s.b, Math.max(0, s.p - k * 0.03));
           glow(ctx, q.x, q.y, 7 - k, s.a.c, 0.8 - k * 0.12);
         }
         if (s.p >= 1) { fire(s.b, s.e, s.a); return false; }

@@ -26,7 +26,7 @@ export function StoryPicker() {
             aria-label={stories.playLabel}
             className="flex size-[54px] cursor-pointer items-center justify-center rounded-full border-0 bg-white focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-white/60"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="#0E1A3A" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" className="fill-ink" aria-hidden="true">
               <path d="M7 4l14 8-14 8z" />
             </svg>
           </button>

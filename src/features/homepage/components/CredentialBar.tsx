@@ -34,7 +34,7 @@ export function CredentialBar() {
                   {cred.name}
                   <span
                     aria-hidden="true"
-                    className="inline-flex size-[15px] items-center justify-center rounded-full bg-linear-135 from-[#22C07A] to-[#0F8A55] text-white shadow-[0_0_0_2px_#E4F5EC]"
+                    className="inline-flex size-[15px] items-center justify-center rounded-full bg-linear-135 from-[#22C07A] to-[#0F8A55] text-white shadow-[0_0_0_2px_var(--color-success-soft)]"
                   >
                     <Icon name="check" size={9} strokeWidth={4} />
                   </span>

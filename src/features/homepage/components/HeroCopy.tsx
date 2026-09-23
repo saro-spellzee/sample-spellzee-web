@@ -21,7 +21,7 @@ export function HeroCopy() {
     >
       <div className="flex flex-wrap gap-2.5">
         <span className={`${badge} gap-2.5 pl-3.5 text-brand`}>
-          <Pulse className="bg-[#E0316F] text-[#E0316F]" />
+          <Pulse className="bg-vivid-rose text-vivid-rose" />
           {badges.intro}
         </span>
         <span className={`${badge} gap-2 pl-3 text-ink`}>

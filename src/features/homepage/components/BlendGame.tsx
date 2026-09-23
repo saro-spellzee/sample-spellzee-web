@@ -11,8 +11,8 @@ const slotStates = {
   empty: "w-16 border-dashed border-[#C9D3E6] bg-white text-ink",
   filled: "w-16 border-solid border-brand bg-brand-tint text-brand",
   result: "w-24 border-dashed border-[#C9D3E6] bg-white text-ink",
-  correct: "w-24 border-solid border-tone-green bg-[#E4F5EC] text-tone-green-deep",
-  wrong: "w-24 animate-shake border-solid border-tone-rose bg-[#FDECF1] text-tone-rose-deep",
+  correct: "w-24 border-solid border-tone-green bg-success-soft text-tone-green-deep",
+  wrong: "w-24 animate-shake border-solid border-tone-rose bg-error-soft text-tone-rose-deep",
 } as const;
 
 /** Tap the three sounds in order to build the word; wrong orders shake. */

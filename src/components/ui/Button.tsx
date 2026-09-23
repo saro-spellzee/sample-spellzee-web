@@ -35,7 +35,7 @@ const sizes = {
   field: { box: "min-h-12 px-5 text-sm", arrow: "size-8", icon: 14 },
 } as const;
 
-type ButtonProps = {
+export type ButtonProps = {
   children: ReactNode;
   variant?: keyof typeof variants;
   size?: keyof typeof sizes;

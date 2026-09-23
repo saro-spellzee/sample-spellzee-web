@@ -1,8 +1,10 @@
+export type JsonLdProps = { data: Record<string, unknown> };
+
 /**
  * Renders schema.org JSON-LD. `<` is escaped so content can never close the
  * script tag (Next.js JSON-LD guide).
  */
-export function JsonLd({ data }: { data: Record<string, unknown> }) {
+export function JsonLd({ data }: JsonLdProps) {
   return (
     <script
       type="application/ld+json"

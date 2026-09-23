@@ -5,10 +5,10 @@ import { HeroCanvas } from "./HeroCanvas";
 import { Pulse } from "./Pulse";
 
 const dotColors: Record<HeroTag["dot"], string> = {
-  blue: "bg-[#2563EB] text-[#2563EB]",
-  amber: "bg-[#D97706] text-[#D97706]",
-  violet: "bg-[#7C3AED] text-[#7C3AED]",
-  cyan: "bg-[#0891B2] text-[#0891B2]",
+  blue: "bg-vivid-blue text-vivid-blue",
+  amber: "bg-vivid-amber text-vivid-amber",
+  violet: "bg-vivid-violet text-vivid-violet",
+  cyan: "bg-vivid-cyan text-vivid-cyan",
 };
 
 /** Hero photo + neural-net canvas + floating skill tags (tags hidden on phones). */

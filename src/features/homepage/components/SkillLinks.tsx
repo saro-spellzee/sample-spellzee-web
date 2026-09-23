@@ -22,7 +22,9 @@ const curve = (sx: number, sy: number, ex: number, ey: number) => {
   return `M${sx} ${sy} C ${cx} ${sy}, ${cx} ${ey}, ${ex} ${ey}`;
 };
 
-export function SkillLinks({ active }: { active: number }) {
+export type SkillLinksProps = { /** Index of the selected skill. */ active: number };
+
+export function SkillLinks({ active }: SkillLinksProps) {
   return (
     <svg
       viewBox="0 0 1080 440"

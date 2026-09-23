@@ -34,7 +34,7 @@ export function SampleReport() {
           </div>
         ))}
       </dl>
-      <div className="mt-7 rounded-2xl bg-[#FBF0D2] px-5 py-[18px] text-[15px] leading-[1.6] text-[#3A2E0A]">
+      <div className="mt-7 rounded-2xl bg-tone-amber-soft px-5 py-[18px] text-[15px] leading-[1.6] text-[#3A2E0A]">
         <strong>{report.focusLabel}</strong>
         {report.focus}
       </div>

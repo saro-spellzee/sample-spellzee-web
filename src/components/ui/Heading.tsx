@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
-type HeadingProps = {
+export type HeadingProps = {
   as?: "h1" | "h2" | "h3";
   /** `display` = the export's `.h1` look, `section` = its `.h2` look. Independent of level. */
   look?: "display" | "section";
