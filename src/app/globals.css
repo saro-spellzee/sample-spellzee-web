@@ -194,7 +194,7 @@
 /* Silk texture background used by five sections. Pair with bg-center/top/bottom. */
 @utility silk {
   background-color: var(--color-cream);
-  background-image: url(/images/homepage/silk-texture.jpg);
+  background-image: url(/images/homepage/silk-texture.webp);
   background-size: cover;
   background-repeat: no-repeat;
 }
@@ -202,7 +202,7 @@
   background-color: var(--color-cream);
   background-image:
     radial-gradient(ellipse 42% 38% at 50% 64%, rgb(139 92 246 / 0.12), rgb(139 92 246 / 0) 72%),
-    url(/images/homepage/silk-texture.jpg);
+    url(/images/homepage/silk-texture.webp);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

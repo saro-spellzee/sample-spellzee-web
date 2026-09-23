@@ -20,6 +20,8 @@ const caveat = Caveat({
   subsets: ["latin"],
   weight: ["500", "600"],
   variable: "--font-caveat",
+  // Handwriting notes sit far below the fold; don't spend first-load bandwidth on them.
+  preload: false,
 });
 
 export const metadata: Metadata = {
