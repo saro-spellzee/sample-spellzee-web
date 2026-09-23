@@ -163,6 +163,8 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    /* Keep focused elements and anchor targets clear of the 74px sticky header (WCAG 2.4.11). */
+    scroll-padding-top: 90px;
   }
   body {
     @apply bg-cream font-sans text-ink antialiased;
@@ -173,6 +175,9 @@
     @apply text-brand hover:text-brand-hover;
   }
   @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
     *,
     *::before,
     *::after {

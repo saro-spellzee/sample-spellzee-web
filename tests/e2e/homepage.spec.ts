@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { classroom, clm, faq, footer, hero, stories } from "../../src/features/homepage/content";
+import { classroom, clm, faq, footer, header, hero, stories } from "../../src/features/homepage/content";
 
 /**
  * Programme pages the homepage links to that haven't been built yet. Next prefetches
@@ -77,10 +77,23 @@ test.describe("homepage", () => {
     }
   });
 
+  test("skip link is the first tab stop and moves focus to main", async ({ page }) => {
+    await page.goto("/");
+    await page.keyboard.press("Tab");
+    const skip = page.getByRole("link", { name: header.skipLink.label });
+    await expect(skip).toBeFocused();
+    await expect(skip).toBeInViewport();
+
+    await page.keyboard.press("Enter");
+
+    await expect(page.locator("main")).toBeFocused();
+  });
+
   test("CLM skill map selects a skill", async ({ page }) => {
     await page.goto("/");
     const skill = clm.skills[2];
-    const pill = page.getByRole("button", { name: skill.name, exact: true });
+    // Scoped: the hero has a "Comprehension" tag button too.
+    const pill = page.locator("#clm").getByRole("button", { name: skill.name, exact: true });
 
     await pill.click();
 

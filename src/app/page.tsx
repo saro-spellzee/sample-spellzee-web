@@ -40,7 +40,7 @@ export default function HomePage() {
     <div className="min-w-90 overflow-x-clip bg-cream">
       <JsonLd data={homepageStructuredData()} />
       <HomeHeader />
-      <main>
+      <main id="main" tabIndex={-1} className="outline-none">
         <HeroSection />
         <ClmSection />
         <ProgramsSection />

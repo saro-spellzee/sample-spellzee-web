@@ -15,8 +15,9 @@ export function HeroSection() {
         data-hero-host
         className="relative flex w-full flex-col items-stretch lg:min-h-[560px] lg:flex-[1_0_auto] lg:flex-row lg:items-center"
       >
-        <HeroArtwork />
+        {/* Copy first in the DOM so focus order follows reading order; layout order is set with CSS. */}
         <HeroCopy />
+        <HeroArtwork />
       </div>
       <HeroLedger />
     </section>

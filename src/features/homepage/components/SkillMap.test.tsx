@@ -133,16 +133,45 @@ describe("SkillMap", () => {
     });
 
     it("pauses after the user picks a skill, then resumes once idle", () => {
-      renderInSection(true);
+      const { container } = renderInSection(true);
       tick(1);
       fireEvent.click(pill(3));
       expectActive(3);
+      // The pointer then leaves the map (jsdom keeps :hover set after a click).
+      const root = container.querySelector("section > div")!;
+      const matches = root.matches.bind(root);
+      vi.spyOn(root, "matches").mockImplementation((sel: string) => sel !== ":hover" && matches(sel));
 
       tick(IDLE_AFTER_TOUCH_MS - 1);
       expectActive(3);
 
       tick(AUTO_ADVANCE_MS);
       expectActive(4);
+    });
+
+    it("stays paused while keyboard focus is inside the map, and resumes after it leaves", () => {
+      renderInSection(true);
+      tick(1);
+      act(() => pill(2).focus());
+      expectActive(2);
+
+      tick(IDLE_AFTER_TOUCH_MS + AUTO_ADVANCE_MS * 3);
+      expectActive(2);
+
+      act(() => pill(2).blur());
+      tick(AUTO_ADVANCE_MS);
+      expectActive(3);
+    });
+
+    it("stays paused while the pointer rests over the map", () => {
+      const { container } = renderInSection(true);
+      const root = container.querySelector("section > div")!;
+      const matches = root.matches.bind(root);
+      vi.spyOn(root, "matches").mockImplementation((sel: string) => sel === ":hover" || matches(sel));
+
+      tick(AUTO_ADVANCE_MS * 3);
+
+      expectActive(0);
     });
   });
 

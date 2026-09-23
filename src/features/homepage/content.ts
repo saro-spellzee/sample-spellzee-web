@@ -35,6 +35,7 @@ export const meta = {
 export const header = {
   logo: img("spellzee-logo.png", "Spellzee — Cognitive Literacy Mapping for kids", 524, 150),
   homeHref: "#top",
+  skipLink: { label: "Skip to main content", href: "#main" },
   navLabel: "Main",
   nav: [
     { label: "Approach", href: "#clm" },
@@ -130,7 +131,6 @@ export const programs = {
     { id: "public-speaking", title: "Public Speaking", href: "/public-speaking", page: "Public Speaking", description: "Feels hesitant or nervous while speaking in front of others.", tone: "amber", icon: "stage", focusSkills: [{ label: "Delivery Techniques", tone: "amber" }, { label: "Anxiety Management", tone: "green" }] },
   ] satisfies Program[],
   explorePrefix: "Explore ",
-  ariaLabel: "{title} — explore the {page} programme",
   help: {
     title: "Not sure which difficulty fits?",
     body: "A free assessment maps your child's reading, writing and speaking — then we recommend the right programme.",
