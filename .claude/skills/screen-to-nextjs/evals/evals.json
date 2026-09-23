@@ -1,0 +1,11 @@
+{
+  "skill_name": "screen-to-nextjs",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "screens/homepage la irukka HTML page ah namma Next.js code ah convert pannunga with proper UI standards and best practices.",
+      "expected_output": "Homepage at src/app/page.tsx composed from src/features/homepage/sections/*, tokens in globals.css @theme, next/font fonts, typed content.ts, interactive leaves as client components, canvas animations as hooks; tsc/lint/build pass; capture at 1440/1000/390 shows matching landmarks, <4% height drift, no overflow, no console errors.",
+      "files": ["screens/homepage/Main.dc.html"]
+    }
+  ]
+}
