@@ -36,7 +36,7 @@ export function OneOnOneStage() {
         </svg>
         <span aria-hidden="true" className="absolute top-[13%] left-1/2 -mt-1.5 -ml-1.5 size-3 rounded-full bg-brand shadow-[0_0_0_8px_rgba(21,87,214,.12)]" />
         <Avatar image={oneOnOne.mentor.image} label={oneOnOne.mentor.label} className="left-[22.7%] bg-ink" />
-        <Avatar image={oneOnOne.student.image} label={oneOnOne.student.label} className="left-[77.3%] bg-[#E0316F] [animation-delay:-3s]" />
+        <Avatar image={oneOnOne.student.image} label={oneOnOne.student.label} className="left-[77.3%] bg-vivid-rose [animation-delay:-3s]" />
         <div
           aria-hidden="true"
           className="absolute top-[56%] left-1/2 -translate-x-1/2 -translate-y-1/2 font-serif text-[110px] leading-none tracking-[-.02em] whitespace-nowrap text-ink italic sm:text-[128px]"

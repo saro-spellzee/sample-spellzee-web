@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
-type LeadProps = {
+export type LeadProps = {
   children: ReactNode;
   /** Font-size classes; defaults to the export's 18px `.lead`. */
   size?: string;

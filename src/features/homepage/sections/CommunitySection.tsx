@@ -25,7 +25,7 @@ export function CommunitySection() {
           </span>
         ))}
         <svg width="90" height="14" viewBox="0 0 90 14" className="mt-2 block">
-          <path d="M2 10 Q 45 0 88 6" stroke="#1557D6" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+          <path d="M2 10 Q 45 0 88 6" className="stroke-brand" strokeWidth="2.5" fill="none" strokeLinecap="round" />
         </svg>
       </div>
       <div aria-hidden="true" className={cn(note, "top-[200px] right-[4%] -rotate-10 text-right")}>
@@ -41,7 +41,7 @@ export function CommunitySection() {
       <Container className="relative text-center">
         <Kicker>{community.kicker}</Kicker>
         <Heading look="display" size="text-[clamp(36px,4.2vw,54px)] leading-[1.1] tracking-[-0.035em]" className="mx-auto mt-4 max-w-[880px]">
-          {title.line1}
+          {title.line1}{" "}
           <br />
           {title.before}
           <Accent className="text-[1.12em] text-brand">{title.accent}</Accent>

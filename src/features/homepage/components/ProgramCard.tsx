@@ -7,13 +7,15 @@ import type { Program } from "../types";
 
 const lift = "group-hover:bg-(--tone) group-hover:text-white group-focus-visible:bg-(--tone) group-focus-visible:text-white";
 
+export type ProgramCardProps = { program: Program; /** 1-based position, shown as "01", "02"… */ n: number };
+
 /** Programme card: lifts and fills with its tone on hover/focus (`.pcard`). */
-export function ProgramCard({ program, n }: { program: Program; n: number }) {
-  const label = programs.ariaLabel.replace("{title}", program.title).replace("{page}", program.page);
+export function ProgramCard({ program, n }: ProgramCardProps) {
+  // No aria-label: the link's name is its visible text (title, description, focus
+  // skills, "Explore …"), so speech-input users can say what they see (WCAG 2.5.3).
   return (
     <Link
       href={program.href}
-      aria-label={label}
       className={cn(
         tones[program.tone],
         "group flex h-full w-full cursor-pointer flex-col items-stretch rounded-[22px] border-[1.5px] border-line bg-white p-[22px] text-left text-ink no-underline outline-none",
@@ -26,7 +28,7 @@ export function ProgramCard({ program, n }: { program: Program; n: number }) {
         <span className={cn("flex size-12 flex-none items-center justify-center rounded-[14px] bg-(--tone-soft) text-(--tone) transition-colors duration-300", lift)}>
           <Icon name={program.icon} size={22} />
         </span>
-        <span className="text-meta font-extrabold tracking-[0.08em] text-[#A7AEC4]">0{n}</span>
+        <span aria-hidden="true" className="text-meta font-extrabold tracking-[0.08em] text-[#A7AEC4]">0{n}</span>
       </span>
       <span className="mt-5 block text-[18px] font-extrabold">{program.title}</span>
       <span className="mt-2 block min-h-[4.8em] text-body leading-[1.6] text-muted">{program.description}</span>

@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 import { tones, type Tone } from "./tones";
 
-type ChipProps = {
+export type ChipProps = {
   tone: Tone;
   children: ReactNode;
   /** Padding + font-size classes; defaults to the export's `.chipc`. */

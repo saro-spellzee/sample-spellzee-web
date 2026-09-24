@@ -15,6 +15,9 @@ const eslintConfig = defineConfig([
     // Design exports (x-dc runtime + vendored React) and agent tooling are not app code.
     "screens/**",
     ".claude/**",
+    ".quality/**",
+    "test-results/**",
+    "playwright-report/**",
   ]),
 ]);
 

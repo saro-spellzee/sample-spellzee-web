@@ -7,7 +7,9 @@ const sizes = {
   xl: "pb-[10px] [--swoosh-h:14px]",
 } as const;
 
+export type SwooshProps = { children: ReactNode; size?: keyof typeof sizes };
+
 /** Word underlined with the hand-drawn gradient swoosh that draws in on load (`.mark`). */
-export function Swoosh({ children, size = "md" }: { children: ReactNode; size?: keyof typeof sizes }) {
+export function Swoosh({ children, size = "md" }: SwooshProps) {
   return <span className={cn("swoosh text-ink", sizes[size])}>{children}</span>;
 }

@@ -65,6 +65,24 @@
   --color-tone-pink: #e0317a;
   --color-tone-pink-soft: #fce4ee;
 
+  /* Brand spectrum: the blue -> violet -> pink stops of the gradient hairlines,
+     gradient text, wave dividers and CTA line art. */
+  --color-spectrum-blue: #2f6bf2;
+  --color-spectrum-violet: #8b4fe8;
+  --color-spectrum-pink: #d0508f;
+
+  /* Vivid accents: live/pulse dots, hero neural-net neurons, the student avatar.
+     The hero canvas palette (hooks/netGeometry.ts) uses the same values. */
+  --color-vivid-blue: #2563eb;
+  --color-vivid-amber: #d97706;
+  --color-vivid-violet: #7c3aed;
+  --color-vivid-cyan: #0891b2;
+  --color-vivid-rose: #e0316f;
+
+  /* Answer feedback surfaces (classroom activities) and verified ticks. */
+  --color-success-soft: #e4f5ec;
+  --color-error-soft: #fdecf1;
+
   /* Type scale that recurs */
   --text-body: 14.5px;
   --text-meta: 13px;
@@ -145,6 +163,8 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    /* Keep focused elements and anchor targets clear of the 74px sticky header (WCAG 2.4.11). */
+    scroll-padding-top: 90px;
   }
   body {
     @apply bg-cream font-sans text-ink antialiased;
@@ -155,6 +175,9 @@
     @apply text-brand hover:text-brand-hover;
   }
   @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
     *,
     *::before,
     *::after {
@@ -171,7 +194,7 @@
 /* Silk texture background used by five sections. Pair with bg-center/top/bottom. */
 @utility silk {
   background-color: var(--color-cream);
-  background-image: url(/images/homepage/silk-texture.jpg);
+  background-image: url(/images/homepage/silk-texture.webp);
   background-size: cover;
   background-repeat: no-repeat;
 }
@@ -179,7 +202,7 @@
   background-color: var(--color-cream);
   background-image:
     radial-gradient(ellipse 42% 38% at 50% 64%, rgb(139 92 246 / 0.12), rgb(139 92 246 / 0) 72%),
-    url(/images/homepage/silk-texture.jpg);
+    url(/images/homepage/silk-texture.webp);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -202,12 +225,12 @@
   border: 1.5px solid transparent;
   background:
     linear-gradient(#fff, #fff) padding-box,
-    linear-gradient(90deg, #2f6bf2, #8b4fe8, #d0508f) border-box;
+    linear-gradient(90deg, var(--color-spectrum-blue), var(--color-spectrum-violet), var(--color-spectrum-pink)) border-box;
 }
 
 /* Blue-to-violet gradient text. */
 @utility text-gradient {
-  background: linear-gradient(90deg, #2f6bf2, #8b4fe8);
+  background: linear-gradient(90deg, var(--color-spectrum-blue), var(--color-spectrum-violet));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -228,8 +251,8 @@
 /* Kicker dot: brand dot on a blue-lilac disc. */
 @utility kicker-dot {
   background:
-    radial-gradient(circle, #1557d6 0 3.5px, transparent 4.5px),
-    linear-gradient(135deg, #e3ecfe, #eee7fd);
+    radial-gradient(circle, var(--color-brand) 0 3.5px, transparent 4.5px),
+    linear-gradient(135deg, var(--color-tone-blue-soft), var(--color-tone-iris-soft));
 }
 
 /* Hero artwork: covers the stage height, capped at 2.2x, anchored right, faded in from the left.

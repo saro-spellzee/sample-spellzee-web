@@ -19,7 +19,7 @@ export function ClmSection() {
           <div className="gradient-border inline-flex items-center gap-3 rounded-full py-1.5 pr-5 pl-1.5 shadow-[0_14px_34px_-18px_rgba(124,77,232,.55)]">
             <span
               aria-hidden="true"
-              className="flex size-9 items-center justify-center rounded-full bg-white shadow-[inset_0_0_0_1px_#ECE4D9,0_0_0_4px_rgba(139,92,246,.1)]"
+              className="flex size-9 items-center justify-center rounded-full bg-white shadow-[inset_0_0_0_1px_var(--color-line),0_0_0_4px_rgba(139,92,246,.1)]"
             >
               <Image src={badge.mark.src} alt="" width={badge.mark.width} height={badge.mark.height} sizes="21px" className="block h-[22px] w-auto" />
             </span>

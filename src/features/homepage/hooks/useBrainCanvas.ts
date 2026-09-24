@@ -1,7 +1,5 @@
-"use client";
-
 import { useEffect, type RefObject } from "react";
-import { TAU, fitCanvas, glow, hexA, prefersReducedMotion } from "./canvas";
+import { TAU, fitCanvas, glow, hexA, prefersReducedMotion, startCanvas } from "./canvas";
 
 type Pt = { x: number; y: number };
 type Node = Pt & { ph: number; sp: number };
@@ -71,91 +69,95 @@ function along(pts: Pt[], p: number): Pt {
 export function useBrainCanvas(canvasRef: RefObject<HTMLCanvasElement | null>, activeRef: RefObject<number>) {
   useEffect(() => {
     const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
-    const box = canvas?.parentElement;
-    if (!canvas || !ctx || !box) return;
+    if (!canvas) return;
+    return startCanvas("Brain canvas", canvas, (guard) => {
+      const ctx = canvas.getContext("2d");
+      const box = canvas.parentElement;
+      if (!ctx || !box) return () => {};
 
-    const { nodes, links, paths } = buildNetwork();
-    const reduce = prefersReducedMotion();
-    let w = 0, h = 0, s = 1, raf = 0, t = 0, visible = true;
-    let sparks: { a: Node; b: Node; p: number; v: number }[] = [];
-    let signals: { i: number; p: number }[] = [];
+      const { nodes, links, paths } = buildNetwork();
+      const reduce = prefersReducedMotion();
+      let w = 0, h = 0, s = 1, raf = 0, t = 0, visible = true;
+      let sparks: { a: Node; b: Node; p: number; v: number }[] = [];
+      let signals: { i: number; p: number }[] = [];
 
-    const draw = () => {
-      t += 1;
-      ctx.clearRect(0, 0, w, h);
-      const act = Math.max(0, Math.min(5, activeRef.current | 0));
-      const ac = COLS[act];
-      // faint synapse web
-      ctx.lineWidth = 0.6;
-      for (const [a, b] of links) {
-        ctx.strokeStyle = "rgba(255,255,255,0.16)";
-        ctx.beginPath(); ctx.moveTo(a.x * s, a.y * s); ctx.lineTo(b.x * s, b.y * s); ctx.stroke();
-      }
-      // active pathway
-      const P = paths[act];
-      ctx.strokeStyle = hexA(ac, 0.55);
-      ctx.lineWidth = 1.6;
-      ctx.beginPath(); ctx.moveTo(P[0].x * s, P[0].y * s);
-      for (let i = 1; i < P.length; i++) ctx.lineTo(P[i].x * s, P[i].y * s);
-      ctx.stroke();
-      // twinkling neurons
-      for (const n of nodes) {
-        const tw = 0.45 + 0.55 * Math.max(0, Math.sin(t * n.sp + n.ph));
-        glow(ctx, n.x * s, n.y * s, 5 * s * tw + 2, "#FFFFFF", 0.55 * tw);
-        ctx.fillStyle = `rgba(255,255,255,${0.5 + 0.5 * tw})`;
-        ctx.beginPath(); ctx.arc(n.x * s, n.y * s, 0.9 * s, 0, TAU); ctx.fill();
-      }
-      if (!reduce) {
-        // ambient sparks along random synapses
-        if (sparks.length < 3 && Math.random() < 0.025) {
-          const l = links[(Math.random() * links.length) | 0];
-          const rev = Math.random() < 0.5;
-          sparks.push({ a: rev ? l[1] : l[0], b: rev ? l[0] : l[1], p: 0, v: 0.01 + Math.random() * 0.008 });
+      const draw = () => {
+        t += 1;
+        ctx.clearRect(0, 0, w, h);
+        const act = Math.max(0, Math.min(5, activeRef.current | 0));
+        const ac = COLS[act];
+        // faint synapse web
+        ctx.lineWidth = 0.6;
+        for (const [a, b] of links) {
+          ctx.strokeStyle = "rgba(255,255,255,0.16)";
+          ctx.beginPath(); ctx.moveTo(a.x * s, a.y * s); ctx.lineTo(b.x * s, b.y * s); ctx.stroke();
         }
-        sparks = sparks.filter((k) => k.p <= 1);
-        for (const k of sparks) {
-          k.p += k.v;
-          glow(ctx, (k.a.x + (k.b.x - k.a.x) * k.p) * s, (k.a.y + (k.b.y - k.a.y) * k.p) * s, 4 * s, "#FFFFFF", 0.9);
+        // active pathway
+        const P = paths[act];
+        ctx.strokeStyle = hexA(ac, 0.55);
+        ctx.lineWidth = 1.6;
+        ctx.beginPath(); ctx.moveTo(P[0].x * s, P[0].y * s);
+        for (let i = 1; i < P.length; i++) ctx.lineTo(P[i].x * s, P[i].y * s);
+        ctx.stroke();
+        // twinkling neurons
+        for (const n of nodes) {
+          const tw = 0.45 + 0.55 * Math.max(0, Math.sin(t * n.sp + n.ph));
+          glow(ctx, n.x * s, n.y * s, 5 * s * tw + 2, "#FFFFFF", 0.55 * tw);
+          ctx.fillStyle = `rgba(255,255,255,${0.5 + 0.5 * tw})`;
+          ctx.beginPath(); ctx.arc(n.x * s, n.y * s, 0.9 * s, 0, TAU); ctx.fill();
         }
-        // signals from the active skill into the core
-        if (t % 90 === 0) signals.push({ i: act, p: 0 });
-        signals = signals.filter((g) => g.p <= 1 && g.i === act);
-        for (const g of signals) {
-          g.p += 0.011;
-          for (let k = 0; k < 5; k++) {
-            const q = along(paths[g.i], Math.max(0, g.p - k * 0.025));
-            glow(ctx, q.x * s, q.y * s, (5 - k * 0.7) * s, COLS[g.i], 0.85 - k * 0.15);
+        if (!reduce) {
+          // ambient sparks along random synapses
+          if (sparks.length < 3 && Math.random() < 0.025) {
+            const l = links[(Math.random() * links.length) | 0];
+            const rev = Math.random() < 0.5;
+            sparks.push({ a: rev ? l[1] : l[0], b: rev ? l[0] : l[1], p: 0, v: 0.01 + Math.random() * 0.008 });
           }
-          const q = along(paths[g.i], g.p);
-          ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(q.x * s, q.y * s, 1.3 * s, 0, TAU); ctx.fill();
+          sparks = sparks.filter((k) => k.p <= 1);
+          for (const k of sparks) {
+            k.p += k.v;
+            glow(ctx, (k.a.x + (k.b.x - k.a.x) * k.p) * s, (k.a.y + (k.b.y - k.a.y) * k.p) * s, 4 * s, "#FFFFFF", 0.9);
+          }
+          // signals from the active skill into the core
+          if (t % 90 === 0) signals.push({ i: act, p: 0 });
+          signals = signals.filter((g) => g.p <= 1 && g.i === act);
+          for (const g of signals) {
+            g.p += 0.011;
+            for (let k = 0; k < 5; k++) {
+              const q = along(paths[g.i], Math.max(0, g.p - k * 0.025));
+              glow(ctx, q.x * s, q.y * s, (5 - k * 0.7) * s, COLS[g.i], 0.85 - k * 0.15);
+            }
+            const q = along(paths[g.i], g.p);
+            ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(q.x * s, q.y * s, 1.3 * s, 0, TAU); ctx.fill();
+          }
         }
-      }
-      // core responds in the active colour
-      const beat = 0.55 + 0.45 * Math.sin(t * 0.035);
-      glow(ctx, CORE.x * s, CORE.y * s, 16 * s * (0.8 + 0.3 * beat), ac, 0.35 * beat);
-      glow(ctx, CORE.x * s, CORE.y * s, 6 * s, "#FFFFFF", 0.9);
-    };
-    const resize = () => {
-      const r = fitCanvas(canvas, ctx, box);
-      w = r.width;
-      h = r.height;
-      s = w / BW;
-      if (reduce) draw();
-    };
-    const loop = () => { if (visible) draw(); raf = requestAnimationFrame(loop); };
+        // core responds in the active colour
+        const beat = 0.55 + 0.45 * Math.sin(t * 0.035);
+        glow(ctx, CORE.x * s, CORE.y * s, 16 * s * (0.8 + 0.3 * beat), ac, 0.35 * beat);
+        glow(ctx, CORE.x * s, CORE.y * s, 6 * s, "#FFFFFF", 0.9);
+      };
+      const resize = () => {
+        const r = fitCanvas(canvas, ctx, box);
+        w = r.width;
+        h = r.height;
+        s = w / BW;
+        if (reduce) draw();
+      };
+      const loop: () => void = guard(() => { if (visible) draw(); raf = requestAnimationFrame(loop); });
 
-    const ro = new ResizeObserver(() => resize());
-    ro.observe(box);
-    const io = new IntersectionObserver((en) => { visible = en[0].isIntersecting; });
-    io.observe(box);
-    resize();
-    if (!reduce) raf = requestAnimationFrame(loop);
+      // First frame before anything is attached, so a throw here leaves nothing to release.
+      resize();
+      const ro = new ResizeObserver(guard(resize));
+      ro.observe(box);
+      const io = new IntersectionObserver(guard((en: IntersectionObserverEntry[]) => { visible = en[0].isIntersecting; }));
+      io.observe(box);
+      if (!reduce) raf = requestAnimationFrame(loop);
 
-    return () => {
-      cancelAnimationFrame(raf);
-      ro.disconnect();
-      io.disconnect();
-    };
+      return () => {
+        cancelAnimationFrame(raf);
+        ro.disconnect();
+        io.disconnect();
+      };
+    });
   }, [canvasRef, activeRef]);
 }

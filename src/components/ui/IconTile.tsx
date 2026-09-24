@@ -15,7 +15,7 @@ const boxes = {
   52: "size-[52px] rounded-[15px]",
 } as const;
 
-type IconTileProps = {
+export type IconTileProps = {
   icon: IconName;
   tone: Tone;
   /** Box size in px; each carries the export's matching corner radius. */

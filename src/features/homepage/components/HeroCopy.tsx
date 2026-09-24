@@ -21,7 +21,7 @@ export function HeroCopy() {
     >
       <div className="flex flex-wrap gap-2.5">
         <span className={`${badge} gap-2.5 pl-3.5 text-brand`}>
-          <Pulse className="bg-[#E0316F] text-[#E0316F]" />
+          <Pulse className="bg-vivid-rose text-vivid-rose" />
           {badges.intro}
         </span>
         <span className={`${badge} gap-2 pl-3 text-ink`}>
@@ -31,9 +31,9 @@ export function HeroCopy() {
       </div>
 
       <Heading as="h1" look="display" size="text-[clamp(36px,3.6vw,52px)] leading-[1.08] tracking-[-0.045em]" className="mt-[18px]">
-        {title.lines[0]}
+        {title.lines[0]}{" "}
         <br />
-        {title.lines[1]}
+        {title.lines[1]}{" "}
         <br />
         {title.lines[2]}
         <Accent className="pl-[0.04em] text-[1.14em] text-brand">{title.accent}</Accent>

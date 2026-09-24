@@ -1,7 +1,7 @@
 import type { ComponentPropsWithoutRef } from "react";
 import { cn } from "@/lib/cn";
 
-type CardProps = ComponentPropsWithoutRef<"div"> & {
+export type CardProps = ComponentPropsWithoutRef<"div"> & {
   /** Radius class; the export varies it per card (20–28px). */
   radius?: string;
 };

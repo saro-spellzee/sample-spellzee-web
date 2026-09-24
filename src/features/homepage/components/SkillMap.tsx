@@ -18,6 +18,8 @@ const IDLE_AFTER_TOUCH_MS = 7000;
 /**
  * The six CLM skills around the brain. Hover, focus or click a pill to select it;
  * while the section is in view and untouched for 7s, it auto-advances every 3.6s.
+ * Auto-advance pauses while the pointer or keyboard focus is inside the map, and is
+ * off entirely under prefers-reduced-motion (WCAG 2.2.2).
  */
 export function SkillMap() {
   const skills = clm.skills;
@@ -34,8 +36,10 @@ export function SkillMap() {
 
   useEffect(() => {
     const id = window.setInterval(() => {
-      const sec = rootRef.current?.closest("section");
-      if (!sec || prefersReducedMotion()) return;
+      const root = rootRef.current;
+      const sec = root?.closest("section");
+      if (!root || !sec || prefersReducedMotion()) return;
+      if (root.matches(":hover") || root.contains(document.activeElement)) return;
       const r = sec.getBoundingClientRect();
       const vh = window.innerHeight || 800;
       if (r.bottom < vh * 0.25 || r.top > vh * 0.75) return;

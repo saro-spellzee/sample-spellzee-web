@@ -17,16 +17,16 @@ export function CtaSection() {
             className="absolute inset-0 hidden size-full opacity-50 lg:block"
           >
             <g fill="none" strokeWidth="1.2">
-              <path d="M-20 300 C 200 180, 300 360, 520 250" stroke="#2F6BF2" />
-              <path d="M1120 60 C 900 180, 800 0, 600 110" stroke="#8B4FE8" />
-              <path d="M-20 60 C 150 120, 220 20, 380 90" stroke="#E0316F" opacity="0.7" />
-              <path d="M1120 300 C 950 240, 900 340, 740 280" stroke="#12A57A" opacity="0.7" />
+              <path d="M-20 300 C 200 180, 300 360, 520 250" className="stroke-spectrum-blue" />
+              <path d="M1120 60 C 900 180, 800 0, 600 110" className="stroke-spectrum-violet" />
+              <path d="M-20 60 C 150 120, 220 20, 380 90" className="stroke-vivid-rose" opacity="0.7" />
+              <path d="M1120 300 C 950 240, 900 340, 740 280" className="stroke-tone-emerald" opacity="0.7" />
             </g>
             <g>
-              <circle cx="520" cy="250" r="4" fill="#2F6BF2" />
-              <circle cx="600" cy="110" r="4" fill="#8B4FE8" />
-              <circle cx="380" cy="90" r="3.5" fill="#E0316F" />
-              <circle cx="740" cy="280" r="3.5" fill="#12A57A" />
+              <circle cx="520" cy="250" r="4" className="fill-spectrum-blue" />
+              <circle cx="600" cy="110" r="4" className="fill-spectrum-violet" />
+              <circle cx="380" cy="90" r="3.5" className="fill-vivid-rose" />
+              <circle cx="740" cy="280" r="3.5" className="fill-tone-emerald" />
             </g>
           </svg>
           <div className="relative">

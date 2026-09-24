@@ -14,7 +14,7 @@ export function StoriesSection() {
           <Kicker>{stories.kicker}</Kicker>
           <Heading className="mt-3.5">
             {stories.title.before}
-            <Accent className="text-[1.1em] text-[#7C3AED]">{stories.title.accent}</Accent>
+            <Accent className="text-[1.1em] text-vivid-violet">{stories.title.accent}</Accent>
           </Heading>
           <Lead size="text-[16.5px] leading-[1.65]" className="mt-3.5">
             {stories.lead}
