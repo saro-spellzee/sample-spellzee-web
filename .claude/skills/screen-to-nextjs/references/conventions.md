@@ -19,6 +19,7 @@ If anything here disagrees with `node_modules/next/dist/docs/`, the docs win.
 11. Server vs client components
 12. Shared UI primitives
 13. Metadata
+14. Safari (iPhone)
 
 ## 1. Folder layout
 
@@ -366,3 +367,40 @@ Reuse existing primitives on later screens; extend them with a variant rather th
 `page.tsx` exports `metadata` (or `generateMetadata`) with the export's `<title>` and a
 description written from the hero copy, plus Open Graph basics. Site-wide defaults
 (`metadataBase`, title template) go in `layout.tsx`. See the `seo-metadata` skill.
+
+## 14. Safari (iPhone)
+
+Many parents open the site on an iPhone, so the pipeline checks Safari's engine (WebKit)
+in the E2E `iphone` project and in the audit's `webkit` check. The support floor is **iOS
+Safari 16.4+**: Tailwind v4 relies on `@property`, `color-mix()` and cascade layers, so
+older iOS shows parts of the page unstyled. Build for these differences:
+
+- **Viewport height:** `100vh` includes the area under Safari's collapsing toolbar. Use
+  `h-svh` / `min-h-dvh` for full-screen heroes, drawers and modals.
+- **Inputs under 16px zoom the page** when focused. Inputs, selects and textareas need at least
+  `text-base` (16px) at phone width, even if the board draws them smaller. List that as a
+  deviation.
+- **A tap before hydration is lost.** Essentials such as forms must work without JS, with a
+  Server Action as the form's `action`.
+- **Buttons don't get focus on click.** Don't open or close menus and tooltips from
+  `:focus` / `onFocus` / `onBlur` alone. Drive them with state from the click, and close on
+  Escape and on an outside tap.
+- **Hover:** iOS turns the first tap into a hover. Anything shown only on hover needs a tap
+  path too. Keep hover-only styling under `@media (hover: hover)` (Tailwind's `hover:`
+  variant already does this in v4).
+- **`position: sticky`** stops working inside an ancestor with `overflow: hidden` or
+  `overflow: auto`. Use `overflow-x-clip` on the ancestor instead: clip doesn't create a
+  scroll container.
+- **`backdrop-filter`** in hand-written CSS (`@utility`) also needs `-webkit-backdrop-filter`.
+  Tailwind's utilities already add the prefix.
+- **Newer CSS** (`text-wrap: balance` is iOS 17.5+, for example) is fine as an enhancement
+  that degrades quietly. Don't let the layout depend on it.
+- **Tab order:** Safari leaves links out by default. That's a user setting, not a bug.
+
+Test artefacts, not bugs (Playwright's WebKit on Windows):
+- Text looks thinner in WebKit screenshots. The Windows build rasterises fonts differently;
+  the weights are loaded and applied (check `document.fonts`). Judge Safari by layout,
+  errors and behaviour, not by glyph weight.
+- On `http://localhost`, WebKit upgrades every request to https because of the CSP's
+  `upgrade-insecure-requests`. The E2E fixture and the audit strip that one directive
+  locally, so don't remove it from the CSP.

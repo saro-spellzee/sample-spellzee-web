@@ -30,14 +30,18 @@ node $S/audit.mjs --quick --routes <route> --original screens/<screen>/Main.dc.h
 
 `--quick` runs these checks on the build the gates just made:
 - console errors and full-page axe
-- a focus walk: every Tab stop at 1440/390
-- a responsive sweep: overflow at 320–1920 and text spacing
+- a focus walk: every Tab stop at 1440, 390 and 844×390 landscape
+- a responsive sweep: overflow at 320–1920 and landscape, text spacing, and how much of a
+  landscape phone screen the fixed bars cover
+- first-load JS weight against the JS budget
+- iPhone Safari's engine (WebKit): errors, sideways scroll, and layout compared with Chromium
 - security headers
 - design capture at 1440/390, each width against its nearest design board (390 against the
-  mobile board when there is one)
+  mobile board when there is one): layout, **design copy missing from the page**, and every
+  state board listed in `tests/design-states/<screen>.json`
 - mobile Lighthouse
 
-It takes about 2–3 minutes, a bit more when Lighthouse re-measures. These are the things
+It takes about 3 minutes, a bit more when Lighthouse re-measures. These are the things
 that can get worse without a unit or E2E test failing. A metric regresses when it gets
 worse than its baseline by more than the noise allowance:
 
@@ -46,6 +50,13 @@ worse than its baseline by more than the noise allowance:
 | console errors, axe serious/critical, axe rules violated, broken links | 0 |
 | focus: stops hidden while focused, stops without outline/ring, focus trap | 0 |
 | sweep: widths that scroll sideways or cut content off, text-spacing issues | 0 |
+| sweep: share of a landscape phone screen covered by fixed bars | 5 points |
+| design copy missing from the page, per width | 0 |
+| state board: couldn't be reproduced, landmark count | 0 |
+| state board: height drift / pixel diff | 1.5 points |
+| first-load JS | 15 KB gzip (more needs a `TRADE-OFF:`) |
+| Safari: errors, sideways scroll, landmark count | 0 |
+| Safari: landmark heights vs Chromium | 1.5 points |
 | a security header that was present | 0 (must stay) |
 | capture height drift / pixel diff, per width | 1.5 points |
 | capture landmark count, overflow, page errors | 0 |
@@ -109,11 +120,17 @@ run every screen's unit and E2E tests, but not their capture, axe, focus or swee
    `feat/<screen>-quality` with `--no-convert`, `feat/<screen>-resync` for a re-sync; if the
    name is taken, append `-2`). Already on a feature branch → stay.
    Record the base commit (`git rev-parse HEAD`) for the review diff.
+   If `git branch --no-merged <base>` lists an earlier screen's `feat/*` branch, ask whether
+   to merge it first. Until it's merged, that screen and its shared changes (tokens,
+   primitives, header/footer, headers) are missing from this run, and the two branches will
+   conflict later.
 5. **Tooling.** If any of `vitest`, `@testing-library/react`, `@playwright/test`,
    `axe-core` is missing from devDependencies, or `vitest.config.mts` /
-   `playwright.config.ts` / `tests/setup.ts` / `tests/axe.ts` is missing, apply
-   `references/tooling-setup.md`, run `$S/gates.mjs --no-build`, and commit
-   `chore: add test and audit tooling`.
+   `playwright.config.ts` (with the `iphone` project) / `tests/setup.ts` / `tests/axe.ts` /
+   `tests/e2e/fixtures.ts` is missing, apply `references/tooling-setup.md`, run
+   `$S/gates.mjs --no-build`, and commit `chore: add test and audit tooling`. Make sure
+   WebKit is installed (`npx playwright install webkit`). Without it, the Safari checks are
+   skipped, so tell the user if it can't be downloaded.
 6. **Ignore output.** Ensure `.gitignore` has `/.quality/`, `/test-results/`, `/playwright-report/`.
 7. **State.** `node $S/state.mjs init <screen> --route <route> --base <sha> --branch <branch> --flags "<flags>"`.
 8. **Other screens' baseline.** If `node $S/screens.mjs others <screen>` prints anything:
@@ -133,7 +150,13 @@ width against its nearest board (390 against the mobile board when there is one)
 `src/features/<screen>` already exists, the converter re-syncs instead of starting over.
 Output: the converter's summary (plan table, files, capture table, judgment calls).
 Blocking: the capture must be within tolerance (or deviations explained) and gates green;
-otherwise stop and show the user.
+otherwise stop and show the user. Within tolerance also means:
+- **Copy:** no design copy missing at any width. A line that's deliberately different is
+  listed as a deviation.
+- **State boards:** every state board has an entry in `tests/design-states/<screen>.json`
+  that reproduces it on the page.
+- **Safari:** the `webkit` check shows nothing that Chromium doesn't: no extra errors, no
+  sideways scroll, and landmark heights within 4%.
 
 Skipped with `--no-convert` (screen already converted).
 
@@ -167,6 +190,13 @@ Skills: `form-handling-validation`, `security-practices` (rules 13, 24).
   when it's unset, fail loudly in production and log in development. List it under
   `DECISIONS NEEDED`.
 - Children's personal data (DPDP): collect the minimum, and put a consent checkbox linked to the privacy policy on forms collecting a child's data.
+- **Works before hydration.** A tap before React hydrates is lost in Safari, where WebKit
+  doesn't replay it. On a slow phone that means "I pressed Subscribe and nothing happened".
+  Give the form a Server Action as its `action` (with `useActionState` for the result), so
+  it submits and validates on the server even before hydration. Client-side RHF
+  validation then layers on top. If that isn't possible, list it as a decision.
+- **iPhone inputs:** text inputs, selects and textareas need a font size of at least 16px on
+  phones. Below that, iOS Safari zooms the page when the field gets focus.
 - Tests for valid, invalid and pending states. This phase runs before the tests phase, so on
   the first screen there may be no test suite yet: write the form's own unit tests
   (`gates.mjs --tests` skips a test gate that has no test files, it doesn't fail it). The
@@ -184,9 +214,14 @@ Skills: `testing-frontend`. Setup facts: `references/tooling-setup.md`.
   covered: extend its tests only where something is missing, don't duplicate them.
 - **Pure logic** (structured-data builders, helpers): unit tests, e.g. the FAQ JSON-LD
   has one Question per `content.ts` item.
-- **E2E** `tests/e2e/<screen>.spec.ts`, desktop + mobile projects: renders with an `h1`,
-  zero console/page errors, no horizontal overflow, each interactive widget works once
-  in a real browser, primary CTA has a real `href`. Links to pages that don't exist yet
+- **E2E** `tests/e2e/<screen>.spec.ts`, desktop + mobile + **iphone** (WebKit) projects,
+  importing `test`/`expect` from `./fixtures`: renders with an `h1`, zero console/page
+  errors, no horizontal overflow, each interactive widget works once in a real browser,
+  primary CTA has a real `href`.
+  - A test that fails only in `iphone` is a Safari bug to fix (conventions "Safari (iPhone)"),
+    not a test to skip.
+  - The one exception is Tab-order tests: Safari leaves links out of the Tab order by
+    default, so skip those for WebKit with that reason (tooling-setup.md, fixtures). Links to pages that don't exist yet
   (the open decision from the build gate) prefetch as 404s: list them in the spec's
   known-unbuilt set instead of letting them flake.
 - Query by role/label/text (content from `content.ts`, never duplicated literals).
@@ -232,8 +267,8 @@ Skills: `accessibility`, `animation-motion`.
 
 - `node $S/audit.mjs --routes <route> --checks axe,console,focus,sweep --out $Q/06-audit`
   and fix every violation. Serious/critical first.
-- **Focus walk**: the `focus` check Tabs through the page at 1440 and 390 and writes a contact
-  sheet per width (`$Q/06-audit/focus-<route>-<width>.png`), one crop per stop.
+- **Focus walk**: the `focus` check Tabs through the page at 1440, 390 and 844×390 landscape
+  and writes a contact sheet for each (`$Q/06-audit/focus-<route>-<width>.png`), one crop per stop.
   - Look at every stop on the sheet. An indicator can exist and still look broken (clipped,
     no padding, too faint), and only the image shows that. On the trial, a skip link lost
     its padding when focused, and only the reviewer caught it.
@@ -251,6 +286,9 @@ Skills: `accessibility`, `animation-motion`.
   - No text cut off under the WCAG 1.4.12 text-spacing overrides.
   - Widths between the design boards have no design to match, so fix them from the nearest
     board's layout.
+  - Landscape phone (844×390): no sideways scroll, and fixed/sticky bars leave most of the
+    short screen for content. Over 40% covered is a warning. Shrink or un-stick them under
+    `@media (max-height: 500px)`.
 - Headings: one `h1`, no skipped levels. Landmarks: `header`, `nav`, `main`, `footer`.
 - Images: `alt` from the export, decorative `alt=""`. Canvases/decorative SVG `aria-hidden`.
 - Motion: `prefers-reduced-motion` respected, including `::before/::after`; auto-advancing
@@ -332,9 +370,13 @@ Runs this late so it measures the page as it will ship: every header, error boun
 form and font is already in place.
 
 - `node $S/gates.mjs` (fresh build), then
-  `node $S/audit.mjs --routes <route> --checks lighthouse --out $Q/10-audit`.
+  `node $S/audit.mjs --routes <route> --checks lighthouse,weight --out $Q/10-audit`.
   Budgets (override with `--budget`): desktop perf ≥90, LCP ≤2.5s; mobile perf ≥80,
-  LCP ≤4s; CLS ≤0.1; TBT ≤200ms desktop / 300ms mobile.
+  LCP ≤4s; CLS ≤0.1; TBT ≤200ms desktop / 300ms mobile; **first-load JS ≤250 KB gzip, target
+  ≤200** (`weight.js`).
+- **JS budget**: follow `performance-optimization` rules, Rule 2 "The JS budget in this
+  project", and its definition of done (section 2). Growth over 15 KB in any phase has
+  to be explained. Diagnose with `npx next experimental-analyze --output`, before vs after.
 - Known wins on this stack:
   - LCP image: `loading="eager"` + `fetchPriority="high"`, not `preload` (Next 16's
     `preload` link has no fetchpriority and competes with other preloads).
@@ -356,7 +398,8 @@ form and font is already in place.
 - The orchestrator's regression check after this phase adds `--modes mobile,desktop`, so
   desktop numbers join the baseline too.
 
-Done: budgets met, or `partial` with the measured numbers and what would move them.
+Done: Lighthouse and JS budgets met, or `partial` with the measured numbers and what would
+move them.
 
 ## 11 · Code review (`code-reviewer`, read-only)
 
@@ -382,15 +425,32 @@ at most.
 Every phase was already checked against the baseline, so this is a confirmation, not a
 search. A regression here comes from the review fixes or from something the quick check
 doesn't cover (links, the 1000px capture, other screens' Lighthouse). Hand it back **once**
-to the agent that owns that area (perf for Lighthouse, a11y for axe/focus/sweep, security for
-headers, structure or the converter for the capture, seo for links), then re-run this
-phase. For another screen's regression, `baseline-others.json`'s history shows which phases
+to the agent that owns that area, then re-run this phase:
+- perf: Lighthouse and first-load JS
+- a11y: axe, focus and sweep
+- security: headers
+- structure or the converter: capture, missing copy, state boards and Safari layout
+- seo: links
+- errors: Safari-only console errors For another screen's regression, `baseline-others.json`'s history shows which phases
 changed shared code. Still failing → report it. Blocking only for red gates.
 
 ## 13 · Report (orchestrator)
 
 `node $S/state.mjs report <screen>` → `$Q/REPORT.md` (phase table plus the per-phase
-regression-check trend from the baseline), then tell the user:
+regression-check trend from the baseline).
+
+**Design review pack.** Write the merged, de-duplicated decisions and every deliberate
+deviation from a board to `$Q/DECISIONS.md` (markdown bullets under `##` headings), then run
+`node $S/review-pack.mjs <screen>`. It writes `$Q/DESIGN-REVIEW.html`, a single file for the
+design team with:
+- items that differ noticeably first
+- every board next to the built page, section by section, at each width
+- the state boards and any design copy that's missing
+- the decisions, each with a sign-off box
+
+It uses the newest capture, which is the final audit's.
+
+Then tell the user:
 per-phase table, the headline numbers (tests, axe, focus, sweep, Lighthouse, headers,
 capture, other screens), any trade-off accepted into the baseline, every
 `DECISIONS NEEDED` item merged and de-duplicated, commits on the branch, and next steps

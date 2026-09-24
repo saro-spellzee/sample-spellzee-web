@@ -151,7 +151,9 @@ footer go in the page, or in `layout.tsx` once a second screen shares them.
    `npm run lint`, `npm run build`. All must pass.
 2. Full capture at `1440,1000,390`. Each width is compared with the board drawn nearest to
    it, and `report.md` names that board. Read the report: landmark counts equal, heights
-   within ~4%, 0px overflow, 0 converted-side console errors.
+   within ~4%, 0px overflow, 0 converted-side console errors, and **0 lines of design copy
+   missing** at every width. A missing line is dropped or changed copy: put it back verbatim,
+   unless it's a deliberate deviation you list.
 3. Inspect the pair images in `<out>/<width>/pairs/` (original left, converted right), starting
    with those the report ranks highest by pixel difference, and compare colour, type, spacing,
    alignment, radii, shadows and image crop. Look at every pair at 1440 and every pair with a
@@ -172,9 +174,15 @@ footer go in the page, or in `layout.tsx` once a second screen shares them.
    each one.
 4. Exercise the interactions in the browser: click each tab, picker, accordion item and
    game control; tab through the page with the keyboard; check hover states. Playwright
-   can drive this. For each state board, put the widget in that state at the board's width
-   (open the drawer at 390) and compare it with a screenshot of the board.
-5. Walk `references/definition-of-done.md`. Where a group's standard is unclear, open the
+   can drive this. For each state board, write its entry in `tests/design-states/<screen>.json`
+   (x-dc-format, "State board"). Re-run the capture: it reproduces the state on the page and
+   compares it with the board. Every state board needs an entry.
+5. Safari: after `node .claude/skills/ship-screen/scripts/gates.mjs`, run
+   `node .claude/skills/ship-screen/scripts/audit.mjs --routes <route> --checks webkit,sweep --out <scratch>/audit`.
+   Fix anything that happens only in Safari, following conventions §14: errors, sideways
+   scroll, or landmark heights more than 4% off Chromium. Fix sideways scroll at any sweep
+   width, including 320 and landscape.
+6. Walk `references/definition-of-done.md`. Where a group's standard is unclear, open the
    owning project skill (`.claude/skills/<name>/`) and follow it: `accessibility`,
    `performance-optimization`, `seo-metadata`, `animation-motion`, `component-architecture`,
    `design-tokens`, `figma-pixel-perfect`, `form-handling-validation`.

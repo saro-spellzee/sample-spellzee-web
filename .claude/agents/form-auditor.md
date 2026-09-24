@@ -20,3 +20,6 @@ Method:
 - Delivery goes to a configurable endpoint via env var. Never hard-code a URL, and never
   pretend to succeed in production when it's unset.
 - Tests: valid submit, each invalid field, the pending state, and keyboard-only completion.
+- Safari: the form works before hydration (a Server Action as the form's `action`), and inputs
+  are ≥16px at phone width so iOS doesn't zoom on focus. The new library code counts against
+  the JS budget: report the first-load JS before → after (`audit.mjs --checks weight`).

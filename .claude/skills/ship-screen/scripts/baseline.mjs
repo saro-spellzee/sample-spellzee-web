@@ -23,8 +23,16 @@ const RULES = [
   [/^console\.errors$/, "lower", 0],
   [/^axe\.(serious|rules)$/, "lower", 0],
   [/^links\.broken$/, "lower", 0],
+  [/^sweep\.landscapeCover$/, "lower", 5],
   [/^sweep\./, "lower", 0],
   [/^focus\./, "lower", 0],
+  [/^capture\.\d+\.copy$/, "lower", 0],
+  [/^state\..+\.(drift|diff)$/, "lower", 1.5],
+  [/^state\..+\.(landmarks|failed)$/, "lower", 0],
+  // First-load JS in KB gzip: a phase may add up to 15 KB without comment; more needs a TRADE-OFF.
+  [/^weight\.js$/, "lower", 15],
+  [/^webkit\.drift$/, "lower", 1.5],
+  [/^webkit\./, "lower", 0],
   [/^header\./, "higher", 0],
   [/^capture\.\d+\.(drift|diff)$/, "lower", 1.5],
   [/^capture\.\d+\.(landmarks|overflow|errors)$/, "lower", 0],
@@ -62,6 +70,20 @@ export function metricsOf(report) {
     if (r.sweep) {
       m["sweep.widths"] = r.sweep.failingWidths;
       m["sweep.textSpacing"] = r.sweep.textSpacingIssues;
+      if (r.sweep.landscapeCoverPct !== undefined) m["sweep.landscapeCover"] = r.sweep.landscapeCoverPct;
+    }
+    if (r.weight) m["weight.js"] = r.weight.js;
+    if (r.webkit) {
+      m["webkit.errors"] = r.webkit.errors.length;
+      m["webkit.overflow"] = r.webkit.overflowAt.length;
+      m["webkit.landmarks"] = r.webkit.countMatch ? 0 : 1;
+      m["webkit.drift"] = r.webkit.maxDrift;
+    }
+    for (const s of r.capture?.states ?? []) {
+      m[`state.${s.name}.drift`] = s.maxDriftPct;
+      m[`state.${s.name}.diff`] = s.maxPixelDiff;
+      m[`state.${s.name}.landmarks`] = s.countMatch ? 0 : 1;
+      m[`state.${s.name}.failed`] = s.failed ? 1 : 0;
     }
     if (r.focus) {
       m["focus.hidden"] = r.focus.hidden;
@@ -75,6 +97,7 @@ export function metricsOf(report) {
       m[`capture.${p.width}.landmarks`] = p.countMatch ? 0 : 1;
       m[`capture.${p.width}.overflow`] = p.overflow;
       m[`capture.${p.width}.errors`] = p.errors;
+      if (p.copyMissing) m[`capture.${p.width}.copy`] = p.copyMissing.length;
     }
     for (const [mode, l] of Object.entries(r.lighthouse ?? {})) {
       m[`lh.${mode}.perf`] = l.scores.perf;
@@ -173,6 +196,9 @@ const TREND = [
   ["390 drift %", "capture.390.drift"],
   ["overflow widths", "sweep.widths"],
   ["hidden focus", "focus.hidden"],
+  ["JS KB", "weight.js"],
+  ["missing copy 390", "capture.390.copy"],
+  ["Safari errors", "webkit.errors"],
 ];
 
 /** Markdown: one row per recorded check, so a regression shows up next to the phase that caused it. */

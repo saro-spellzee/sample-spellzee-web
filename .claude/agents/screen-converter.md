@@ -23,7 +23,10 @@ Next.js code for spellzee-web.
 Verification you must include in the report's EVIDENCE:
 - `node .claude/skills/ship-screen/scripts/gates.mjs` result
 - the `boards.mjs` table (which design board each width was compared with)
-- the final capture table (per width: landmarks, height deltas, pixel diff, overflow, console errors)
+- the final capture table (per width: landmarks, height deltas, pixel diff, overflow, console
+  errors, missing design copy) and the state-board table
+- `tests/design-states/<screen>.json`, with one entry per state board (or "no state boards")
+- the `webkit` + `sweep` audit result (Safari and every width, including 320 and landscape)
 
 With a mobile board, the phone layout is designed: build it from that board and match
 it at 390, rather than deriving it from the desktop board (screen-to-nextjs conventions §4).

@@ -16,7 +16,11 @@ Read first:
 
 Method:
 - `node .claude/skills/ship-screen/scripts/gates.mjs`, then
-  `node .claude/skills/ship-screen/scripts/audit.mjs --routes <route> --checks lighthouse --out .quality/<screen>/10-audit` (add the prompt's `--budget` if given).
+  `node .claude/skills/ship-screen/scripts/audit.mjs --routes <route> --checks lighthouse,weight --out .quality/<screen>/10-audit` (add the prompt's `--budget` if given).
+- JS budget: first-load JS ≤250 KB gzip, target 200 (`performance-optimization` rules, Rule 2
+  "The JS budget in this project"). Before cutting anything, copy
+  `npx next experimental-analyze --output`'s `.next/diagnostics/analyze` aside so you can
+  show which module shrank. Record the JS KB before → after in EVIDENCE.
 - Read the LCP element, the LCP-discovery checklist and the failing audits. Pick the
   biggest lever, change it, rebuild, re-measure.
 - Keep the design: an animation or image change that alters how the page looks goes

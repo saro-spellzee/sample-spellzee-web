@@ -10,6 +10,9 @@ A feature/release cannot be marked "done" until every item below is checked.
 ## 2. Bundle & Build
 - [ ] New dependencies checked for bundle-size cost before adding
 - [ ] Bundle size budget enforced in CI
+- [ ] First-load JS per route measured (`audit.mjs --checks weight`) and within budget: ≤ 250 KB gzip hard ceiling, ≤ 200 KB target (Rule 2, "The JS budget in this project")
+- [ ] Any change that adds more than 15 KB gzip of first-load JS has a stated reason (before → after, what it buys), recorded as a decision
+- [ ] A budget increase was diagnosed with the bundle analyzer (`npx next experimental-analyze --output`, before vs after), not guessed
 - [ ] Imports are tree-shakeable (named imports from large libraries, no unnecessary barrel files)
 - [ ] Route-based and heavy-component code splitting applied (`next/dynamic` for conditional heavy components)
 

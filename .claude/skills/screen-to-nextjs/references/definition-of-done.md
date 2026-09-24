@@ -14,6 +14,8 @@ where you have doubts, not all of them by default.
 ## 2. Visual fidelity (`figma-pixel-perfect`)
 - [ ] Capture report at 1440 / 1000 / 390, each width against its nearest design board (`boards.mjs`): same landmark count, every landmark within ~4% height of the original, 0px horizontal overflow
 - [ ] Every pair image inspected. Colours, type size/weight/line-height, spacing, radii, shadows, gradients and image crops match
+- [ ] Design copy: 0 lines missing at any width (the capture report's "Copy:" line), or each one listed as a deliberate deviation
+- [ ] Every state board has an entry in `tests/design-states/<screen>.json`, is reproduced on the page, and matches its board
 - [ ] Fonts are the export's fonts (no fallback rendering); weights match
 - [ ] Remaining differences are listed in the summary with the reason (e.g. canvas animation frame differs, which is expected)
 
@@ -21,6 +23,8 @@ where you have doubts, not all of them by default.
 - [ ] Phone (390): nothing clipped, overlapping or scrolling horizontally; tap targets ≥ 44px; text ≥ 12px
 - [ ] With a mobile board: 390 matches it, every difference is listed with its reason, and each state board (menu open, …) is reproduced and checked at its width
 - [ ] Tablet (1000) follows the tablet board if there is one, else the export's `max-width:1000px` rules
+- [ ] No sideways scroll at any sweep width (320–1920) or in landscape (844×390). In landscape, fixed bars leave most of the screen for content
+- [ ] Safari (the WebKit check): no errors or sideways scroll that Chromium doesn't have, landmark heights within 4% of Chromium, inputs ≥16px at phone width (conventions §14)
 - [ ] Mobile and desktop share one DOM per landmark. A second variant exists only where the structure differs, it renders from the same `content.ts`, and the unused one is `display:none`
 - [ ] An image that differs on the mobile board uses art direction (`getImageProps` + `<picture>`), so each viewport downloads only its own image
 - [ ] Breakpoints come from `@theme` tokens, not scattered arbitrary `min-[…]` values
@@ -59,6 +63,7 @@ where you have doubts, not all of them by default.
 - [ ] Fonts via `next/font`, only the weights used
 - [ ] No layout shift from images or fonts (dimensions known, font `display` handled by next/font)
 - [ ] Client JS limited to interactive leaves; heavy canvas code only in the components that use it
+- [ ] First-load JS within budget: ≤ 250 KB gzip, target ≤ 200 (`audit.mjs --checks weight`; `performance-optimization` Rule 2)
 
 ## 9. SEO (`seo-metadata`)
 - [ ] `metadata` exported with title (from the export) + description + Open Graph

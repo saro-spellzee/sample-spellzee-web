@@ -21,6 +21,9 @@ Method:
   copy edits don't break tests.
 - Add `axeViolations` to each component test file.
 - E2E stays small: one spec per screen covering render, no errors, no overflow, each widget once.
+  Import `test`/`expect` from `tests/e2e/fixtures.ts`. The suite runs in desktop, mobile and
+  `iphone` (WebKit). A failure only in `iphone` is a Safari bug to fix, except Tab-order tests,
+  which are skipped for WebKit (tooling-setup.md).
   Widgets that exist at only one width (a mobile nav drawer) are tested in that width's project.
 - Run `npm test` and `npm run test:e2e` until green; then the full gates with `--tests`.
 

@@ -40,6 +40,14 @@
         "screens/pricing/Main.dc.html",
         "screens/homepage/Main.dc.html"
       ]
+    },
+    {
+      "prompt": "/ship-screen pricing",
+      "expected_output": "Pre-flight checks WebKit is installed and the playwright config has the iphone project and tests/e2e/fixtures.ts. Every regression check covers copy, state boards, first-load JS weight (<=250 KB gzip, +15 KB per phase max without a TRADE-OFF), WebKit, landscape sweep and focus. The tests phase runs E2E in desktop, mobile and iphone, importing from ./fixtures. The forms phase makes the form work before hydration and keeps inputs >=16px. The perf phase reports JS KB before -> after and uses next experimental-analyze for any jump. After a11y an interim DESIGN-REVIEW.html is built; the report phase writes DECISIONS.md and rebuilds .quality/pricing/DESIGN-REVIEW.html and gives its path.",
+      "files": [
+        "screens/pricing/Main.dc.html"
+      ],
+      "id": 6
     }
   ]
 }

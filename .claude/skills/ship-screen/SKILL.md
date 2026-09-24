@@ -27,7 +27,7 @@ commits and the final story. Keep your own context lean: read reports, not code.
 | `--from <phase>` | Resume from a phase (reads `.quality/<screen>/run.json`) |
 | `--only <p1,p2>` | Run just these phases (plus the build gate before them) |
 | `--skip <p1,p2>` | Skip phases (recorded as skipped in the report) |
-| `--budget <k=v,…>` | Lighthouse budget overrides, e.g. `mobile.perf=85,desktop.lcp=2000` |
+| `--budget <k=v,…>` | Lighthouse and JS budget overrides, e.g. `mobile.perf=85,desktop.lcp=2000,weight.js=230` |
 | `--fix-contrast` | Let the a11y phase apply AA-compliant colour replacements instead of only proposing them |
 | `--desktop-only` | The screen has no mobile board and none is coming: pre-flight doesn't ask about one, and the phone layout is derived from the desktop board |
 | `--no-commit` | Don't commit per phase. Everything stays in the working tree, and there's no rollback point, so the run **stops at the first failed phase** instead of parking it |
@@ -197,19 +197,28 @@ must answer is known: contrast shades, colour drift, deviations from a board, a 
 mobile board leaves out, designer copy. If there are any, show them to the user once as a
 short interim list, then carry on without waiting. The designers can answer while the
 remaining phases run, instead of after the whole run (~2¾ hours on the trial). The end
-report still lists them.
+report still lists them. To give the designers something to look at, also write the list
+to `.quality/<screen>/DECISIONS.md` and run
+`node .claude/skills/ship-screen/scripts/review-pack.mjs <screen>`. It builds an interim
+`DESIGN-REVIEW.html` from the latest capture, and the report phase rebuilds it at the end.
 
 ## Ending
 
 Phase 13 writes `.quality/<screen>/REPORT.md`. Your final message to the user:
 
 1. The phase table (status + one-line note each).
-2. Headline evidence: tests (count, pass), axe (violations), focus walk (hidden stops,
-   traps), responsive sweep (widths that scroll sideways), Lighthouse desktop/mobile
-   (perf, LCP, CLS, TBT), security headers, design capture drift, other screens, gates,
-   and any regression the per-phase check caught (fixed, or accepted as a trade-off).
-3. **Decisions needed**: merged list, each with the concrete proposal.
-4. Branch, commits, any parked attempts, and next steps: review the branch, merge into
+2. Headline evidence:
+   - tests (count, pass, including the iPhone project)
+   - axe (violations), focus walk (hidden stops, traps), responsive sweep (widths that
+     scroll sideways, landscape)
+   - Lighthouse desktop/mobile (perf, LCP, CLS, TBT) and first-load JS (KB against the budget)
+   - Safari (errors, layout vs Chromium) and security headers
+   - design capture drift, missing design copy, state boards, other screens
+   - gates, and any regression the per-phase check caught (fixed, or accepted as a trade-off)
+3. **The design review pack**: the path to `.quality/<screen>/DESIGN-REVIEW.html` and how many
+   items it lists first, so the user can forward it to the design team.
+4. **Decisions needed**: merged list, each with the concrete proposal.
+5. Branch, commits, any parked attempts, and next steps: review the branch, merge into
    the main branch, push. Offer to do the merge; never push.
 
 Keep it scannable. The detail lives in `.quality/<screen>/`.

@@ -18,8 +18,10 @@ npm i -D vitest @vitejs/plugin-react jsdom \
   the Node major actually in use (`node -v`): `npm i -D @types/node@^24`. Next 16
   supports Node ≥20.9, so this is safe.
 - Don't add `vite-tsconfig-paths`: Vite 8 resolves tsconfig paths natively (`resolve.tsconfigPaths`).
-- Browsers: `npx playwright install chromium` if the network allows. If not, the config below
-  falls back to the machine's Chrome automatically; nothing else to do.
+- Browsers: `npx playwright install chromium webkit` if the network allows. If Chromium can't
+  be downloaded, the config below falls back to the machine's Chrome automatically. WebKit
+  (iPhone Safari's engine, ~60 MB) has no fallback: without it the `iphone` E2E project
+  can't run and the audit's `webkit` check reports SKIP. Tell the user; don't drop the project.
 - `npm warn allow-scripts … unrs-resolver` is harmless (an eslint dependency's postinstall).
 
 ## package.json scripts
@@ -97,6 +99,8 @@ export default defineConfig({
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"], channel } },
     { name: "mobile", use: { ...devices["Pixel 7"], channel } },
+    // iPhone Safari's engine. Specs import `test` from tests/e2e/fixtures.ts (below).
+    { name: "iphone", use: { ...devices["iPhone 15"], channel: undefined } },
   ],
   // Tests run against the production build (`npm run build` first; gates.mjs does this).
   webServer: {
@@ -107,6 +111,23 @@ export default defineConfig({
   },
 });
 ```
+
+## tests/e2e/fixtures.ts
+
+Every spec imports `test` and `expect` from `./fixtures`, never from `@playwright/test`
+directly. The fixture does two things (see the file for the code):
+
+- **WebKit and `upgrade-insecure-requests`.** WebKit applies this CSP directive even on
+  `http://localhost` (Chromium exempts localhost), so every asset is requested over https
+  and fails: no CSS, no JS, a page 2000px wide. `bypassCSP` doesn't stop it. For WebKit
+  only, the fixture drops that one directive from responses; the rest of the CSP stays enforced.
+- **Hydration.** `page.goto` waits until React has hydrated the page. WebKit drops a click
+  that lands before hydration instead of replaying it, so interaction tests raced the JS
+  bundle there.
+
+Also in WebKit: Tab skips links (Safari only puts links in the Tab order when the user
+turns that on). Skip Tab-order tests for `browserName === "webkit"` with that reason. The
+Chromium projects cover keyboard order.
 
 `gates.mjs` sets `CI=1`, so E2E never reuses a stray dev server on port 3100: stop anything
 listening there first.
@@ -135,6 +156,8 @@ Add to the existing `globalIgnores([...])` list, or lint crawls generated report
 
 - Component/integration tests: next to the component, `Name.test.tsx` (co-located, per
   `component-architecture`). Import the a11y helper with a relative path to `tests/axe.ts`.
-- E2E: `tests/e2e/<screen>.spec.ts`, one file per screen.
+- E2E: `tests/e2e/<screen>.spec.ts`, one file per screen, importing from `./fixtures`.
+- State-board specs for the design capture: `tests/design-states/<screen>.json` (written by
+  the converter; format in `screen-to-nextjs/scripts/capture.mjs`).
 - Vitest can't render `async` Server Components. Test those through E2E; unit-test the
   synchronous and client components.

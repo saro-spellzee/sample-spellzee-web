@@ -7,15 +7,22 @@
 //   headers    security response headers
 //   lighthouse Lighthouse mobile + desktop (--modes), checked against budgets
 //   capture    design fidelity vs the screens/ export (needs --original), via screen-to-nextjs/capture.mjs;
-//              each width is compared with the nearest design board (mobile board at 390, if there is one)
-//   sweep      responsive sweep: horizontal overflow or cut-off content at 320-1920 (WCAG 1.4.10 reflow
-//              at 320), and text-spacing overrides at 390/1440 (WCAG 1.4.12)
-//   focus      keyboard walk at 1440 + 390: every Tab stop's focus indicator, whether it's hidden
-//              (off-screen or covered, WCAG 2.4.11), focus traps, and a contact sheet of every stop
+//              each width is compared with the nearest design board (mobile board at 390, if there is one),
+//              design copy missing from the page is listed, and state boards are compared when
+//              tests/design-states/<screen>.json describes how to reach each state
+//   sweep      responsive sweep: horizontal overflow or cut-off content at 320-1920 and 844×390 landscape
+//              (WCAG 1.4.10 reflow at 320), text-spacing overrides at 390/1440 (WCAG 1.4.12), and how
+//              much of a landscape phone screen fixed/sticky bars cover
+//   focus      keyboard walk at 1440, 390 and 844×390: every Tab stop's focus indicator, whether it's
+//              hidden (off-screen or covered, WCAG 2.4.11), focus traps, and a contact sheet of every stop
+//   weight     first-load JavaScript (KB gzip, before any scroll or input) against the JS budget, plus
+//              CSS, HTML and image bytes and the largest scripts
+//   webkit     iPhone Safari's engine (Playwright WebKit): console errors, sideways scroll at 320/390 and
+//              landscape, and landmark heights compared with Chromium at the same size
 // Writes <out>/audit.md + audit.json and prints the markdown.
 //
 // Usage (from the project root, after `npm run build`):
-//   node .claude/skills/ship-screen/scripts/audit.mjs --routes / [--checks console,links,axe,focus,sweep,headers,lighthouse,capture]
+//   node .claude/skills/ship-screen/scripts/audit.mjs --routes / [--checks console,links,axe,focus,sweep,weight,webkit,headers,lighthouse,capture]
 //        [--original screens/<screen>/Main.dc.html | --original home=screens/homepage/Main.dc.html,pricing=screens/pricing/Main.dc.html]
 //        [--widths 1440,1000,390] [--modes mobile,desktop] [--sweep-widths 320,360,…]
 //        [--out .quality/<screen>/audit] [--url http://localhost:3000] [--budget mobile.perf=85,desktop.lcp=2000] [--strict]
@@ -24,8 +31,8 @@
 // A plain --original belongs to the first route; route=path pairs give each route its own design
 // export (screens.mjs others prints them). A route without one skips the capture.
 //
-// --quick is the per-phase regression check: console, axe, focus, sweep, headers, capture (with
-// --original) and Lighthouse, at 1440 + 390 and mobile only, in about 2-3 minutes. --links adds
+// --quick is the per-phase regression check: console, axe, focus, sweep, weight, webkit, headers,
+// capture (with --original) and Lighthouse, at 1440 + 390 and mobile only, in about 3 minutes. --links adds
 // the link check to it (the build gate does this once, so broken links are known from the start).
 // --baseline compares every tracked metric with the best value earlier phases reached (see
 // baseline.mjs) and exits 1 on a regression. A Lighthouse run that looks regressed is measured
@@ -40,6 +47,7 @@ import { createRequire } from "node:module";
 import fs from "node:fs";
 import net from "node:net";
 import path from "node:path";
+import zlib from "node:zlib";
 import { compare, describe, load, metricsOf, record, save } from "./baseline.mjs";
 
 const argv = process.argv.slice(2);
@@ -68,7 +76,7 @@ for (const part of (opt("original") ?? "").split(",").filter(Boolean)) {
   if (eq > 0) originals.set(normalizeRoute(part.slice(0, eq)), part.slice(eq + 1));
   else originals.set(routes[0], part);
 }
-const checks = new Set(opt("checks", `console,${quick ? "" : "links,"}axe,focus,sweep,headers,lighthouse${originals.size ? ",capture" : ""}`).split(","));
+const checks = new Set(opt("checks", `console,${quick ? "" : "links,"}axe,focus,sweep,weight,webkit,headers,lighthouse${originals.size ? ",capture" : ""}`).split(","));
 if (flag("links")) checks.add("links");
 const modes = opt("modes", quick ? "mobile" : "mobile,desktop").split(",");
 const widths = opt("widths", quick ? "1440,390" : "1440,1000,390");
@@ -80,6 +88,8 @@ const baselineBefore = baselineFile && !flag("reset-baseline") ? load(baselineFi
 const budgets = {
   desktop: { perf: 90, a11y: 95, bp: 95, seo: 95, lcp: 2500, cls: 0.1, tbt: 200 },
   mobile: { perf: 80, a11y: 95, bp: 95, seo: 95, lcp: 4000, cls: 0.1, tbt: 300 },
+  // First-load JavaScript per route, KB gzip (performance-optimization, "JS budget").
+  weight: { js: 250, jsTarget: 200 },
 };
 for (const pair of (opt("budget", "") || "").split(",").filter(Boolean)) {
   const [key, value] = pair.split("=");
@@ -146,7 +156,7 @@ async function launch() {
   console.error("No browser could be launched. Run: npx playwright install chromium");
   process.exit(2);
 }
-const needsBrowser = ["console", "links", "axe", "focus", "sweep"].some((c) => checks.has(c));
+const needsBrowser = ["console", "links", "axe", "focus", "sweep", "weight", "webkit"].some((c) => checks.has(c));
 const browser = needsBrowser ? await launch() : null;
 
 async function openPage(route, width, reducedMotion = "no-preference") {
@@ -385,6 +395,26 @@ for (const route of routes) {
       const m = await measure(false);
       perWidth.push({ width: w, overflow: m.overflow, offenders: m.offenders });
     }
+    // Phone in landscape (844×390): same overflow rules, plus how much of the short screen the
+    // fixed/sticky bars (header, cookie or CTA bar) leave for content.
+    await page.setViewportSize({ width: 844, height: 390 });
+    await page.waitForTimeout(300);
+    const land = await measure(false);
+    const coverPct = await page.evaluate(() => {
+      const vh = innerHeight;
+      let top = 0;
+      let bottom = 0;
+      for (const el of document.body.querySelectorAll("*")) {
+        const cs = getComputedStyle(el);
+        if (!["fixed", "sticky"].includes(cs.position) || cs.visibility === "hidden" || cs.display === "none") continue;
+        const r = el.getBoundingClientRect();
+        if (!r.height || r.width < innerWidth * 0.5 || r.bottom <= 0 || r.top >= vh) continue;
+        if (r.top <= 1) top = Math.max(top, Math.min(r.bottom, vh));
+        else if (r.bottom >= vh - 1) bottom = Math.max(bottom, vh - Math.max(r.top, 0));
+      }
+      return Math.round(((top + bottom) / vh) * 100);
+    });
+    perWidth.push({ width: "844x390", overflow: land.overflow, offenders: land.offenders, coverPct });
     // WCAG 1.4.12: with line-height 1.5, letter-spacing .12em, word-spacing .16em and paragraph
     // spacing 2em, nothing may be cut off. Text already clipped without the overrides isn't counted.
     const baseOverflow = {};
@@ -403,13 +433,13 @@ for (const route of routes) {
     await ctx.close();
     const failing = perWidth.filter((p) => p.overflow > 0 || p.offenders.length);
     const spacingIssues = textSpacing.reduce((n, t) => n + (t.overflow > 0 ? 1 : 0) + t.clippedCount, 0);
-    r.sweep = { perWidth, textSpacing, failingWidths: failing.length, textSpacingIssues: spacingIssues };
+    r.sweep = { perWidth, textSpacing, failingWidths: failing.length, textSpacingIssues: spacingIssues, landscapeCoverPct: coverPct };
     const scrolls = failing.filter((p) => p.overflow > 0);
     add(
       "sweep",
       route,
-      scrolls.length ? "FAIL" : failing.length || spacingIssues ? "WARN" : "PASS",
-      `${sweepWidths.length} widths ${sweepWidths[0]}-${sweepWidths.at(-1)}: ${scrolls.length ? `scrolls sideways at ${scrolls.map((p) => p.width).join("/")}` : "no sideways scroll"}${failing.length > scrolls.length ? `, content cut off at ${failing.filter((p) => !p.overflow).map((p) => p.width).join("/")}` : ""} · text spacing: ${spacingIssues} issue(s)`,
+      scrolls.length ? "FAIL" : failing.length || spacingIssues || coverPct > 40 ? "WARN" : "PASS",
+      `${sweepWidths.length} widths ${sweepWidths[0]}-${sweepWidths.at(-1)} + landscape: ${scrolls.length ? `scrolls sideways at ${scrolls.map((p) => p.width).join("/")}` : "no sideways scroll"}${failing.length > scrolls.length ? `, content cut off at ${failing.filter((p) => !p.overflow).map((p) => p.width).join("/")}` : ""} · text spacing: ${spacingIssues} issue(s) · landscape: fixed bars cover ${coverPct}% of the screen${coverPct > 40 ? " ⚠" : ""}`,
     );
   }
 
@@ -417,8 +447,9 @@ for (const route of routes) {
   if (checks.has("focus")) {
     const slug = route === "/" ? "home" : route.replace(/^\/|\/$/g, "").replace(/\//g, "_");
     const perWidth = [];
-    for (const width of [1440, 390]) {
-      const ctx = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: "reduce", bypassCSP: true });
+    // Desktop, phone, and phone in landscape (a sticky header takes far more of a 390px-tall screen).
+    for (const [width, vh, label] of [[1440, 900, "1440"], [390, 844, "390"], [844, 390, "844x390"]]) {
+      const ctx = await browser.newContext({ viewport: { width, height: vh }, reducedMotion: "reduce", bypassCSP: true });
       const page = await ctx.newPage();
       await page.goto(base + route, { waitUntil: "networkidle", timeout: 60_000 });
       // Smooth scrolling would still be moving the focused element into view when it's measured.
@@ -479,14 +510,14 @@ for (const route of routes) {
       }
       await ctx.close();
       // Contact sheet: each stop cropped from its viewport screenshot, so the focus ring can be judged by eye.
-      const sheetFile = path.join(outDir, `focus-${slug}-${width}.png`);
+      const sheetFile = path.join(outDir, `focus-${slug}-${label}.png`);
       if (shots.length) {
         const cells = shots
           .map(({ n, s, img }) => {
             const x = Math.max(0, Math.round(s.rect.x) - 16);
             const y = Math.max(0, Math.round(s.rect.y) - 16);
             const w = Math.min(560, Math.round(s.rect.w) + 32, width - x);
-            const h = Math.min(220, Math.round(s.rect.h) + 32, 900 - y);
+            const h = Math.min(220, Math.round(s.rect.h) + 32, vh - y);
             const esc = (t) => t.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
             return `<div class="c"><div class="l">${n}. ${esc(s.name)}${s.indicator ? "" : " · NO RING/OUTLINE"} ${esc(s.label)}</div><div style="width:${w}px;height:${h}px;background:url(data:image/jpeg;base64,${img}) -${x}px -${y}px no-repeat"></div></div>`;
           })
@@ -496,7 +527,7 @@ for (const route of routes) {
         await sheet.screenshot({ path: sheetFile, fullPage: true });
         await sheet.close();
       }
-      perWidth.push({ width, stops, trapped, capped, sheet: shots.length ? sheetFile : null });
+      perWidth.push({ width: label, stops, trapped, capped, sheet: shots.length ? sheetFile : null });
     }
     const all = perWidth.flatMap((p) => p.stops);
     const noIndicator = all.filter((s) => !s.indicator && !s.hidden).length;
@@ -510,6 +541,142 @@ for (const route of routes) {
       perWidth.map((p) => `${p.width}: ${p.stops.length} stops${p.capped ? " (stopped at 200)" : ""}`).join(" · ") +
         ` · ${hidden} hidden while focused · ${noIndicator} without outline/ring (check the contact sheet)${trapped ? " · FOCUS TRAP" : ""}`,
     );
+  }
+
+  // ---------- weight (first-load JavaScript budget) ----------
+  if (checks.has("weight")) {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
+    const page = await ctx.newPage();
+    const seen = new Map();
+    let stage = "initial";
+    page.on("response", (res) => {
+      const type = res.request().resourceType();
+      if (!["script", "document", "stylesheet", "image", "font"].includes(type) || res.status() >= 300 || seen.has(res.url())) return;
+      const entry = { url: res.url(), type, stage, gz: 0 };
+      seen.set(res.url(), entry);
+      // gzip ourselves so the number doesn't depend on the server's compression settings;
+      // images and fonts are already compressed formats.
+      entry.done = res.body().then((b) => (entry.gz = ["image", "font"].includes(type) ? b.length : zlib.gzipSync(b).length)).catch(() => {});
+    });
+    await page.goto(base + route, { waitUntil: "networkidle", timeout: 60_000 });
+    await page.waitForTimeout(500);
+    // First load = before any scroll or input. Scrolling then pulls lazy chunks (and prefetches).
+    stage = "after scroll";
+    await page.evaluate(async () => {
+      for (let y = 0; y < document.body.scrollHeight; y += 600) {
+        window.scrollTo(0, y);
+        await new Promise((res) => setTimeout(res, 50));
+      }
+    });
+    await page.waitForTimeout(1500);
+    await Promise.all([...seen.values()].map((e) => e.done));
+    await ctx.close();
+    const items = [...seen.values()];
+    const kb = (n) => Math.round(n / 102.4) / 10;
+    const total = (type, st) => kb(items.filter((x) => x.type === type && (!st || x.stage === st)).reduce((n, x) => n + x.gz, 0));
+    const w = {
+      js: total("script", "initial"),
+      jsAfterScroll: total("script"),
+      css: total("stylesheet", "initial"),
+      html: total("document", "initial"),
+      images: total("image", "initial"),
+      fonts: total("font", "initial"),
+      largest: items
+        .filter((x) => x.type === "script" && x.stage === "initial")
+        .sort((a, b) => b.gz - a.gz)
+        .slice(0, 6)
+        .map((x) => ({ file: new URL(x.url).pathname.split("/").pop(), kb: kb(x.gz) })),
+    };
+    r.weight = w;
+    const b = budgets.weight;
+    add("weight", route, w.js > b.js ? "FAIL" : w.js > b.jsTarget ? "WARN" : "PASS", `first-load JS ${w.js} KB gzip (budget ${b.js}, target ${b.jsTarget}) · after scroll ${w.jsAfterScroll} KB · CSS ${w.css} KB · HTML ${w.html} KB · images ${w.images} KB · fonts ${w.fonts} KB`);
+  }
+
+  // ---------- webkit (iPhone Safari's engine) ----------
+  if (checks.has("webkit")) {
+    const pw = req("playwright");
+    let wk = null;
+    try {
+      wk = await pw.webkit.launch();
+    } catch {
+      add("webkit", route, "SKIP", "WebKit isn't installed: npx playwright install webkit");
+    }
+    if (wk) {
+      const phone = { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2, userAgent: pw.devices["iPhone 15"]?.userAgent, reducedMotion: "reduce" };
+      const load = async (engine, events) => {
+        const ctx = await engine.newContext(phone);
+        // WebKit applies CSP upgrade-insecure-requests to http://localhost too (Chromium exempts it),
+        // so every asset would go to https:// and fail. Drop only that directive here; the rest of
+        // the policy stays enforced, and production is https anyway.
+        await ctx.route("**/*", async (rt) => {
+          const res = await rt.fetch();
+          const headers = res.headers();
+          if (headers["content-security-policy"]) headers["content-security-policy"] = headers["content-security-policy"].replace(/;?\s*upgrade-insecure-requests/g, "");
+          await rt.fulfill({ response: res, headers });
+        });
+        const page = await ctx.newPage();
+        if (events) {
+          page.on("console", (m) => m.type() === "error" && events.push(`console: ${m.text().slice(0, 200)}`));
+          page.on("pageerror", (e) => events.push(`pageerror: ${String(e).slice(0, 200)}`));
+          page.on("response", (res) => res.status() >= 400 && events.push(`http ${res.status()}: ${res.url()}`));
+        }
+        await page.goto(base + route, { waitUntil: "networkidle", timeout: 60_000 });
+        await page.evaluate(async () => {
+          await document.fonts.ready;
+          for (let y = 0; y < document.body.scrollHeight; y += 600) {
+            window.scrollTo(0, y);
+            await new Promise((res) => setTimeout(res, 60));
+          }
+          window.scrollTo(0, 0);
+        });
+        await page.waitForTimeout(800);
+        const landmarks = await page.evaluate(() =>
+          [...document.querySelectorAll("header, section, footer")]
+            .filter((el) => !el.parentElement?.closest("header, section, footer"))
+            .map((el) => ({ name: el.tagName.toLowerCase() + (el.id ? `#${el.id}` : ""), h: Math.round(el.getBoundingClientRect().height) }))
+            .filter((x) => x.h > 0),
+        );
+        return { ctx, page, landmarks };
+      };
+      const events = [];
+      const safari = await load(wk, events);
+      const overflowAt = [];
+      for (const [w, h, label] of [[390, 844, "390"], [320, 700, "320"], [844, 390, "844x390"]]) {
+        await safari.page.setViewportSize({ width: w, height: h });
+        await safari.page.waitForTimeout(300);
+        const o = await safari.page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+        if (o > 0) overflowAt.push(`${label} (${o}px)`);
+      }
+      await safari.page.setViewportSize(phone.viewport);
+      await safari.page.evaluate(() => window.scrollTo(0, 0));
+      const slug = route === "/" ? "home" : route.replace(/^\/|\/$/g, "").replace(/\//g, "_");
+      const wkShot = await safari.page.screenshot({ type: "jpeg", quality: 70 });
+      const chrome = await load(browser);
+      const crShot = await chrome.page.screenshot({ type: "jpeg", quality: 70 });
+      await safari.ctx.close();
+      await chrome.ctx.close();
+      await wk.close();
+      // Landmark heights, Safari vs Chromium at the same phone size (Chromium is what the design capture checked).
+      const diffs = safari.landmarks.map((l, i) => {
+        const c = chrome.landmarks[i];
+        return { name: l.name, safari: l.h, chromium: c?.h ?? 0, pct: c ? Math.round((Math.abs(l.h - c.h) / Math.max(c.h, 1)) * 1000) / 10 : 100 };
+      });
+      const countMatch = safari.landmarks.length === chrome.landmarks.length;
+      const maxDrift = Math.max(0, ...diffs.map((d) => d.pct));
+      // First screen side by side, Safari left, Chromium right.
+      const sideBySide = path.join(outDir, `webkit-${slug}-390.png`);
+      const sheet = await browser.newPage({ viewport: { width: 820, height: 900 } });
+      await sheet.setContent(`<style>body{margin:0;display:flex;gap:20px;background:#777;font:12px system-ui;color:#fff}img{width:390px;display:block}</style><div><div>SAFARI (WebKit)</div><img src="data:image/jpeg;base64,${wkShot.toString("base64")}"></div><div><div>CHROMIUM</div><img src="data:image/jpeg;base64,${crShot.toString("base64")}"></div>`);
+      await sheet.screenshot({ path: sideBySide, fullPage: true });
+      await sheet.close();
+      r.webkit = { errors: events, overflowAt, countMatch, maxDrift, diffs: diffs.filter((d) => d.pct > 1).sort((a, b) => b.pct - a.pct).slice(0, 8), screenshot: sideBySide };
+      add(
+        "webkit",
+        route,
+        events.length || overflowAt.length || !countMatch ? "FAIL" : maxDrift > 4 ? "WARN" : "PASS",
+        `iPhone Safari engine: ${events.length} errors · sideways scroll ${overflowAt.length ? `at ${overflowAt.join(", ")}` : "none"} · landmark heights vs Chromium ≤${maxDrift}%${countMatch ? "" : " · landmark count differs"}`,
+      );
+    }
   }
 
   // ---------- headers ----------
@@ -546,24 +713,36 @@ for (const route of routes) {
         add("capture", route, "SKIP", "capture.mjs produced no report");
       } else {
         const rep = JSON.parse(fs.readFileSync(repFile, "utf8"));
-        const perWidth = Object.entries(rep.widths).map(([w, sides]) => {
-          const o = sides.original?.landmarks ?? [];
-          const c = sides.converted?.landmarks ?? [];
+        const summarise = (o, c) => {
           const drift = o.map((a, i) => (c[i] ? Math.abs(c[i].height - a.height) / Math.max(a.height, 1) : 1));
-          return {
-            width: Number(w),
-            board: sides.original?.board,
-            countMatch: o.length === c.length,
-            maxDriftPct: Math.round(Math.max(0, ...drift) * 1000) / 10,
-            maxPixelDiff: Math.max(0, ...c.map((x) => x.diffPct ?? 0)),
-            overflow: sides.converted?.horizontalOverflowPx ?? 0,
-            errors: sides.converted?.errors?.length ?? 0,
-          };
-        });
-        r.capture = { perWidth, report: path.join(capOut, "report.md") };
-        const hard = perWidth.some((p) => !p.countMatch || p.overflow > 0 || p.errors > 0);
-        const soft = perWidth.some((p) => p.maxDriftPct > 4 || p.maxPixelDiff > 5);
-        add("capture", route, hard ? "FAIL" : soft ? "WARN" : "PASS", perWidth.map((p) => `${p.width}: drift ≤${p.maxDriftPct}% diff ≤${p.maxPixelDiff}%${p.countMatch ? "" : " landmark count differs"}${p.overflow ? ` overflow ${p.overflow}px` : ""}`).join(" · "));
+          return { countMatch: o.length === c.length, maxDriftPct: Math.round(Math.max(0, ...drift) * 1000) / 10, maxPixelDiff: Math.max(0, ...c.map((x) => x.diffPct ?? 0)) };
+        };
+        const perWidth = Object.entries(rep.widths).map(([w, sides]) => ({
+          width: Number(w),
+          board: sides.original?.board,
+          ...summarise(sides.original?.landmarks ?? [], sides.converted?.landmarks ?? []),
+          overflow: sides.converted?.horizontalOverflowPx ?? 0,
+          errors: sides.converted?.errors?.length ?? 0,
+          copyMissing: sides.copy?.missing ?? [],
+          copyExtra: sides.copy?.extra?.length ?? 0,
+        }));
+        const states = Object.entries(rep.states ?? {}).map(([name, s]) => ({
+          name,
+          board: s.board,
+          width: s.width,
+          failed: s.failed ?? "",
+          ...(s.original && s.converted ? summarise(s.original.landmarks, s.converted.landmarks) : { countMatch: false, maxDriftPct: 100, maxPixelDiff: 100 }),
+        }));
+        r.capture = { perWidth, states, notes: rep.notes ?? [], report: path.join(capOut, "report.md") };
+        const hard = perWidth.some((p) => !p.countMatch || p.overflow > 0 || p.errors > 0 || p.copyMissing.length) || states.some((s) => s.failed);
+        const soft = perWidth.some((p) => p.maxDriftPct > 4 || p.maxPixelDiff > 5) || states.some((s) => s.maxDriftPct > 4 || s.maxPixelDiff > 5) || (rep.notes ?? []).length;
+        add(
+          "capture",
+          route,
+          hard ? "FAIL" : soft ? "WARN" : "PASS",
+          perWidth.map((p) => `${p.width}: drift ≤${p.maxDriftPct}% diff ≤${p.maxPixelDiff}%${p.countMatch ? "" : " landmark count differs"}${p.overflow ? ` overflow ${p.overflow}px` : ""}${p.copyMissing.length ? ` · ${p.copyMissing.length} design line(s) missing` : ""}`).join(" · ") +
+            (states.length ? ` · states: ${states.map((s) => `${s.name} ${s.failed ? "FAILED" : `diff ≤${s.maxPixelDiff}%`}`).join(", ")}` : ""),
+        );
       }
     }
   }
@@ -644,11 +823,21 @@ for (const [route, r] of Object.entries(report.results)) {
     for (const e of r.console.slice(0, 20)) md.push(`- [${e.width}] ${e.kind}: \`${e.text.replace(/`/g, "'")}\``);
   }
   if (r.capture) {
-    md.push(``, `## Design capture: ${route}`, `| width | compared with board | landmarks match | max height drift | max pixel diff | overflow | errors |`, `|---|---|---|---|---|---|---|`);
-    for (const p of r.capture.perWidth) md.push(`| ${p.width} | ${p.board ?? "?"} | ${p.countMatch ? "yes" : "NO"} | ${p.maxDriftPct}% | ${p.maxPixelDiff}% | ${p.overflow}px | ${p.errors} |`);
+    md.push(``, `## Design capture: ${route}`, `| width | compared with board | landmarks match | max height drift | max pixel diff | overflow | errors | design copy missing |`, `|---|---|---|---|---|---|---|---|`);
+    for (const p of r.capture.perWidth) md.push(`| ${p.width} | ${p.board ?? "?"} | ${p.countMatch ? "yes" : "NO"} | ${p.maxDriftPct}% | ${p.maxPixelDiff}% | ${p.overflow}px | ${p.errors} | ${p.copyMissing.length} |`);
+    for (const p of r.capture.perWidth.filter((x) => x.copyMissing.length)) {
+      md.push(`- Copy missing at ${p.width}px (design text not on the page):`);
+      for (const m of p.copyMissing.slice(0, 10)) md.push(`  - ${m.landmark}: "${m.text.slice(0, 120)}"`);
+      if (p.copyMissing.length > 10) md.push(`  - … ${p.copyMissing.length - 10} more in the capture report`);
+    }
+    if (r.capture.states.length) {
+      md.push(``, `| state board | width | landmarks match | max height drift | max pixel diff | result |`, `|---|---|---|---|---|---|`);
+      for (const s of r.capture.states) md.push(`| ${s.board} | ${s.width} | ${s.countMatch ? "yes" : "NO"} | ${s.maxDriftPct}% | ${s.maxPixelDiff}% | ${s.failed ? `couldn't reproduce: ${s.failed}` : "compared"} |`);
+    }
+    for (const n of r.capture.notes) md.push(`- ⚠ ${n}`);
     md.push(`- Per-section table and side-by-side pairs: \`${r.capture.report}\` (pairs/ next to it). Deliberate deviations (a phone-width fix when there is no mobile board, a landmark the mobile board leaves out) show up as drift, so check them against the converter's report.`);
   }
-  if (r.sweep && (r.sweep.failingWidths || r.sweep.textSpacingIssues)) {
+  if (r.sweep && (r.sweep.failingWidths || r.sweep.textSpacingIssues || r.sweep.landscapeCoverPct > 40)) {
     md.push(``, `## Responsive sweep: ${route}`);
     for (const p of r.sweep.perWidth.filter((x) => x.overflow || x.offenders.length)) {
       md.push(`- ${p.width}px: ${p.overflow ? `page scrolls sideways by ${p.overflow}px` : "content cut off at the edge"}${p.offenders.length ? `; outermost: ${p.offenders.map((o) => `\`${o}\``).join(", ")}` : ""}`);
@@ -656,6 +845,7 @@ for (const [route, r] of Object.entries(report.results)) {
     for (const t of r.sweep.textSpacing.filter((x) => x.overflow || x.clippedCount)) {
       md.push(`- text spacing at ${t.width}px:${t.overflow ? ` scrolls sideways by ${t.overflow}px;` : ""}${t.clippedCount ? ` ${t.clippedCount} text box(es) cut off: ${t.clipped.map((c) => `\`${c}\``).join(", ")}` : ""}`);
     }
+    if (r.sweep.landscapeCoverPct > 40) md.push(`- 844×390 landscape: fixed/sticky bars cover ${r.sweep.landscapeCoverPct}% of the screen, leaving little room to read. Shrink or un-stick them in short viewports (e.g. \`@media (max-height: 500px)\`).`);
     md.push(`- 320px must not scroll sideways (WCAG 1.4.10). Widths between the design boards have no design to compare with, so fix these from the nearest board's layout.`);
   }
   if (r.focus) {
@@ -664,6 +854,18 @@ for (const [route, r] of Object.entries(report.results)) {
     for (const p of r.focus.perWidth) md.push(`- ${p.width}px: ${p.stops.length} Tab stops${p.trapped ? ", **focus trap** (Tab came back to an earlier stop)" : ""}${p.sheet ? ` · contact sheet \`${p.sheet}\`` : ""}`);
     for (const s of flagged.slice(0, 15)) md.push(`  - [${s.width}] ${s.n}. \`${s.name}\` "${s.label}": ${s.hidden ? `**${s.hidden}** while focused` : "no outline or ring (a background/underline change can still be a valid indicator: check the sheet)"}`);
     if (flagged.length > 15) md.push(`  - … ${flagged.length - 15} more in audit.json`);
+  }
+  if (r.weight) {
+    const b = budgets.weight;
+    md.push(``, `## Page weight: ${route}`, `- First-load JS **${r.weight.js} KB** gzip (budget ${b.js}, target ${b.jsTarget}); ${r.weight.jsAfterScroll} KB once scrolled. Largest: ${r.weight.largest.map((x) => `${x.file} ${x.kb} KB`).join(", ")}`);
+    md.push(`- To see what's inside a chunk: \`npx next experimental-analyze --output\` (writes .next/diagnostics/analyze; copy it aside to compare before/after).`);
+  }
+  if (r.webkit && (r.webkit.errors.length || r.webkit.overflowAt.length || !r.webkit.countMatch || r.webkit.maxDrift > 4)) {
+    md.push(``, `## iPhone Safari (WebKit): ${route}`);
+    for (const e of r.webkit.errors.slice(0, 10)) md.push(`- ${e}`);
+    if (r.webkit.overflowAt.length) md.push(`- scrolls sideways at ${r.webkit.overflowAt.join(", ")}`);
+    for (const d of r.webkit.diffs) md.push(`- \`${d.name}\`: ${d.safari}px in Safari vs ${d.chromium}px in Chromium (${d.pct}%)`);
+    md.push(`- First screen side by side: \`${r.webkit.screenshot}\`. Safari-specific fixes: screen-to-nextjs conventions, "Safari (iPhone)".`);
   }
   if (r.links?.broken.length) {
     md.push(``, `## Broken links: ${route}`);

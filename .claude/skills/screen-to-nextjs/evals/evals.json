@@ -17,6 +17,16 @@
         "screens/pricing/mobile/Main.dc.html"
       ],
       "id": 2
+    },
+    {
+      "prompt": "screens/pricing la desktop, mobile/ board, and mobile/Menu-open.dc.html (menu open state) irukku. convert pannu",
+      "expected_output": "boards.mjs lists Menu-open.dc.html as a state of mobile/Main.dc.html. The converter writes tests/design-states/pricing.json with an entry for it (width 390, mode viewport, a click step on the menu toggle) and the capture report shows the state compared, not \"not checked\". The capture Copy line shows 0 design lines missing at 1440/1000/390 (or each listed as a deviation). audit.mjs --checks webkit,sweep shows no Safari-only errors, no sideways scroll at 320-1920 or 844x390, landmark heights within 4% of Chromium. Inputs are >=16px at phone width.",
+      "files": [
+        "screens/pricing/Main.dc.html",
+        "screens/pricing/mobile/Main.dc.html",
+        "screens/pricing/mobile/Menu-open.dc.html"
+      ],
+      "id": 3
     }
   ]
 }

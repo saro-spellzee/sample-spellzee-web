@@ -1,4 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { classroom, clm, faq, footer, header, hero, stories } from "../../src/features/homepage/content";
 
 /**
@@ -77,7 +78,8 @@ test.describe("homepage", () => {
     }
   });
 
-  test("skip link is the first tab stop and moves focus to main", async ({ page }) => {
+  test("skip link is the first tab stop and moves focus to main", async ({ page, browserName }) => {
+    test.skip(browserName === "webkit", "Safari leaves links out of the Tab order unless the user turns that on; the Chromium projects cover keyboard order");
     await page.goto("/");
     await page.keyboard.press("Tab");
     const skip = page.getByRole("link", { name: header.skipLink.label });

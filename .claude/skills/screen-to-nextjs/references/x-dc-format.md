@@ -59,8 +59,19 @@ themselves, so their commands don't change.
   `@media (max-width:640px)` rules disagree, the mobile board wins. The designer drew it
   deliberately, whereas the media query was only a fallback.
 - **State board** (same width as a reference board): the spec for that one state, e.g. the
-  drawer the hamburger opens. It isn't captured. Check it by opening the widget at that
-  width and comparing it with the board.
+  drawer the hamburger opens. To have it checked automatically, add an entry to
+  `tests/design-states/<screen>.json`: the board, the width, the steps that reach the state
+  on the built page, and `"mode": "viewport"` for overlays like a drawer or modal.
+  ```json
+  { "states": [
+    { "board": "mobile/Menu-open.dc.html", "width": 390, "mode": "viewport",
+      "steps": [ { "click": "button[aria-controls='site-menu']" } ] }
+  ] }
+  ```
+  The capture then compares that state every time it runs: in the converter's loop, in every
+  phase's regression check and in final. Steps are `click`, `hover`, `focus`, `press` (a
+  key), `scroll` (a selector into view) and `wait` (ms), and they only run on the built page.
+  A state board with no entry is reported as "not checked".
 - **Each board has its own logic class.** Usually they match. Different data (fewer items,
   shorter strings) shows up in the inventory's "Copy only on …" lines. Different behaviour
   (a carousel on mobile, a grid on desktop) means one widget owns both.

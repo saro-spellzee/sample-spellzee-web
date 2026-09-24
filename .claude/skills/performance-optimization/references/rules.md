@@ -8,6 +8,30 @@
 - Set an explicit JS bundle size budget per route/page at project setup, enforced in CI (bundle analyzer + a size-limit check that fails the build) — don't let bundle size grow silently until a Lighthouse audit surprises the team months later.
 - New dependencies are checked against bundle-size cost (bundlephobia-style check) before adding, not after.
 
+### The JS budget in this project (spellzee-web)
+- **What's measured:** first-load JavaScript per route, in KB gzip. That is every script the
+  browser downloads before the user scrolls or touches anything, at phone size. The
+  `weight` check in `.claude/skills/ship-screen/scripts/audit.mjs` gzips each script itself,
+  so the number doesn't depend on the server's compression. Scripts that load on scroll are
+  reported separately, as information only.
+- **Budget:** a hard ceiling of **250 KB** (the check fails) and a target of **200 KB** (the
+  check warns). The Next 16 + React 19 runtime alone is roughly 110 KB. The ceiling leaves
+  room for a page's own widgets and stops slow creep. The homepage, with canvases, a quiz
+  and a validated form, measured 186 KB. Override per run with `--budget weight.js=<kb>`
+  only when a decision says so.
+- **Growth:** the per-phase regression check lets one change add up to **15 KB**. More than
+  that needs a stated reason: the agent replies `TRADE-OFF:` with before → after and what the
+  bytes buy, and the choice goes under decisions. On the homepage trial, the form library
+  added ~27 KB. That is exactly the kind of change that should be a conscious decision.
+- **Diagnosing a jump:** `npx next experimental-analyze --output` writes the Turbopack module
+  graph to `.next/diagnostics/analyze`. Copy it aside before the change and compare after, to
+  see which module grew and which import pulled it in. The `weight` check's "largest" list
+  names the chunks to look at first.
+- **Usual fixes, in order:** move work to a Server Component, so it ships no JS at all. Import
+  only what you use (named imports, no namespace imports, no barrels over big modules). Load
+  heavy below-the-fold widgets with `next/dynamic` or on visibility. Pick a smaller library,
+  e.g. `zod/mini` instead of full `zod`.
+
 ## Rule 3: Code Splitting by Route and by Heavy Component
 - Next.js route-based code splitting is the default (automatic per-page) — additionally, `next/dynamic` (React `lazy`/`Suspense` under the hood) splits out heavy, conditionally-rendered components (rich text editors, chart libraries, video players) so their code doesn't load until actually needed.
 - Don't dynamically import everything reflexively — code-splitting has its own overhead (extra network round trip); apply it to genuinely heavy or conditional pieces, not trivial components.
