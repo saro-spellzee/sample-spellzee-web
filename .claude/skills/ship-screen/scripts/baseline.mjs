@@ -23,6 +23,8 @@ const RULES = [
   [/^console\.errors$/, "lower", 0],
   [/^axe\.(serious|rules)$/, "lower", 0],
   [/^links\.broken$/, "lower", 0],
+  [/^sweep\./, "lower", 0],
+  [/^focus\./, "lower", 0],
   [/^header\./, "higher", 0],
   [/^capture\.\d+\.(drift|diff)$/, "lower", 1.5],
   [/^capture\.\d+\.(landmarks|overflow|errors)$/, "lower", 0],
@@ -57,6 +59,15 @@ export function metricsOf(report) {
       m["axe.rules"] = r.axe.violations.length;
     }
     if (r.links) m["links.broken"] = r.links.broken.length;
+    if (r.sweep) {
+      m["sweep.widths"] = r.sweep.failingWidths;
+      m["sweep.textSpacing"] = r.sweep.textSpacingIssues;
+    }
+    if (r.focus) {
+      m["focus.hidden"] = r.focus.hidden;
+      m["focus.noIndicator"] = r.focus.noIndicator;
+      m["focus.trapped"] = r.focus.trapped ? 1 : 0;
+    }
     for (const h of r.headers?.expect ?? []) m[`header.${h.id}`] = h.ok ? 1 : 0;
     for (const p of r.capture?.perWidth ?? []) {
       m[`capture.${p.width}.drift`] = p.maxDriftPct;
@@ -160,6 +171,8 @@ const TREND = [
   ["axe serious", "axe.serious"],
   ["console errors", "console.errors"],
   ["390 drift %", "capture.390.drift"],
+  ["overflow widths", "sweep.widths"],
+  ["hidden focus", "focus.hidden"],
 ];
 
 /** Markdown: one row per recorded check, so a regression shows up next to the phase that caused it. */

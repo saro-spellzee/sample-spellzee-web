@@ -3,21 +3,29 @@
 // starts from facts instead of skimming a 100KB+ file.
 //
 // Usage: node inventory.mjs screens/<screen>/Main.dc.html [--out inventory.md]
+//        (or pass the folder screens/<screen>: the widest board is inventoried in full)
+//
+// When the screen has other design boards (a mobile or tablet board, state boards; see
+// boards.mjs), the end of the report lists each one with its landmarks and line ranges, and
+// what differs from the main board: landmarks, copy, colours, type sizes and images.
 //
 // No dependencies. Regex-based on purpose: x-dc exports are machine-generated
 // and regular enough that this is reliable, and it keeps the script portable.
 
 import fs from "node:fs";
 import path from "node:path";
+import { findBoards, mainBoard, rel } from "./boards.mjs";
 
 const args = process.argv.slice(2);
-const file = args.find((a) => !a.startsWith("--"));
+const input = args.find((a) => !a.startsWith("--"));
 const outIdx = args.indexOf("--out");
 const outFile = outIdx >= 0 ? args[outIdx + 1] : null;
-if (!file) {
-  console.error("usage: node inventory.mjs <Main.dc.html> [--out inventory.md]");
+if (!input || !fs.existsSync(input)) {
+  console.error("usage: node inventory.mjs <Main.dc.html | screens/<screen>> [--out inventory.md]");
   process.exit(1);
 }
+const boardSet = findBoards(input);
+const file = fs.statSync(input).isDirectory() ? mainBoard(boardSet).file : input;
 
 const html = fs.readFileSync(file, "utf8");
 const dir = path.dirname(file);
@@ -85,7 +93,7 @@ p();
 
 // ---------- landmarks ----------
 // Top-level header/section/footer blocks, each with the dynamic bits inside it.
-function blocks() {
+function blocks(html) {
   const res = [];
   const re = /<(header|section|footer)\b([^>]*)>/g;
   let m;
@@ -110,7 +118,7 @@ const uniq = (a) => [...new Set(a)];
 p(`## Page landmarks (in render order)`);
 p(`Each is a candidate section component. Lines refer to ${path.basename(file)}.`);
 p();
-blocks().forEach((b, i) => {
+blocks(html).forEach((b, i) => {
   const body = html.slice(b.start, b.end);
   const id = attr(b.attrs, "id");
   const cls = attr(b.attrs, "class");
@@ -210,6 +218,88 @@ const iconTable = /const\s+I\s*=\s*\{/.test(html);
 p(`## Icons`);
 p(`- Inline <svg> elements in markup: ${svgs}`);
 if (iconTable) p(`- Logic class defines an icon table \`I\` (keys referenced as I.<name>) → becomes an Icon component with a typed name union`);
+
+// ---------- other design boards ----------
+const decode = (s) =>
+  s
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&#39;|&rsquo;|&lsquo;/g, "'")
+    .replace(/&quot;|&ldquo;|&rdquo;/g, '"')
+    .replace(/&mdash;/g, "—")
+    .replace(/&ndash;/g, "–");
+// Visible copy: template text nodes plus prose-like string literals from the logic class
+// (the renderVals data arrays). Heuristic, but enough to show where two boards' copy differs.
+function copyOf(src) {
+  const body = src.replace(/<helmet>[\s\S]*?<\/helmet>/g, "").replace(/<style[\s\S]*?<\/style>/g, "").replace(/<svg[\s\S]*?<\/svg>/g, "");
+  const js = body.match(/<script type="text\/x-dc"[^>]*>([\s\S]*?)<\/script>/)?.[1] ?? "";
+  const found = new Set();
+  for (const t of body.replace(/<script[\s\S]*?<\/script>/g, "").split(/<[^>]+>/)) {
+    const s = decode(t).replace(/\{\{[^}]*\}\}/g, "").replace(/\s+/g, " ").trim();
+    if (s.length >= 3 && /[a-z]/i.test(s)) found.add(s);
+  }
+  for (const m of js.matchAll(/'((?:[^'\\\n]|\\.){8,})'|"((?:[^"\\\n]|\\.){8,})"/g)) {
+    const s = decode(m[1] ?? m[2]).replace(/\\(.)/g, "$1").replace(/\s+/g, " ").trim();
+    const code = /^[MmLlHhVvCcSsQqTtAaZz\d\s.,-]+$/.test(s) || /gradient\(|rgba?\(|var\(|\d(px|ms|deg|%)\b|^#|[{};<>=]/.test(s);
+    if (/\s/.test(s) && /[a-z]{3}/i.test(s) && !code) found.add(s);
+  }
+  return found;
+}
+const landmarksOf = (src) =>
+  blocks(src).map((b) => {
+    const id = attr(b.attrs, "id");
+    const h = (src.slice(b.start, b.end).match(/<h[12][^>]*>([\s\S]*?)<\/h[12]>/) || [])[1];
+    const ht = h ? h.replace(/<[^>]+>/g, " ").replace(/\{\{[^}]*\}\}/g, "…").replace(/\s+/g, " ").trim().slice(0, 50) : "";
+    const line = (idx) => src.slice(0, idx).split("\n").length;
+    return { key: id ? `<${b.tag}> #${id}` : `<${b.tag}>${ht ? ` "${ht}"` : ""}`, from: line(b.start), to: line(b.end) };
+  });
+const assetsOf = (src) => new Set([...src.matchAll(/assets\/([\w.-]+)/g)].map((m) => m[1]));
+const hexOf = (src) => new Set([...src.matchAll(/#[0-9A-Fa-f]{6}\b/g)].map((m) => m[0].toUpperCase()));
+const onlyIn = (a, b) => [...a].filter((x) => !b.has(x));
+const quoteList = (items, n = 25) =>
+  items.length
+    ? items.slice(0, n).map((x) => `"${x.length > 80 ? `${x.slice(0, 77)}…` : x}"`).join("; ") + (items.length > n ? ` … +${items.length - n} more` : "")
+    : "none";
+
+function compareBoards(label, src, baseLabel, base) {
+  const a = landmarksOf(src).map((x) => x.key);
+  const b = landmarksOf(base).map((x) => x.key);
+  const [ak, bk] = [new Set(a), new Set(b)];
+  const sharedA = a.filter((k) => bk.has(k));
+  const sharedB = b.filter((k) => ak.has(k));
+  p(`- Compared with ${baseLabel}:`);
+  p(`  - Landmarks only on ${label}: ${onlyIn(ak, bk).join(", ") || "none"}`);
+  p(`  - Landmarks only on ${baseLabel}: ${onlyIn(bk, ak).join(", ") || "none"}`);
+  if (sharedA.join("|") !== sharedB.join("|")) p(`  - Shared landmarks in a different order here: ${sharedA.join(" → ")}`);
+  const [ca, cb] = [copyOf(src), copyOf(base)];
+  p(`  - Copy only on ${label} (${onlyIn(ca, cb).length}): ${quoteList(onlyIn(ca, cb))}`);
+  p(`  - Copy only on ${baseLabel} (${onlyIn(cb, ca).length}): ${quoteList(onlyIn(cb, ca))}`);
+  p(`  - Colours only on ${label}: ${onlyIn(hexOf(src), hexOf(base)).join(" ") || "none"}`);
+  const img = onlyIn(assetsOf(src), assetsOf(base));
+  p(`  - Images only on ${label}: ${img.join(", ") || "none"}${img.length ? " (a different image at this width: art direction, conventions §4)" : ""}`);
+}
+
+const others = boardSet.boards.filter((b) => b.file !== path.resolve(file));
+if (others.length) {
+  const mainLabel = rel(file);
+  p();
+  p(`## Other design boards`);
+  p(
+    `The inventory above is for ${mainLabel}. A reference board is the spec at its own width (\`boards.mjs\` prints the width → board map); a state board is the spec for one widget's other state (menu open, step 2). Read them section by section too, using these line ranges.`,
+  );
+  for (const b of others) {
+    const src = fs.readFileSync(b.file, "utf8");
+    const label = rel(b.file);
+    const css2 = [...src.matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join("\n");
+    p();
+    p(`### ${label} (${b.width ?? "?"}px, ${b.band}, ${b.role === "state" ? `state of ${rel(b.stateOf)}` : b.role})`);
+    p(`- @media: ${[...new Set([...css2.matchAll(/@media\s*([^{]+)\{/g)].map((m) => m[1].trim()))].join(" | ") || "(none)"}`);
+    p(`- font-size: ${fmt(freq(/font-size:\s*([\d.]+(?:px|rem|em))/g, src), 20)}`);
+    p(`- Landmarks: ${landmarksOf(src).map((l, i) => `${i + 1}. ${l.key} (lines ${l.from}–${l.to})`).join(" · ") || "none"}`);
+    if (b.role === "state") compareBoards(label, src, rel(b.stateOf), fs.readFileSync(b.stateOf, "utf8"));
+    else compareBoards(label, src, mainLabel, html);
+  }
+}
 
 const text = out.join("\n");
 if (outFile) {

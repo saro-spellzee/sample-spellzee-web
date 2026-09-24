@@ -26,11 +26,26 @@ const steps = [
   { name: "lint", cmd: "npm run lint" },
 ];
 if (!flag("no-build")) steps.push({ name: "build", cmd: "npm run build" });
+
+// A test gate with nothing to run yet is skipped, not failed: the forms phase runs before the
+// tests phase, and `vitest run` / `playwright test` exit 1 when they find no test files.
+// Locations match tooling-setup.md (vitest include src/**/*.test.*, Playwright testDir tests/e2e).
+function hasFiles(dir, re) {
+  if (!fs.existsSync(dir)) return false;
+  for (const d of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (d.name === "node_modules" || d.name.startsWith(".")) continue;
+    const p = path.join(dir, d.name);
+    if (d.isDirectory() ? hasFiles(p, re) : re.test(d.name)) return true;
+  }
+  return false;
+}
 if (flag("tests")) {
-  if (scripts.test) steps.push({ name: "unit tests", cmd: "npm test" });
-  else steps.push({ name: "unit tests", skip: "no `test` script in package.json" });
-  if (scripts["test:e2e"]) steps.push({ name: "e2e tests", cmd: "npm run test:e2e" });
-  else steps.push({ name: "e2e tests", skip: "no `test:e2e` script in package.json" });
+  if (!scripts.test) steps.push({ name: "unit tests", skip: "no `test` script in package.json" });
+  else if (!hasFiles("src", /\.test\.[jt]sx?$/)) steps.push({ name: "unit tests", skip: "no *.test.* files under src/ yet" });
+  else steps.push({ name: "unit tests", cmd: "npm test" });
+  if (!scripts["test:e2e"]) steps.push({ name: "e2e tests", skip: "no `test:e2e` script in package.json" });
+  else if (!hasFiles(path.join("tests", "e2e"), /\.spec\.[jt]sx?$/)) steps.push({ name: "e2e tests", skip: "no *.spec.* files under tests/e2e/ yet" });
+  else steps.push({ name: "e2e tests", cmd: "npm run test:e2e" });
 }
 
 // Keep the useful tail of noisy tool output: error lines first, then the last lines.

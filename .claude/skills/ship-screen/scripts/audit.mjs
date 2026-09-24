@@ -6,18 +6,27 @@
 //   axe        axe-core WCAG 2.2 AA scan (1440 + 390)
 //   headers    security response headers
 //   lighthouse Lighthouse mobile + desktop (--modes), checked against budgets
-//   capture    design fidelity vs the screens/ export (needs --original), via screen-to-nextjs/capture.mjs
+//   capture    design fidelity vs the screens/ export (needs --original), via screen-to-nextjs/capture.mjs;
+//              each width is compared with the nearest design board (mobile board at 390, if there is one)
+//   sweep      responsive sweep: horizontal overflow or cut-off content at 320-1920 (WCAG 1.4.10 reflow
+//              at 320), and text-spacing overrides at 390/1440 (WCAG 1.4.12)
+//   focus      keyboard walk at 1440 + 390: every Tab stop's focus indicator, whether it's hidden
+//              (off-screen or covered, WCAG 2.4.11), focus traps, and a contact sheet of every stop
 // Writes <out>/audit.md + audit.json and prints the markdown.
 //
 // Usage (from the project root, after `npm run build`):
-//   node .claude/skills/ship-screen/scripts/audit.mjs --routes / [--checks console,links,axe,headers,lighthouse,capture]
-//        [--original screens/<screen>/Main.dc.html] [--widths 1440,1000,390] [--modes mobile,desktop]
+//   node .claude/skills/ship-screen/scripts/audit.mjs --routes / [--checks console,links,axe,focus,sweep,headers,lighthouse,capture]
+//        [--original screens/<screen>/Main.dc.html | --original home=screens/homepage/Main.dc.html,pricing=screens/pricing/Main.dc.html]
+//        [--widths 1440,1000,390] [--modes mobile,desktop] [--sweep-widths 320,360,…]
 //        [--out .quality/<screen>/audit] [--url http://localhost:3000] [--budget mobile.perf=85,desktop.lcp=2000] [--strict]
-//        [--quick] [--baseline .quality/<screen>/baseline.json [--phase <id>] [--reset-baseline]]
+//        [--quick [--links]] [--baseline .quality/<screen>/baseline.json [--phase <id>] [--reset-baseline]]
 // Default checks: everything except capture (capture is added automatically when --original is given).
+// A plain --original belongs to the first route; route=path pairs give each route its own design
+// export (screens.mjs others prints them). A route without one skips the capture.
 //
-// --quick is the per-phase regression check: console, axe, headers, capture (with --original)
-// and Lighthouse, at 1440 + 390 and mobile only, in about 2 minutes.
+// --quick is the per-phase regression check: console, axe, focus, sweep, headers, capture (with
+// --original) and Lighthouse, at 1440 + 390 and mobile only, in about 2-3 minutes. --links adds
+// the link check to it (the build gate does this once, so broken links are known from the start).
 // --baseline compares every tracked metric with the best value earlier phases reached (see
 // baseline.mjs) and exits 1 on a regression. A Lighthouse run that looks regressed is measured
 // once more and the better run kept, so localhost noise doesn't count. --phase also records the
@@ -52,7 +61,15 @@ const normalizeRoute = (r) => {
 };
 const routes = opt("routes", "/").split(",").map((r) => r.trim()).filter(Boolean).map(normalizeRoute);
 const quick = flag("quick");
-const checks = new Set(opt("checks", `console,${quick ? "" : "links,"}axe,headers,lighthouse${opt("original") ? ",capture" : ""}`).split(","));
+// Design exports per route: "screens/x/Main.dc.html" (first route) or "home=screens/a/Main.dc.html,pricing=…".
+const originals = new Map();
+for (const part of (opt("original") ?? "").split(",").filter(Boolean)) {
+  const eq = part.indexOf("=");
+  if (eq > 0) originals.set(normalizeRoute(part.slice(0, eq)), part.slice(eq + 1));
+  else originals.set(routes[0], part);
+}
+const checks = new Set(opt("checks", `console,${quick ? "" : "links,"}axe,focus,sweep,headers,lighthouse${originals.size ? ",capture" : ""}`).split(","));
+if (flag("links")) checks.add("links");
 const modes = opt("modes", quick ? "mobile" : "mobile,desktop").split(",");
 const widths = opt("widths", quick ? "1440,390" : "1440,1000,390");
 const outDir = opt("out", ".quality/audit");
@@ -129,7 +146,7 @@ async function launch() {
   console.error("No browser could be launched. Run: npx playwright install chromium");
   process.exit(2);
 }
-const needsBrowser = ["console", "links", "axe"].some((c) => checks.has(c));
+const needsBrowser = ["console", "links", "axe", "focus", "sweep"].some((c) => checks.has(c));
 const browser = needsBrowser ? await launch() : null;
 
 async function openPage(route, width, reducedMotion = "no-preference") {
@@ -140,6 +157,10 @@ async function openPage(route, width, reducedMotion = "no-preference") {
   page.on("pageerror", (e) => events.push({ kind: "pageerror", text: String(e).slice(0, 300) }));
   page.on("requestfailed", (r) => events.push({ kind: "requestfailed", text: `${r.url()} (${r.failure()?.errorText})` }));
   page.on("response", (r) => r.status() >= 400 && events.push({ kind: `http ${r.status()}`, text: r.url() }));
+  let inflight = 0;
+  page.on("request", () => inflight++);
+  page.on("requestfinished", () => inflight--);
+  page.on("requestfailed", () => inflight--);
   await page.goto(base + route, { waitUntil: "networkidle", timeout: 60_000 });
   await page.evaluate(async () => {
     for (let y = 0; y < document.body.scrollHeight; y += 600) {
@@ -148,7 +169,15 @@ async function openPage(route, width, reducedMotion = "no-preference") {
     }
     window.scrollTo(0, 0);
   });
-  await page.waitForTimeout(500);
+  // Scrolling makes Next prefetch the links it brings into view (a 404 for a page that doesn't
+  // exist yet shows up here). Wait until the network is quiet for 600ms, at most 5s.
+  const t0 = Date.now();
+  let quietSince = Date.now();
+  while (Date.now() - t0 < 5000) {
+    await page.waitForTimeout(100);
+    if (inflight > 0) quietSince = Date.now();
+    else if (Date.now() - quietSince >= 600) break;
+  }
   return { ctx, page, events };
 }
 
@@ -307,6 +336,182 @@ for (const route of routes) {
     }
   }
 
+  // ---------- sweep (responsive: every width between the design boards, 320px reflow, text spacing) ----------
+  if (checks.has("sweep")) {
+    const sweepWidths = opt("sweep-widths", "320,360,414,600,768,834,1024,1280,1920").split(",").map(Number);
+    const ctx = await browser.newContext({ viewport: { width: sweepWidths[0], height: 900 }, reducedMotion: "reduce", bypassCSP: true });
+    const page = await ctx.newPage();
+    await page.goto(base + route, { waitUntil: "networkidle", timeout: 60_000 });
+    // Content past the viewport edge that isn't inside a scroll/clip container (a swipe row, a
+    // section clipping its decoration) or a fixed layer (an off-canvas drawer): it either scrolls
+    // the page sideways or is cut off. Plus text that its own overflow:hidden box cuts off.
+    const measure = (tag) =>
+      page.evaluate((tag) => {
+        const vw = document.documentElement.clientWidth;
+        const name = (el) => el.tagName.toLowerCase() + (el.id ? `#${el.id}` : "") + [...el.classList].slice(0, 2).map((c) => `.${c}`).join("");
+        const contained = (el) => {
+          for (let p = el; p && p !== document.body; p = p.parentElement) {
+            const cs = getComputedStyle(p);
+            if (cs.position === "fixed" || cs.visibility === "hidden") return true;
+            if (p !== el && cs.overflowX !== "visible") return true;
+          }
+          return false;
+        };
+        const off = [];
+        const clipped = [];
+        for (const el of document.body.querySelectorAll("*")) {
+          const r = el.getBoundingClientRect();
+          if (!r.width || !r.height) continue;
+          if ((r.right > vw + 1 || r.left < -1) && !contained(el)) off.push({ el, past: Math.round(Math.max(r.right - vw, -r.left)) });
+          const cs = getComputedStyle(el);
+          const text = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
+          const clips = ["hidden", "clip"].includes(cs.overflowX) || ["hidden", "clip"].includes(cs.overflowY);
+          if (text && clips && (el.scrollHeight > el.clientHeight + 2 || el.scrollWidth > el.clientWidth + 2)) {
+            if (tag) el.setAttribute("data-audit-clipped", "");
+            else if (!el.hasAttribute("data-audit-clipped")) clipped.push(name(el));
+          }
+        }
+        const parents = new Set(off.map((o) => o.el));
+        const outer = off.filter((o) => !parents.has(o.el.parentElement));
+        return { overflow: Math.max(0, document.documentElement.scrollWidth - vw), offenders: outer.slice(0, 5).map((o) => `${name(o.el)} (${o.past}px past the edge)`), clipped: clipped.slice(0, 5), clippedCount: clipped.length };
+      }, tag);
+    const at = async (w) => {
+      await page.setViewportSize({ width: w, height: 900 });
+      await page.waitForTimeout(300);
+    };
+    const perWidth = [];
+    for (const w of sweepWidths) {
+      await at(w);
+      const m = await measure(false);
+      perWidth.push({ width: w, overflow: m.overflow, offenders: m.offenders });
+    }
+    // WCAG 1.4.12: with line-height 1.5, letter-spacing .12em, word-spacing .16em and paragraph
+    // spacing 2em, nothing may be cut off. Text already clipped without the overrides isn't counted.
+    const baseOverflow = {};
+    for (const w of [390, 1440]) {
+      await at(w);
+      baseOverflow[w] = (await measure(true)).overflow;
+    }
+    await page.addStyleTag({ content: "*{line-height:1.5!important;letter-spacing:.12em!important;word-spacing:.16em!important}p{margin-bottom:2em!important}" });
+    const textSpacing = [];
+    for (const w of [390, 1440]) {
+      await at(w);
+      const m = await measure(false);
+      // Only the extra sideways scroll the spacing causes counts; the sweep already reports the rest.
+      textSpacing.push({ width: w, ...m, overflow: Math.max(0, m.overflow - baseOverflow[w]) });
+    }
+    await ctx.close();
+    const failing = perWidth.filter((p) => p.overflow > 0 || p.offenders.length);
+    const spacingIssues = textSpacing.reduce((n, t) => n + (t.overflow > 0 ? 1 : 0) + t.clippedCount, 0);
+    r.sweep = { perWidth, textSpacing, failingWidths: failing.length, textSpacingIssues: spacingIssues };
+    const scrolls = failing.filter((p) => p.overflow > 0);
+    add(
+      "sweep",
+      route,
+      scrolls.length ? "FAIL" : failing.length || spacingIssues ? "WARN" : "PASS",
+      `${sweepWidths.length} widths ${sweepWidths[0]}-${sweepWidths.at(-1)}: ${scrolls.length ? `scrolls sideways at ${scrolls.map((p) => p.width).join("/")}` : "no sideways scroll"}${failing.length > scrolls.length ? `, content cut off at ${failing.filter((p) => !p.overflow).map((p) => p.width).join("/")}` : ""} · text spacing: ${spacingIssues} issue(s)`,
+    );
+  }
+
+  // ---------- focus (keyboard walk: indicator, hidden focus, traps) ----------
+  if (checks.has("focus")) {
+    const slug = route === "/" ? "home" : route.replace(/^\/|\/$/g, "").replace(/\//g, "_");
+    const perWidth = [];
+    for (const width of [1440, 390]) {
+      const ctx = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: "reduce", bypassCSP: true });
+      const page = await ctx.newPage();
+      await page.goto(base + route, { waitUntil: "networkidle", timeout: 60_000 });
+      // Smooth scrolling would still be moving the focused element into view when it's measured.
+      await page.addStyleTag({ content: "html,*{scroll-behavior:auto!important}" });
+      const stops = [];
+      const shots = [];
+      const seen = new Set();
+      let trapped = false;
+      let capped = false;
+      for (let i = 0; ; i++) {
+        if (i >= 200) {
+          capped = true;
+          break;
+        }
+        await page.keyboard.press("Tab");
+        const s = await page.evaluate(async () => {
+          await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+          const el = document.activeElement;
+          if (!el || el === document.body || el === document.documentElement) return null;
+          const name = (e) => e.tagName.toLowerCase() + (e.id ? `#${e.id}` : "") + [...e.classList].slice(0, 2).map((c) => `.${c}`).join("");
+          const key = (e) => {
+            const parts = [];
+            for (; e && e !== document.body; e = e.parentElement) parts.unshift(`${e.tagName}:${e.parentElement ? [...e.parentElement.children].indexOf(e) : 0}`);
+            return parts.join(">");
+          };
+          const r = el.getBoundingClientRect();
+          const cs = getComputedStyle(el);
+          const visible = (c) => !!c && c !== "transparent" && !/rgba\([^)]*,\s*0(\.0+)?\)$/.test(c);
+          const outline = cs.outlineStyle !== "none" && parseFloat(cs.outlineWidth) > 0 && visible(cs.outlineColor);
+          const ring =
+            cs.boxShadow !== "none" &&
+            cs.boxShadow.split(/,(?![^(]*\))/).some((layer) => {
+              const color = (layer.match(/rgba?\([^)]*\)/) || ["rgb(0, 0, 0)"])[0];
+              const [, , blur = 0, spread = 0] = (layer.match(/-?[\d.]+px/g) || []).map(parseFloat);
+              return visible(color) && (blur !== 0 || spread !== 0);
+            });
+          const offscreen = !r.width || !r.height || r.bottom <= 0 || r.top >= innerHeight || r.right <= 0 || r.left >= innerWidth;
+          const cx = Math.min(Math.max(r.left + r.width / 2, 0), innerWidth - 1);
+          const cy = Math.min(Math.max(r.top + r.height / 2, 0), innerHeight - 1);
+          const top = offscreen ? null : document.elementFromPoint(cx, cy);
+          const covered = top && !el.contains(top) && !top.contains(el) ? name(top) : "";
+          const label = (el.getAttribute("aria-label") || el.innerText || el.value || "").replace(/\s+/g, " ").trim().slice(0, 50);
+          return { key: key(el), name: name(el), label, rect: { x: r.left, y: r.top, w: r.width, h: r.height }, indicator: outline ? "outline" : ring ? "ring" : "", hidden: offscreen ? "off-screen" : covered ? `covered by ${covered}` : "" };
+        });
+        // Past the last stop, Chrome moves focus to the browser (activeElement = body) before it
+        // wraps. So coming back to any earlier stop, the first one included, without passing
+        // through body means a script is holding focus: a trap.
+        if (!s) break;
+        if (seen.has(s.key)) {
+          // Tabbing through an embed's own controls keeps the <iframe> as activeElement.
+          if (s.name.startsWith("iframe") && stops.at(-1)?.key === s.key) continue;
+          trapped = true; // came back to an earlier stop without reaching the end
+          break;
+        }
+        seen.add(s.key);
+        stops.push(s);
+        if (!s.hidden) shots.push({ n: stops.length, s, img: (await page.screenshot({ type: "jpeg", quality: 70 })).toString("base64") });
+      }
+      await ctx.close();
+      // Contact sheet: each stop cropped from its viewport screenshot, so the focus ring can be judged by eye.
+      const sheetFile = path.join(outDir, `focus-${slug}-${width}.png`);
+      if (shots.length) {
+        const cells = shots
+          .map(({ n, s, img }) => {
+            const x = Math.max(0, Math.round(s.rect.x) - 16);
+            const y = Math.max(0, Math.round(s.rect.y) - 16);
+            const w = Math.min(560, Math.round(s.rect.w) + 32, width - x);
+            const h = Math.min(220, Math.round(s.rect.h) + 32, 900 - y);
+            const esc = (t) => t.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
+            return `<div class="c"><div class="l">${n}. ${esc(s.name)}${s.indicator ? "" : " · NO RING/OUTLINE"} ${esc(s.label)}</div><div style="width:${w}px;height:${h}px;background:url(data:image/jpeg;base64,${img}) -${x}px -${y}px no-repeat"></div></div>`;
+          })
+          .join("");
+        const sheet = await browser.newPage({ viewport: { width: 1200, height: 900 } });
+        await sheet.setContent(`<style>body{margin:0;padding:12px;background:#777;font:12px system-ui;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start}.c{background:#fff}.l{background:#111;color:#fff;padding:4px 6px;max-width:560px;overflow:hidden;white-space:nowrap}</style>${cells}`);
+        await sheet.screenshot({ path: sheetFile, fullPage: true });
+        await sheet.close();
+      }
+      perWidth.push({ width, stops, trapped, capped, sheet: shots.length ? sheetFile : null });
+    }
+    const all = perWidth.flatMap((p) => p.stops);
+    const noIndicator = all.filter((s) => !s.indicator && !s.hidden).length;
+    const hidden = all.filter((s) => s.hidden).length;
+    const trapped = perWidth.some((p) => p.trapped);
+    r.focus = { perWidth, noIndicator, hidden, trapped };
+    add(
+      "focus",
+      route,
+      trapped || hidden ? "FAIL" : noIndicator ? "WARN" : "PASS",
+      perWidth.map((p) => `${p.width}: ${p.stops.length} stops${p.capped ? " (stopped at 200)" : ""}`).join(" · ") +
+        ` · ${hidden} hidden while focused · ${noIndicator} without outline/ring (check the contact sheet)${trapped ? " · FOCUS TRAP" : ""}`,
+    );
+  }
+
   // ---------- headers ----------
   if (checks.has("headers")) {
     const res = await fetch(base + route);
@@ -328,10 +533,10 @@ for (const route of routes) {
 
   // ---------- capture (design fidelity vs the screens/ export) ----------
   if (checks.has("capture")) {
-    const original = opt("original");
+    const original = originals.get(route);
     const capture = path.join(cwd, ".claude/skills/screen-to-nextjs/scripts/capture.mjs");
     if (!original || !fs.existsSync(original)) {
-      add("capture", route, "SKIP", "no --original <screens/<screen>/Main.dc.html> given");
+      add("capture", route, "SKIP", original ? `design export not found: ${original}` : "no design export for this route (--original)");
     } else {
       const slug = route === "/" ? "home" : route.replace(/^\/|\/$/g, "").replace(/\//g, "_");
       const capOut = path.join(outDir, `capture-${slug}`);
@@ -347,6 +552,7 @@ for (const route of routes) {
           const drift = o.map((a, i) => (c[i] ? Math.abs(c[i].height - a.height) / Math.max(a.height, 1) : 1));
           return {
             width: Number(w),
+            board: sides.original?.board,
             countMatch: o.length === c.length,
             maxDriftPct: Math.round(Math.max(0, ...drift) * 1000) / 10,
             maxPixelDiff: Math.max(0, ...c.map((x) => x.diffPct ?? 0)),
@@ -438,9 +644,26 @@ for (const [route, r] of Object.entries(report.results)) {
     for (const e of r.console.slice(0, 20)) md.push(`- [${e.width}] ${e.kind}: \`${e.text.replace(/`/g, "'")}\``);
   }
   if (r.capture) {
-    md.push(``, `## Design capture: ${route}`, `| width | landmarks match | max height drift | max pixel diff | overflow | errors |`, `|---|---|---|---|---|---|`);
-    for (const p of r.capture.perWidth) md.push(`| ${p.width} | ${p.countMatch ? "yes" : "NO"} | ${p.maxDriftPct}% | ${p.maxPixelDiff}% | ${p.overflow}px | ${p.errors} |`);
-    md.push(`- Per-section table and side-by-side pairs: \`${r.capture.report}\` (pairs/ next to it). Deliberate deviations (e.g. a phone-width fix) show up as drift, so check them against the converter's report.`);
+    md.push(``, `## Design capture: ${route}`, `| width | compared with board | landmarks match | max height drift | max pixel diff | overflow | errors |`, `|---|---|---|---|---|---|---|`);
+    for (const p of r.capture.perWidth) md.push(`| ${p.width} | ${p.board ?? "?"} | ${p.countMatch ? "yes" : "NO"} | ${p.maxDriftPct}% | ${p.maxPixelDiff}% | ${p.overflow}px | ${p.errors} |`);
+    md.push(`- Per-section table and side-by-side pairs: \`${r.capture.report}\` (pairs/ next to it). Deliberate deviations (a phone-width fix when there is no mobile board, a landmark the mobile board leaves out) show up as drift, so check them against the converter's report.`);
+  }
+  if (r.sweep && (r.sweep.failingWidths || r.sweep.textSpacingIssues)) {
+    md.push(``, `## Responsive sweep: ${route}`);
+    for (const p of r.sweep.perWidth.filter((x) => x.overflow || x.offenders.length)) {
+      md.push(`- ${p.width}px: ${p.overflow ? `page scrolls sideways by ${p.overflow}px` : "content cut off at the edge"}${p.offenders.length ? `; outermost: ${p.offenders.map((o) => `\`${o}\``).join(", ")}` : ""}`);
+    }
+    for (const t of r.sweep.textSpacing.filter((x) => x.overflow || x.clippedCount)) {
+      md.push(`- text spacing at ${t.width}px:${t.overflow ? ` scrolls sideways by ${t.overflow}px;` : ""}${t.clippedCount ? ` ${t.clippedCount} text box(es) cut off: ${t.clipped.map((c) => `\`${c}\``).join(", ")}` : ""}`);
+    }
+    md.push(`- 320px must not scroll sideways (WCAG 1.4.10). Widths between the design boards have no design to compare with, so fix these from the nearest board's layout.`);
+  }
+  if (r.focus) {
+    const flagged = r.focus.perWidth.flatMap((p) => p.stops.map((s, i) => ({ ...s, n: i + 1, width: p.width }))).filter((s) => s.hidden || !s.indicator);
+    md.push(``, `## Focus walk: ${route}`);
+    for (const p of r.focus.perWidth) md.push(`- ${p.width}px: ${p.stops.length} Tab stops${p.trapped ? ", **focus trap** (Tab came back to an earlier stop)" : ""}${p.sheet ? ` · contact sheet \`${p.sheet}\`` : ""}`);
+    for (const s of flagged.slice(0, 15)) md.push(`  - [${s.width}] ${s.n}. \`${s.name}\` "${s.label}": ${s.hidden ? `**${s.hidden}** while focused` : "no outline or ring (a background/underline change can still be a valid indicator: check the sheet)"}`);
+    if (flagged.length > 15) md.push(`  - … ${flagged.length - 15} more in audit.json`);
   }
   if (r.links?.broken.length) {
     md.push(``, `## Broken links: ${route}`);

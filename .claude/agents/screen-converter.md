@@ -22,7 +22,11 @@ Next.js code for spellzee-web.
 
 Verification you must include in the report's EVIDENCE:
 - `node .claude/skills/ship-screen/scripts/gates.mjs` result
+- the `boards.mjs` table (which design board each width was compared with)
 - the final capture table (per width: landmarks, height deltas, pixel diff, overflow, console errors)
+
+With a mobile board, the phone layout is designed: build it from that board and match
+it at 390, rather than deriving it from the desktop board (screen-to-nextjs conventions §4).
 
 Also include in your report: the conversion plan table, files created, client components
 and why, deliberate deviations from the design, and judgment calls

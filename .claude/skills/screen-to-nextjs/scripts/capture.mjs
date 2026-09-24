@@ -8,6 +8,10 @@
 //                    --url http://localhost:3000/<route> \
 //                    --out <dir> [--widths 1440,1000,390] [--motion] [--only original|converted]
 //
+// --original may also be the folder screens/<screen>. When the screen has more than one
+// design board (a mobile or tablet board next to the desktop one, see boards.mjs), each
+// width is compared with the board drawn nearest to it: 390 with the mobile board, and so on.
+//
 // Requires the `playwright` package resolvable from the project
 // (npm i -D playwright && npx playwright install chromium).
 //
@@ -17,6 +21,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import http from "node:http";
+import { boardFor, findBoards, references, rel } from "./boards.mjs";
 
 const argv = process.argv.slice(2);
 const opt = (name, def) => {
@@ -68,14 +73,23 @@ function serve(folder) {
   });
 }
 
-const targets = [];
-let server;
-if (original && only !== "converted") {
-  const folder = path.resolve(path.dirname(original));
-  server = await serve(folder);
-  targets.push({ side: "original", url: `http://localhost:${server.address().port}/${path.basename(original)}` });
+// One static server per board folder (each export's ./assets/ paths are relative to it).
+const boards = original ? findBoards(original) : null;
+const servers = new Map();
+async function boardUrl(file) {
+  const folder = path.dirname(file);
+  if (!servers.has(folder)) servers.set(folder, await serve(folder));
+  return `http://localhost:${servers.get(folder).address().port}/${path.basename(file)}`;
 }
-if (url && only !== "original") targets.push({ side: "converted", url });
+async function targetsFor(width) {
+  const list = [];
+  if (boards && only !== "converted") {
+    const board = boardFor(boards, width);
+    list.push({ side: "original", url: await boardUrl(board.file), board: rel(board.file), boardWidth: board.width });
+  }
+  if (url && only !== "original") list.push({ side: "converted", url });
+  return list;
+}
 
 // Prefer Playwright's bundled Chromium; fall back to an installed Chrome/Edge
 // so a missing `npx playwright install` doesn't block verification.
@@ -91,7 +105,7 @@ async function launch() {
   process.exit(2);
 }
 const browser = await launch();
-const report = { widths: {}, notes: [] };
+const report = { boards: boards ? references(boards).map((b) => ({ board: rel(b.file), width: b.width, band: b.band })) : [], widths: {}, notes: [] };
 fs.mkdirSync(outDir, { recursive: true });
 
 // Collect top-level landmarks, descending into open shadow roots (the x-dc
@@ -130,7 +144,7 @@ for (const width of widths) {
   const wDir = path.join(outDir, String(width));
   fs.mkdirSync(wDir, { recursive: true });
   report.widths[width] = {};
-  for (const t of targets) {
+  for (const t of await targetsFor(width)) {
     const ctx = await browser.newContext({
       viewport: { width, height: 900 },
       deviceScaleFactor: 1,
@@ -176,7 +190,7 @@ for (const width of widths) {
       });
       shots.push({ ...b, file });
     }
-    report.widths[width][t.side] = { url: t.url, pageHeight, horizontalOverflowPx: overflow, errors, landmarks: shots };
+    report.widths[width][t.side] = { url: t.url, ...(t.board && { board: t.board, boardWidth: t.boardWidth }), pageHeight, horizontalOverflowPx: overflow, errors, landmarks: shots };
     await ctx.close();
   }
 
@@ -213,14 +227,17 @@ for (const width of widths) {
 }
 
 await browser.close();
-server?.close();
+for (const s of servers.values()) s.close();
 
 // ---------- markdown report ----------
 const lines = [`# Capture report`, ``];
+if (report.boards.length > 1) {
+  lines.push(`Design boards: ${report.boards.map((b) => `${b.board} (${b.band}, ${b.width}px)`).join(" · ")}. Each width is compared with the board drawn nearest to it.`, ``);
+}
 for (const [w, sides] of Object.entries(report.widths)) {
   lines.push(`## ${w}px`);
   for (const [side, r] of Object.entries(sides)) {
-    lines.push(`- ${side}: page ${r.pageHeight}px tall, ${r.landmarks.length} landmarks, horizontal overflow ${r.horizontalOverflowPx}px${r.horizontalOverflowPx > 0 ? " ⚠" : ""}, console errors ${r.errors.length}${r.errors.length ? " ⚠" : ""}`);
+    lines.push(`- ${side}${r.board && report.boards.length > 1 ? ` (board ${r.board}, drawn at ${r.boardWidth ?? "?"}px)` : ""}: page ${r.pageHeight}px tall, ${r.landmarks.length} landmarks, horizontal overflow ${r.horizontalOverflowPx}px${r.horizontalOverflowPx > 0 ? " ⚠" : ""}, console errors ${r.errors.length}${r.errors.length ? " ⚠" : ""}`);
     for (const e of r.errors) lines.push(`  - \`${e.replace(/\n/g, " ")}\``);
   }
   const o = sides.original?.landmarks || [];

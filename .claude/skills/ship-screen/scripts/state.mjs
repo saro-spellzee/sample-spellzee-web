@@ -13,17 +13,20 @@ import fs from "node:fs";
 import path from "node:path";
 import { load as loadBaseline, trendMarkdown } from "./baseline.mjs";
 
+// Forms runs before tests: it rewrites form behaviour, so the test net is cast over the final
+// form, and structure/a11y then review the form code too (on the homepage trial, tests were
+// written for a stub form that the later forms phase replaced).
 // Perf runs after security and errors so it measures the page with its final headers,
 // error boundaries and form code (a security header once cost mobile perf ~26 points).
 export const PHASES = [
   { n: 0, id: "preflight", title: "Pre-flight", owner: "orchestrator", blocking: true },
   { n: 1, id: "convert", title: "Convert design → code", owner: "screen-converter", blocking: true },
   { n: 2, id: "build", title: "Build gate", owner: "orchestrator", blocking: true },
-  { n: 3, id: "tests", title: "Tests", owner: "test-engineer", blocking: false },
-  { n: 4, id: "structure", title: "Structure, tokens, types", owner: "architecture-auditor", blocking: false },
-  { n: 5, id: "a11y", title: "Accessibility", owner: "a11y-auditor", blocking: false },
-  { n: 6, id: "seo", title: "SEO / GEO / AEO", owner: "seo-auditor", blocking: false },
-  { n: 7, id: "forms", title: "Forms", owner: "form-auditor", blocking: false },
+  { n: 3, id: "forms", title: "Forms", owner: "form-auditor", blocking: false },
+  { n: 4, id: "tests", title: "Tests", owner: "test-engineer", blocking: false },
+  { n: 5, id: "structure", title: "Structure, tokens, types", owner: "architecture-auditor", blocking: false },
+  { n: 6, id: "a11y", title: "Accessibility", owner: "a11y-auditor", blocking: false },
+  { n: 7, id: "seo", title: "SEO / GEO / AEO", owner: "seo-auditor", blocking: false },
   { n: 8, id: "security", title: "Security", owner: "security-auditor", blocking: false },
   { n: 9, id: "errors", title: "Error handling", owner: "error-handling-auditor", blocking: false },
   { n: 10, id: "perf", title: "Performance", owner: "perf-auditor", blocking: false },

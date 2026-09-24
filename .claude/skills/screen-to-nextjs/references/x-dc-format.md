@@ -6,12 +6,15 @@ Replicate the values; do not port the runtime.
 
 ```
 screens/<screen>/
-  Main.dc.html   the design: <x-dc> template + logic class      ← the only source of truth
-  assets/        uploaded images/svg/fonts, hashed filenames     ← copy, renamed by role
-  support.js     x-dc runtime                                    ← ignore
-  vendor/        react.js / react-dom.js for the runtime         ← ignore
-  README.md      export notes                                    ← read once
+  Main.dc.html   the desktop board: <x-dc> template + logic class ← source of truth at desktop width
+  mobile/        optional: the mobile board's own export          ← source of truth at phone width
+  assets/        uploaded images/svg/fonts, hashed filenames      ← copy, renamed by role
+  support.js     x-dc runtime                                     ← ignore
+  vendor/        react.js / react-dom.js for the runtime          ← ignore
+  README.md      export notes                                     ← read once
 ```
+
+A screen can have more than one board (mobile, tablet, states): see "Several boards" below.
 
 ## Anatomy of Main.dc.html
 
@@ -31,7 +34,38 @@ class Component extends DCLogic { … }                           → content.ts
 </script>
 ```
 
-`$preview.width` is the canvas width the design was drawn at: the desktop reference width.
+`$preview.width` is the width the board was drawn at: 1440 for a desktop board, ~390 for a
+mobile board.
+
+## Several boards: mobile, tablet, states
+
+The design team may draw one screen several times on the canvas: a desktop board, a mobile
+board, sometimes a tablet board, and **state boards** that show one widget in another state
+(menu open, a later quiz step). Each exported board is its own `*.dc.html`. They arrive as
+extra `.dc.html` files in the export, as a folder inside it (`screens/<screen>/mobile/`),
+or as a sibling export (`screens/<screen>-mobile/`, also `-tablet`/`-phone`/`-desktop`).
+A sibling folder belongs to that screen; it is not a screen of its own.
+
+```bash
+node .claude/skills/screen-to-nextjs/scripts/boards.mjs screens/<screen>
+```
+
+This prints every board with its width and role, and which board each capture width is
+compared with: the nearest drawn width, so with a 390 mobile board 1440 and 1000 go to
+desktop and 390 goes to mobile. `inventory.mjs` and `capture.mjs` find the boards
+themselves, so their commands don't change.
+
+- **Reference board**: the spec at its width. Where a mobile board and the desktop board's
+  `@media (max-width:640px)` rules disagree, the mobile board wins. The designer drew it
+  deliberately, whereas the media query was only a fallback.
+- **State board** (same width as a reference board): the spec for that one state, e.g. the
+  drawer the hamburger opens. It isn't captured. Check it by opening the widget at that
+  width and comparing it with the board.
+- **Each board has its own logic class.** Usually they match. Different data (fewer items,
+  shorter strings) shows up in the inventory's "Copy only on …" lines. Different behaviour
+  (a carousel on mobile, a grid on desktop) means one widget owns both.
+- All boards describe **one page**: one route, one DOM, one `content.ts`. How a second
+  board maps onto the same components: conventions §4, "With a mobile board".
 
 ## Template syntax → React
 

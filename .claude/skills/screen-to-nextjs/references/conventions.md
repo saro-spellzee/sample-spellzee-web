@@ -9,7 +9,7 @@ If anything here disagrees with `node_modules/next/dist/docs/`, the docs win.
 1. Folder layout
 2. Routes
 3. Tokens (`@theme`)
-4. Breakpoints
+4. Breakpoints (and a mobile board)
 5. Fonts
 6. Custom CSS: utilities, keyframes, base
 7. Content (`content.ts`)
@@ -125,9 +125,49 @@ tablet → `sm:` classes (or base if it also applies to phone). The `max-width:6
 → base (unprefixed). If a later screen's export uses different breakpoints, reconcile with
 the user rather than adding a second set.
 
-Also design what the export didn't: check every section at 390px. Grids collapse,
-absolute-positioned decorations may need hiding (`max-sm:hidden`), long headings need
-smaller type, and nothing may cause horizontal scroll.
+Without a mobile board, also design what the export didn't: check every section at 390px.
+Grids collapse, absolute-positioned decorations may need hiding (`max-sm:hidden`), long
+headings need smaller type, and nothing may cause horizontal scroll.
+
+### With a mobile board
+
+When `boards.mjs` lists a phone reference board (x-dc-format, "Several boards"), the base
+(unprefixed) classes come from **the mobile board**. `lg:` still comes from the desktop board,
+and `sm:` from a tablet board if there is one, otherwise from the desktop board's
+`max-width:1000px` rules. Where the desktop board has no rule for the tablet band, use the
+nearer board's layout and list the choice. The breakpoint tokens stay as they are.
+
+Work landmark by landmark, with both boards open at the inventory's line ranges:
+
+- **Same content, different layout** (stacked columns, a reordered section, a grid that
+  becomes a swipe row): one DOM, responsive classes (`flex-col lg:flex-row`, `order-*`,
+  `grid-flow-col overflow-x-auto snap-x lg:grid-flow-row`). Don't render the section twice.
+- **Different structure** (inline nav vs a hamburger drawer, a table vs cards): two variants
+  are fine. Both render from the same `content.ts` entries, and the unused one is
+  `display:none` at that width (`hidden lg:flex` / `lg:hidden`), so screen readers, Tab
+  order and search see one copy. Never hide with opacity or off-screen positioning.
+- **On only one board**: mobile-only elements (hamburger, sticky bottom CTA, "show more")
+  are hidden from the width where the desktop layout takes over (`sm:hidden` / `lg:hidden`).
+  Desktop-only decorations get `max-sm:hidden`.
+- **A landmark missing from the mobile board**: don't drop content silently. Keep it, laid
+  out by the desktop board's phone rules, and put it under DECISIONS NEEDED ("`#cta` isn't
+  on the mobile board: kept; hide it on phones?"). The capture reports a landmark-count
+  difference at 390. List it as a deliberate deviation.
+- **Different copy** (a shorter heading on mobile): both strings go verbatim into
+  `content.ts` as explicit fields (`title`, `titleShort`) and use the visibility classes
+  above. If the difference looks like drift rather than intent (one word changed), use the
+  desktop string and list it.
+- **Different image** (the inventory's "Images only on …", usually a mobile crop): art
+  direction with `getImageProps` + `<picture>` (Next docs
+  `03-api-reference/02-components/image.md`, "Art direction"), so each viewport downloads
+  only its own image. Don't use two `next/image` elements toggled with CSS.
+- **Different type scale**: the mobile board's font sizes become the base classes. A heading
+  role that changes size goes into the `Heading` primitive (`text-[30px] lg:text-[46px]`),
+  not into every section.
+- **Different behaviour** (a carousel on mobile, a static grid on desktop): switch with CSS
+  where possible (scroll-snap needs no JS). If JS must know the width (auto-advance only on
+  mobile), gate the effect with `matchMedia` and render the same markup on the server, so
+  hydration doesn't shift the layout.
 
 ## 5. Fonts
 
@@ -277,6 +317,9 @@ and accepts a `title` when the icon carries meaning. Inline one-off SVGs in the 
 - Copy `screens/<screen>/assets/*` to `public/images/<screen>/` with **role names**
   (`hero-child.jpg`, `logo.png`, `silk-texture.jpg`), not hashes. The inventory's asset table gives
   dimensions, alt text and where each is used. Skip files the inventory marks UNUSED.
+  A mobile board's `assets/` usually repeats the same hashed files. Copy each file once, and
+  give an image that only the mobile board uses a `-mobile` role name (`hero-child-mobile.jpg`,
+  art direction per §4).
 - Use `next/image` with the intrinsic `width`/`height` from the inventory (or `fill` + a sized
   parent) and a `sizes` attribute that reflects the rendered width at each breakpoint.
 - The hero/LCP image gets `loading="eager"` + `fetchPriority="high"`. Next 16 deprecated

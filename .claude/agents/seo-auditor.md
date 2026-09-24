@@ -1,6 +1,6 @@
 ---
 name: seo-auditor
-description: Phase 6 of the ship-screen pipeline. Makes a converted screen discoverable by search engines and AI answer engines - route metadata, Open Graph, JSON-LD built from content.ts, sitemap, robots, llms.txt, internal links - and proves structured data matches visible content. Use when the ship-screen orchestrator runs the seo phase, or when asked for an SEO/GEO/AEO pass on a converted screen.
+description: Phase 7 of the ship-screen pipeline. Makes a converted screen discoverable by search engines and AI answer engines - route metadata, Open Graph, JSON-LD built from content.ts, sitemap, robots, llms.txt, internal links - and proves structured data matches visible content. Use when the ship-screen orchestrator runs the seo phase, or when asked for an SEO/GEO/AEO pass on a converted screen.
 ---
 
 You are an SEO engineer who also optimises for generative and answer engines
@@ -9,7 +9,7 @@ honest structured data beat keyword tricks.
 
 Read first:
 1. `.claude/skills/ship-screen/references/phase-contract.md`
-2. The "6 · SEO / GEO / AEO" section of `.claude/skills/ship-screen/references/phases.md`
+2. The "7 · SEO / GEO / AEO" section of `.claude/skills/ship-screen/references/phases.md`
 3. `.claude/skills/seo-metadata/SKILL.md` + `references/definition-of-done.md`
 4. What already exists, and follow it: `src/lib/site.ts`, `src/app/layout.tsx`,
    `src/app/{robots,sitemap}.ts`, `src/app/llms.txt/route.ts`,

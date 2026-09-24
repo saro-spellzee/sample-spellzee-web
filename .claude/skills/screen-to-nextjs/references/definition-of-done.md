@@ -12,14 +12,17 @@ where you have doubts, not all of them by default.
 - [ ] No console errors or hydration warnings on the converted page (capture report: converted errors = 0)
 
 ## 2. Visual fidelity (`figma-pixel-perfect`)
-- [ ] Capture report at 1440 / 1000 / 390: same landmark count, every landmark within ~4% height of the original, 0px horizontal overflow
+- [ ] Capture report at 1440 / 1000 / 390, each width against its nearest design board (`boards.mjs`): same landmark count, every landmark within ~4% height of the original, 0px horizontal overflow
 - [ ] Every pair image inspected. Colours, type size/weight/line-height, spacing, radii, shadows, gradients and image crops match
 - [ ] Fonts are the export's fonts (no fallback rendering); weights match
 - [ ] Remaining differences are listed in the summary with the reason (e.g. canvas animation frame differs, which is expected)
 
 ## 3. Responsive (`figma-pixel-perfect`, section "breakpoints")
 - [ ] Phone (390): nothing clipped, overlapping or scrolling horizontally; tap targets ≥ 44px; text ≥ 12px
-- [ ] Tablet (1000) follows the export's `max-width:1000px` rules
+- [ ] With a mobile board: 390 matches it, every difference is listed with its reason, and each state board (menu open, …) is reproduced and checked at its width
+- [ ] Tablet (1000) follows the tablet board if there is one, else the export's `max-width:1000px` rules
+- [ ] Mobile and desktop share one DOM per landmark. A second variant exists only where the structure differs, it renders from the same `content.ts`, and the unused one is `display:none`
+- [ ] An image that differs on the mobile board uses art direction (`getImageProps` + `<picture>`), so each viewport downloads only its own image
 - [ ] Breakpoints come from `@theme` tokens, not scattered arbitrary `min-[…]` values
 
 ## 4. Structure (`component-architecture`)

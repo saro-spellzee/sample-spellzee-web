@@ -5,7 +5,18 @@
       "id": 1,
       "prompt": "screens/homepage la irukka HTML page ah namma Next.js code ah convert pannunga with proper UI standards and best practices.",
       "expected_output": "Homepage at src/app/page.tsx composed from src/features/homepage/sections/*, tokens in globals.css @theme, next/font fonts, typed content.ts, interactive leaves as client components, canvas animations as hooks; tsc/lint/build pass; capture at 1440/1000/390 shows matching landmarks, <4% height drift, no overflow, no console errors.",
-      "files": ["screens/homepage/Main.dc.html"]
+      "files": [
+        "screens/homepage/Main.dc.html"
+      ]
+    },
+    {
+      "prompt": "screens/pricing la desktop board um mobile/ folder la mobile board um design team kuduthirukanga. /screen-to-nextjs pricing",
+      "expected_output": "Hands off to ship-screen. Pre-flight boards.mjs lists Main.dc.html (1440, desktop) and mobile/Main.dc.html (390, phone) and every agent prompt carries that list. The converter builds base (phone) classes from the mobile board and lg: from the desktop board, keeps one DOM per landmark (a second variant only where structure differs, the unused one display:none), puts mobile-only copy in content.ts as explicit fields, uses getImageProps + <picture> for images only the mobile board uses, and keeps landmarks the mobile board omits while listing them under decisions. Capture compares 390 with the mobile board (report names the board per width); differences from the mobile board are listed with reasons.",
+      "files": [
+        "screens/pricing/Main.dc.html",
+        "screens/pricing/mobile/Main.dc.html"
+      ],
+      "id": 2
     }
   ]
 }

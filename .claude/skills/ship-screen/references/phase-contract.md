@@ -60,7 +60,8 @@ test and say so in `CHANGED`.
 ## After you report: the regression check
 
 The orchestrator then compares the page with the best results earlier phases reached
-(console errors, axe, security headers, design capture, mobile Lighthouse; see "The
+(console errors, axe, focus walk, responsive sweep, security headers, design capture,
+mobile Lighthouse, and other converted screens when you touched shared code; see "The
 regression check" in `phases.md`). If your phase touched something it measures, you can
 run the same command yourself first, **without `--phase`** and with `--out
 .quality/<screen>/NN-precheck` (without `--phase` it only compares and records nothing).

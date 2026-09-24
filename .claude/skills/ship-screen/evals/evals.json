@@ -5,19 +5,41 @@
       "id": 1,
       "prompt": "/ship-screen homepage --no-convert",
       "expected_output": "Pre-flight creates feat/homepage-quality from a clean tree and installs test tooling (committed). Phases 3-12 each run in their own subagent, leave gates green and are committed separately without Co-Authored-By trailers. Final: tests exist and pass, 0 serious axe violations except listed contrast decisions, security headers present with the route still static, Lighthouse numbers reported against budgets, broken programme links and contrast colours listed under decisions, .quality/homepage/REPORT.md written, nothing pushed.",
-      "files": ["screens/homepage/Main.dc.html"]
+      "files": [
+        "screens/homepage/Main.dc.html"
+      ]
     },
     {
       "id": 2,
       "prompt": "screens/pricing la puthu design export pottiruken. /screen-to-nextjs pricing - convert panni ellaa checks-um run pannu",
       "expected_output": "screen-to-nextjs hands off to ship-screen; the convert phase runs in the screen-converter agent and reuses existing tokens/primitives/header/footer (promoting header/footer to components/layout on this second screen); route /pricing; then every quality phase in order; final report with decisions.",
-      "files": ["screens/pricing/Main.dc.html"]
+      "files": [
+        "screens/pricing/Main.dc.html"
+      ]
     },
     {
       "id": 3,
       "prompt": "homepage la a11y and perf phases mattum thirumba run pannu, mobile perf budget 85 vei",
       "expected_output": "ship-screen with --no-convert --only a11y,perf --budget mobile.perf=85: build gate first, then only the a11y and perf agents, committed per phase, short report.",
       "files": []
+    },
+    {
+      "prompt": "homepage ku mobile screens vanthuruchu, screens/homepage/mobile la pottiruken. pipeline run pannu",
+      "expected_output": "Pre-flight sees src/features/homepage already exists and boards.mjs lists a new phone board, so it runs without --no-convert on feat/homepage-resync. The convert phase re-syncs only the phone band against mobile/Main.dc.html (base classes, mobile-only elements, content fields, art-directed images) and proves 1440 drift/pixel diff unchanged while 390 now compares with the mobile board. Tests cover mobile-only widgets in the mobile E2E project; a11y checks the drawer and 24px targets at 390; the regression check after each phase compares 390 with the mobile board.",
+      "files": [
+        "screens/homepage/Main.dc.html",
+        "screens/homepage/mobile/Main.dc.html"
+      ],
+      "id": 4
+    },
+    {
+      "id": 5,
+      "prompt": "/ship-screen pricing (homepage already shipped, header and footer shared)",
+      "expected_output": "Pre-flight: boards.mjs lists the pricing boards (asks whether a mobile board is coming if there is none, unless --desktop-only); screens.mjs others pricing prints the homepage route and export; the base commit is built and the homepage is recorded in baseline-others.json. Build gate baseline runs with --links and seeds broken links into Open decisions. Order: convert, build, forms (only if the screen has form controls), tests, structure, a11y, seo, security, errors, perf, review, final. After every phase whose changes screens.mjs shared-changes reports (layout, components/ui, globals.css, next.config), the other-screens check runs on the homepage (no Lighthouse) against baseline-others.json. The quick check includes the focus walk (hidden stops, traps, contact sheets) and the responsive sweep (320-1920). After a11y an interim list of design decisions is shown without stopping. Final re-checks the homepage with Lighthouse.",
+      "files": [
+        "screens/pricing/Main.dc.html",
+        "screens/homepage/Main.dc.html"
+      ]
     }
   ]
 }
