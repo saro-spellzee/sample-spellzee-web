@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
 import { stories } from "../../content";
@@ -27,10 +27,13 @@ export function ReelRow({ cta }: { cta: ReactNode }) {
     const row = rowRef.current;
     if (row) row.scrollBy({ left: direction * row.clientWidth * 0.8, behavior: "smooth" });
   };
-  const close = () => {
-    setPlaying(null);
-    opener.current?.focus();
-  };
+  const close = () => setPlaying(null);
+  // Focus goes back to the reel once the dialog has closed (VideoDialog's effect runs first). While
+  // the modal is open the page behind it is inert and can't take focus, and Safari, which doesn't
+  // focus a tapped button, has nothing of its own to restore.
+  useEffect(() => {
+    if (!playing) opener.current?.focus();
+  }, [playing]);
 
   return (
     <>

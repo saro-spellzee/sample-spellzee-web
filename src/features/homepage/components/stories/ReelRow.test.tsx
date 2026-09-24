@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { axeViolations } from "../../../../../tests/axe";
@@ -34,6 +34,18 @@ describe("ReelRow", () => {
 
     expect(videoDialog()).not.toHaveAttribute("open");
     expect(reelButton(3)).toHaveFocus();
+  });
+
+  it("closes on Escape and returns focus to the reel that opened it", async () => {
+    const user = userEvent.setup();
+    render(<ReelRow cta={null} />);
+
+    await user.click(reelButton(1));
+    expect(videoDialog()).toHaveAttribute("open");
+    fireEvent(videoDialog(), new Event("cancel", { cancelable: true })); // what Escape fires on a modal <dialog>
+
+    expect(videoDialog()).not.toHaveAttribute("open");
+    expect(reelButton(1)).toHaveFocus();
   });
 
   it("scrolls the row by most of its width with the arrows", async () => {

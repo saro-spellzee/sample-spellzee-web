@@ -41,6 +41,40 @@ describe("HeroTags", () => {
     expect(isShown(tip(first.id))).toBe(false);
   });
 
+  it("closes a tapped-open tooltip when the pointer leaves the tag", async () => {
+    const user = userEvent.setup();
+    render(<HeroTags />);
+
+    await user.click(tag(first.label));
+    await user.unhover(tag(first.label));
+
+    expect(tag(first.label)).toHaveAttribute("aria-expanded", "false");
+    expect(isShown(tip(first.id))).toBe(false);
+  });
+
+  it("closes a tapped-open tooltip when focus moves on", async () => {
+    const user = userEvent.setup();
+    render(<HeroTags />);
+
+    await user.click(tag(first.label));
+    await user.tab();
+
+    expect(tag(second.label)).toHaveFocus();
+    expect(tag(first.label)).toHaveAttribute("aria-expanded", "false");
+    expect(isShown(tip(first.id))).toBe(false);
+  });
+
+  it("opens one tapped tooltip at a time", async () => {
+    const user = userEvent.setup();
+    render(<HeroTags />);
+
+    await user.click(tag(first.label));
+    await user.click(tag(second.label));
+
+    expect(tag(first.label)).toHaveAttribute("aria-expanded", "false");
+    expect(tag(second.label)).toHaveAttribute("aria-expanded", "true");
+  });
+
   it("dismisses the tooltip with Escape until focus leaves", async () => {
     const user = userEvent.setup();
     render(<HeroTags />);

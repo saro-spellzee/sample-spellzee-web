@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { axeViolations } from "../../../../../tests/axe";
@@ -6,12 +6,18 @@ import { requestDemo } from "../../booking/actions";
 import { BOOKING_FAILED, HONEYPOT_FIELD, type BookingResult } from "../../booking/schema";
 import { booking } from "../../content";
 import { BookingDialog } from "./BookingDialog";
+import { calendarMonth, languageText } from "./model";
 
 vi.mock("../../booking/actions", () => ({ requestDemo: vi.fn() }));
 const action = vi.mocked(requestDemo);
 
 const { steps, errors } = booking;
 type User = ReturnType<typeof userEvent.setup>;
+const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/** A difficulty card, by its title from the content. */
+const difficulty = (id: string) => screen.getByRole("button", { name: new RegExp(escape(booking.difficulties.items.find((d) => d.id === id)!.title)) });
+const languageChip = (name: string) => screen.getByRole("button", { name: `${booking.language.addPrefix}${name}` });
+const tamil = booking.language.extras[0];
 
 function renderWithTrigger() {
   return render(
@@ -42,7 +48,7 @@ const sent = (call = 0) => action.mock.calls[call][0] as Record<string, unknown>
 async function fillChild(user: User) {
   await user.type(screen.getByLabelText(booking.kid.label), "Aarav");
   await user.type(screen.getByLabelText(booking.grade.label), "Grade 3");
-  await user.click(screen.getByRole("button", { name: /Reading & Spelling/ }));
+  await user.click(difficulty("read"));
   await user.click(screen.getByRole("button", { name: booking.continue }));
 }
 
@@ -110,7 +116,7 @@ describe("BookingDialog", () => {
     expect(within(group).getAllByRole("button")[0]).toHaveFocus();
 
     // Picking one clears the message straight away.
-    await user.click(screen.getByRole("button", { name: /Reading & Spelling/ }));
+    await user.click(difficulty("read"));
     await waitFor(() => expect(errorLine()).toBeEmptyDOMElement());
     expect(action).not.toHaveBeenCalled();
   });
@@ -173,7 +179,7 @@ describe("BookingDialog", () => {
     await user.click(screen.getByRole("button", { name: booking.edit }));
 
     expect(screen.getByLabelText(booking.kid.label)).toHaveValue("Aarav");
-    expect(screen.getByRole("button", { name: /Reading & Spelling/ })).toHaveAttribute("aria-pressed", "true");
+    expect(difficulty("read")).toHaveAttribute("aria-pressed", "true");
 
     await user.click(screen.getByRole("button", { name: booking.continue }));
     await fillParent(user);
@@ -189,7 +195,7 @@ describe("BookingDialog", () => {
     await open(user);
     await fillChild(user);
     await fillParent(user);
-    await user.click(screen.getByRole("button", { name: /\+ Tamil/ }));
+    await user.click(languageChip(tamil));
 
     await user.click(screen.getByRole("radio", { name: new RegExp(booking.mode.schedule.title) }));
     await user.click(screen.getByRole("button", { name: new RegExp(booking.submit.schedule) }));
@@ -204,8 +210,8 @@ describe("BookingDialog", () => {
     await user.click(screen.getByRole("button", { name: new RegExp(booking.submit.schedule) }));
 
     expect(await screen.findByText(/26 Sept? at 10:30 AM/)).toBeInTheDocument();
-    expect(dialog()).toHaveTextContent("English + Tamil");
-    expect(sent()).toMatchObject({ mode: "schedule", date: "2026-09-26", slot: "10:30 AM", language: "Tamil" });
+    expect(dialog()).toHaveTextContent(languageText(tamil));
+    expect(sent()).toMatchObject({ mode: "schedule", date: "2026-09-26", slot: "10:30 AM", language: tamil });
   });
 
   it("drops a missing-slot message when the parent switches back to a call-back", async () => {
@@ -294,7 +300,7 @@ describe("BookingDialog", () => {
     await user.keyboard("Aarav");
     await user.tab();
     await user.keyboard("Grade 3");
-    await tabTo(user, screen.getByRole("button", { name: /Reading & Spelling/ }));
+    await tabTo(user, difficulty("read"));
     await user.keyboard(" ");
     await tabTo(user, screen.getByRole("button", { name: booking.continue }));
     await user.keyboard("{Enter}");
@@ -331,6 +337,127 @@ describe("BookingDialog", () => {
     await user.click(await screen.findByRole("button", { name: booking.done.button }));
     await open(user);
     expect(screen.getByLabelText(booking.kid.label)).toHaveValue("");
+  });
+
+  it("closes on Escape and returns focus to the booking link that opened it", async () => {
+    const user = userEvent.setup();
+    renderWithTrigger();
+    await open(user);
+
+    fireEvent(dialog(), new Event("cancel", { cancelable: true })); // what Escape fires on a modal <dialog>
+
+    expect(dialog()).not.toHaveAttribute("open");
+    expect(screen.getByRole("link", { name: "Book a Free Demo Class" })).toHaveFocus();
+  });
+
+  it("closes when the backdrop is tapped, returning focus to the link", async () => {
+    const user = userEvent.setup();
+    renderWithTrigger();
+    await open(user);
+    const backdrop = screen.getByRole("button", { name: booking.closeBackdrop });
+    expect(backdrop).toHaveAttribute("tabindex", "-1"); // pointer-only: the close button serves the keyboard
+
+    await user.click(backdrop);
+
+    expect(dialog()).not.toHaveAttribute("open");
+    expect(screen.getByRole("link", { name: "Book a Free Demo Class" })).toHaveFocus();
+  });
+
+  it.each([["Ctrl", { ctrlKey: true }], ["Cmd", { metaKey: true }], ["Shift", { shiftKey: true }]])(
+    "leaves a %s-click on a booking link to the browser (a new tab or window)",
+    (_label, modifier) => {
+      renderWithTrigger();
+      try {
+        const notPrevented = fireEvent.click(screen.getByRole("link", { name: "Book a Free Demo Class" }), modifier);
+
+        expect(notPrevented).toBe(true);
+        expect(dialog()).not.toHaveAttribute("open");
+      } finally {
+        window.history.replaceState(null, "", window.location.pathname); // jsdom followed the #book link
+      }
+    },
+  );
+
+  it("unpicks a difficulty and the classroom language on a second tap", async () => {
+    const user = userEvent.setup();
+    renderWithTrigger();
+    await open(user);
+
+    await user.click(difficulty("comp"));
+    expect(difficulty("comp")).toHaveAttribute("aria-pressed", "true");
+    await user.click(difficulty("comp"));
+    expect(difficulty("comp")).toHaveAttribute("aria-pressed", "false");
+
+    await fillChild(user);
+    await user.click(languageChip(tamil));
+    expect(languageChip(tamil)).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByText(languageText(tamil))).toBeInTheDocument(); // the label names the pick
+    await user.click(languageChip(tamil));
+    expect(languageChip(tamil)).toHaveAttribute("aria-pressed", "false");
+    expect(screen.queryByText(languageText(tamil))).not.toBeInTheDocument();
+  });
+
+  it("treats 'Not sure yet' as either-or with the named difficulties", async () => {
+    const user = userEvent.setup();
+    renderWithTrigger();
+    await open(user);
+    const { unsureId, items } = booking.difficulties;
+    const named = items.filter((d) => d.id !== unsureId).map((d) => d.id);
+    const pressed = () => items.filter((d) => difficulty(d.id).getAttribute("aria-pressed") === "true").map((d) => d.id);
+
+    await user.click(difficulty(named[0]));
+    await user.click(difficulty(named[1]));
+    expect(pressed()).toEqual([named[0], named[1]]);
+
+    await user.click(difficulty(unsureId));
+    expect(pressed()).toEqual([unsureId]);
+
+    await user.click(difficulty(named[2]));
+    expect(pressed()).toEqual([named[2]]);
+  });
+
+  it("steps the calendar through the bookable months, and no further", async () => {
+    const user = userEvent.setup();
+    renderWithTrigger();
+    await open(user);
+    await fillChild(user);
+    await user.click(screen.getByRole("radio", { name: new RegExp(booking.mode.schedule.title) }));
+    const today = new Date();
+    const previous = screen.getByRole("button", { name: booking.schedule.previousMonth });
+    const next = screen.getByRole("button", { name: booking.schedule.nextMonth });
+
+    expect(previous).toBeDisabled();
+    expect(screen.getByRole("group", { name: calendarMonth(today, 0).title })).toBeInTheDocument();
+
+    let offset = 0;
+    while (calendarMonth(today, offset).canGoForward) {
+      await user.click(next);
+      offset++;
+      expect(screen.getByRole("group", { name: calendarMonth(today, offset).title })).toBeInTheDocument();
+    }
+    expect(offset).toBeGreaterThan(0);
+    expect(next).toBeDisabled();
+    expect(previous).toBeEnabled();
+
+    await user.click(previous);
+    expect(screen.getByRole("group", { name: calendarMonth(today, offset - 1).title })).toBeInTheDocument();
+  });
+
+  it("has no axe violations on the scheduler or the confirmation", async () => {
+    const user = userEvent.setup();
+    const { container } = renderWithTrigger();
+    await open(user);
+    await fillChild(user);
+    await fillParent(user);
+    await user.click(screen.getByRole("radio", { name: new RegExp(booking.mode.schedule.title) }));
+    const days = within(screen.getByRole("group", { name: calendarMonth(new Date(), 0).title }));
+    await user.click(days.getAllByRole("button").find((b) => !(b as HTMLButtonElement).disabled)!);
+    await user.click(within(screen.getByRole("group", { name: booking.schedule.slotGroup })).getAllByRole("button")[0]);
+    expect(await axeViolations(container)).toEqual([]);
+
+    await user.click(screen.getByRole("button", { name: new RegExp(booking.submit.schedule) }));
+    await screen.findByRole("heading", { name: booking.done.title.replace("{parent}", "Meera") });
+    expect(await axeViolations(container)).toEqual([]);
   });
 
   it("has no axe violations on either step, with errors showing too", async () => {

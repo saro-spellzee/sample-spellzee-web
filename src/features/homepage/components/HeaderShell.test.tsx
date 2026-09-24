@@ -6,9 +6,17 @@ import { header } from "../content";
 import { HeaderShell } from "./HeaderShell";
 
 const renderHeader = () =>
-  render(<HeaderShell brand={<a href="#top">Spellzee</a>} nav={<nav aria-label={header.navLabel} />} cta={<a href="#book">CTA</a>} />);
+  render(
+    <>
+      <HeaderShell brand={<a href="#top">Spellzee</a>} nav={<nav aria-label={header.navLabel} />} cta={<a href="#book">CTA</a>} />
+      <main>
+        <button type="button">Page content</button>
+      </main>
+    </>,
+  );
 const menuButton = () => screen.getByRole("button", { name: header.menuLabel });
 const mobileNav = () => screen.queryByRole("navigation", { name: header.mobileNavLabel });
+const menuLink = (label: string) => screen.getAllByRole("link", { name: label }).find((a) => mobileNav()?.contains(a))!;
 
 describe("HeaderShell", () => {
   it("starts with the mobile menu closed", () => {
@@ -25,13 +33,46 @@ describe("HeaderShell", () => {
     await user.click(menuButton());
 
     expect(menuButton()).toHaveAttribute("aria-expanded", "true");
-    const nav = mobileNav()!;
-    for (const item of header.nav) expect(screen.getAllByRole("link", { name: item.label }).some((a) => nav.contains(a))).toBe(true);
-    const cta = screen.getAllByRole("link", { name: header.cta.label }).find((a) => nav.contains(a))!;
-    expect(cta).toHaveAttribute("data-action", "book");
+    for (const item of header.nav) expect(menuLink(item.label)).toHaveAttribute("href", item.href);
+    expect(menuLink(header.cta.label)).toHaveAttribute("data-action", "book");
 
-    await user.click(screen.getByRole("link", { name: header.nav[1].label }));
+    await user.click(menuLink(header.nav[1].label));
     expect(menuButton()).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("closes when the menu button is pressed again", async () => {
+    const user = userEvent.setup();
+    renderHeader();
+
+    await user.click(menuButton());
+    await user.click(menuButton());
+
+    expect(menuButton()).toHaveAttribute("aria-expanded", "false");
+    expect(mobileNav()).not.toBeInTheDocument();
+  });
+
+  it("closes on a tap outside the header, but not on a tap inside the open menu", async () => {
+    const user = userEvent.setup();
+    renderHeader();
+    await user.click(menuButton());
+
+    await user.click(mobileNav()!);
+    expect(menuButton()).toHaveAttribute("aria-expanded", "true");
+
+    await user.click(screen.getByRole("button", { name: "Page content" }));
+    expect(menuButton()).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("opens from the keyboard, with the menu links next in the Tab order", async () => {
+    const user = userEvent.setup();
+    renderHeader();
+
+    menuButton().focus();
+    await user.keyboard("{Enter}");
+    expect(menuButton()).toHaveAttribute("aria-expanded", "true");
+
+    await user.tab();
+    expect(menuLink(header.nav[0].label)).toHaveFocus();
   });
 
   it("closes on Escape and returns focus to the menu button", async () => {
