@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { site } from "@/lib/site";
-import { clm, faq, meta, programs } from "./content";
+import { classroom, clm, community, faq, faqExtras, hero, meta, programs } from "./content";
+import { faqAnswerText } from "./faq-answers";
 import { homepageStructuredData } from "./structured-data";
 
 type Node = Record<string, unknown> & { "@type": string | string[]; "@id": string };
@@ -33,14 +34,33 @@ describe("homepageStructuredData", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("has one Question per FAQ item, matching the visible copy", () => {
+  it("has one Question per FAQ item, answered with the whole visible answer", () => {
     const entities = byType("FAQPage").mainEntity as { name: string; acceptedAnswer: { text: string } }[];
 
     expect(entities).toHaveLength(faq.items.length);
     entities.forEach((q, i) => {
       expect(q.name).toBe(faq.items[i].question);
-      expect(q.acceptedAnswer.text).toBe(faq.items[i].answer);
+      // faq-answers.test.tsx checks this text against the rendered answer panel, both ways.
+      expect(q.acceptedAnswer.text).toBe(faqAnswerText(faq.items[i]));
+      expect(q.acceptedAnswer.text.startsWith(faq.items[i].answer)).toBe(true);
     });
+  });
+
+  it("asserts no unconfirmed claim: no ratings, reviews, people or prices, and no pending figures", () => {
+    const json = JSON.stringify(data);
+    const types = collect(graph, "@type").concat(graph.flatMap((n) => [n["@type"]].flat()));
+
+    for (const type of ["AggregateRating", "Rating", "Review", "Person", "PriceSpecification"]) expect(types).not.toContain(type);
+    for (const key of ["aggregateRating", "review", "price", "priceCurrency"]) expect(json).not.toContain(`"${key}"`);
+
+    const pending = [
+      classroom.live.rating.score,
+      hero.ledger.find((item) => item.id === "satisfaction")!.title,
+      hero.ledger.find((item) => item.id === "refund")!.title,
+      community.stats.find((stat) => stat.id === "minutes")!.value,
+      faqExtras.payment.refund.timing,
+    ];
+    for (const claim of pending) expect(json).not.toContain(claim);
   });
 
   it("offers one Service per programme", () => {
@@ -49,9 +69,11 @@ describe("homepageStructuredData", () => {
     expect(catalog.itemListElement.map((o) => o.itemOffered.name)).toEqual(programs.items.map((p) => p.title));
   });
 
-  it("names every CLM skill in knowsAbout", () => {
+  it("names every CLM skill and programme in knowsAbout, once each", () => {
     const knowsAbout = byType("Organization").knowsAbout as string[];
     for (const skill of clm.skills) expect(knowsAbout).toContain(skill.name);
+    for (const program of programs.items) expect(knowsAbout).toContain(program.title);
+    expect(new Set(knowsAbout).size).toBe(knowsAbout.length);
   });
 
   it("defines CLM with the FAQ's own answer", () => {

@@ -141,7 +141,9 @@ export const faqExtras = {
     },
     refund: {
       title: "Refund policy",
-      body: "Within 7 days of your child’s first class, change the tutor or ask for a full refund. Once confirmed, the refund is released within 30 minutes.",
+      body: "Within 7 days of your child’s first class, change the tutor or ask for a full refund.",
+      /** Shown after `body` in the same paragraph. Its own field so JSON-LD and llms.txt can hold it back until confirmed (pending-claims.ts). */
+      timing: "Once confirmed, the refund is released within 30 minutes.",
     },
   },
 };

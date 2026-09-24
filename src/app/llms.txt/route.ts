@@ -1,10 +1,13 @@
-import { book, clm, clmSteps, community, faq, hero, oneOnOne, parentSupport, programs, classroom } from "@/features/homepage/content";
+import { book, classroom, clm, clmSteps, community, educators, faq, hero, oneOnOne, parentSupport, programs } from "@/features/homepage/content";
+import { faqAnswerText } from "@/features/homepage/faq-answers";
+import { isPublishable } from "@/features/homepage/pending-claims";
 import { absoluteUrl, site } from "@/lib/site";
 
 /**
  * /llms.txt (llmstxt.org): a plain-markdown brief of the site for AI assistants
  * and answer engines (GEO). Generated from content.ts at build time, so it
- * always states exactly what the page states.
+ * always states exactly what the page states, minus claims product hasn't
+ * confirmed yet (pending-claims.ts).
  */
 export const dynamic = "force-static";
 
@@ -12,11 +15,14 @@ const list = (items: string[]) => items.map((item) => `- ${item}`).join("\n");
 
 export function GET() {
   const facts = [
-    ...community.stats.map((stat) => `${stat.value} ${stat.label}`),
-    ...hero.ledger.map((item) => item.title),
+    ...community.stats.filter((stat) => isPublishable("stat", stat.id)).map((stat) => `${stat.value} ${stat.label}`),
+    ...hero.ledger.filter((item) => isPublishable("ledger", item.id)).map((item) => item.title),
     ...hero.credentials.map((c) => `${c.name} ${c.caption}`),
+    `${hero.language.label} ${hero.language.spoken}`,
     `Legal entity: ${site.legalName}`,
   ];
+  const clmDefinition = faq.items.find((item) => item.id === "clm")?.answer ?? "";
+  const { match } = educators;
 
   const body = `# ${site.name}
 
@@ -28,7 +34,7 @@ ${list(facts)}
 
 ## What is Cognitive Literacy Mapping (CLM)?
 
-${faq.items.find((item) => item.id === "clm")?.answer ?? ""}
+${clmDefinition}
 
 CLM covers six core skills:
 
@@ -46,23 +52,32 @@ ${oneOnOne.lead}
 
 ${list(oneOnOne.features.map((f) => f.title))}
 
-Learning tools used in class: ${classroom.tools.items.map((t) => t.label.toLowerCase()).join(", ")}.
+Learning tools used in class:
 
-Parent support: ${parentSupport.items.map((i) => `${i.title.toLowerCase()} (${i.description.toLowerCase()})`).join("; ")}.
+${list(classroom.tools.items.map((tool) => `**${tool.label}**${tool.kind === tool.label ? "" : `: ${tool.kind}`}`))}
+
+## Mentors
+
+${educators.stat.value} ${educators.stat.title.toLowerCase()}. ${educators.stat.body}. ${match.before}${match.strong}${match.after}
+
+## Parent support
+
+${list(parentSupport.items.map((item) => `**${item.title}**: ${item.description}`))}
 
 ## What happens after booking a free demo class
 
-${book.steps.map((s) => `${s.n}. **${s.title}**: ${s.description}`).join("\n")}
+${book.steps.map((s) => `${s.n}. **${s.title}** (${s.time}): ${s.description}`).join("\n")}
 
 ## Frequently asked questions
 
-${faq.items.map((item) => `### ${item.question}\n\n${item.answer}`).join("\n\n")}
+${faq.items.map((item) => `### ${item.question}\n\n${faqAnswerText(item)}`).join("\n\n")}
 
 ## Links
 
 - [Homepage](${absoluteUrl("/")}): overview of CLM, programmes, educators and parent stories
 - [How CLM works](${absoluteUrl("/#clm")})
 - [Programmes](${absoluteUrl("/#programs")})
+- [Meet the mentors](${absoluteUrl("/#educators")})
 - [Book a free demo class](${absoluteUrl("/#book")})
 - [FAQ](${absoluteUrl("/#faq")})
 `;

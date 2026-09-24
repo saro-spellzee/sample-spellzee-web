@@ -2,9 +2,14 @@
  * schema.org graph for the homepage, built from content.ts so every value
  * matches what's visible on the page (a Google structured-data requirement,
  * and what makes AI answer engines trust and quote it).
+ *
+ * Only types the page honestly supports: no AggregateRating or Review (the Google
+ * rating badge isn't confirmed or verifiable here), no Person nodes for the mentors,
+ * no prices. Claims awaiting product confirmation stay out (pending-claims.ts).
  */
 import { absoluteUrl, site } from "@/lib/site";
 import { clm, faq, hero, meta, programs } from "./content";
+import { faqAnswerText } from "./faq-answers";
 
 const id = (fragment: string) => `${site.url}/#${fragment}`;
 
@@ -20,10 +25,9 @@ export function homepageStructuredData() {
     logo: { "@type": "ImageObject", url: absoluteUrl(site.logo.src), width: site.logo.width, height: site.logo.height },
     description: site.description,
     slogan: site.tagline,
+    // Skills and programmes share names (Comprehension, Communication): list each once.
     knowsAbout: [
-      "Cognitive Literacy Mapping",
-      ...clm.skills.map((skill) => skill.name),
-      ...programs.items.map((program) => program.title),
+      ...new Set(["Cognitive Literacy Mapping", ...clm.skills.map((skill) => skill.name), ...programs.items.map((program) => program.title)]),
     ],
     hasOfferCatalog: {
       "@type": "OfferCatalog",
@@ -81,6 +85,7 @@ export function homepageStructuredData() {
     url: absoluteUrl("/#clm"),
   };
 
+  // The whole answer each question shows (short answer plus its designed extra), not just the lead-in.
   const faqPage = {
     "@type": "FAQPage",
     "@id": id("faq"),
@@ -89,7 +94,7 @@ export function homepageStructuredData() {
     mainEntity: faq.items.map((item) => ({
       "@type": "Question",
       name: item.question,
-      acceptedAnswer: { "@type": "Answer", text: item.answer },
+      acceptedAnswer: { "@type": "Answer", text: faqAnswerText(item) },
     })),
   };
 

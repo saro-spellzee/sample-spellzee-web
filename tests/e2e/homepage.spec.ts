@@ -165,6 +165,34 @@ test.describe("homepage", () => {
     }
   });
 
+  test("crawlers get canonical and share tags, JSON-LD that matches the FAQ, and the crawl files", async ({ page, request }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop", "what crawlers read doesn't depend on the browser");
+    await page.goto("/");
+
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /^https?:\/\/[^/]+\/?$/);
+    // The share image the tags point at is served (absolute production URL, so fetch its path here).
+    for (const property of ["og:image", "twitter:image"]) {
+      const url = new URL((await page.locator(`meta[property="${property}"], meta[name="${property}"]`).getAttribute("content"))!);
+      const image = await request.get(url.pathname + url.search);
+      expect(image.status(), property).toBe(200);
+      expect(image.headers()["content-type"], property).toBe("image/png");
+    }
+
+    const graphs = await page.locator('script[type="application/ld+json"]').allTextContents();
+    expect(graphs).toHaveLength(1);
+    const nodes = JSON.parse(graphs[0])["@graph"] as { "@type": string | string[]; mainEntity?: { name: string }[] }[];
+    const faqPage = nodes.find((node) => node["@type"] === "FAQPage");
+    const questions = (await page.locator("#faq h3 button").allTextContents()).map((q) => q.trim());
+    expect(questions).toHaveLength(faq.items.length);
+    expect(faqPage?.mainEntity?.map((q) => q.name)).toEqual(questions);
+
+    for (const [path, type] of [["/robots.txt", "text/plain"], ["/sitemap.xml", "application/xml"], ["/llms.txt", "text/markdown"]]) {
+      const response = await request.get(path);
+      expect(response.status(), path).toBe(200);
+      expect(response.headers()["content-type"], path).toContain(type);
+    }
+  });
+
   test("skip link is the first tab stop and moves focus to main", async ({ page, browserName }) => {
     test.skip(browserName === "webkit", "Safari leaves links out of the Tab order unless the user turns that on; the Chromium projects cover keyboard order");
     await page.goto("/");

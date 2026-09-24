@@ -150,7 +150,9 @@ export function PaymentExtra() {
             <Icon name="history" size={18} className="text-tone-rose" />
             {refund.title}
           </div>
-          <p className={fx.text}>{refund.body}</p>
+          <p className={fx.text}>
+            {refund.body} {refund.timing}
+          </p>
         </Box>
       </div>
     </div>
