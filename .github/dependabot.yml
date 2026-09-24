@@ -1,0 +1,37 @@
+# Weekly dependency update PRs against dev; CI runs the full gates on each one.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Kolkata
+    open-pull-requests-limit: 5
+    groups:
+      # playwright and @playwright/test must stay on the same version (tooling-setup.md).
+      playwright:
+        patterns: ["playwright", "@playwright/*"]
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Framework majors change APIs (see AGENTS.md): upgrade those deliberately, not by bot.
+      - dependency-name: next
+        update-types: [version-update:semver-major]
+      - dependency-name: react
+        update-types: [version-update:semver-major]
+      - dependency-name: react-dom
+        update-types: [version-update:semver-major]
+      - dependency-name: tailwindcss
+        update-types: [version-update:semver-major]
+      # @types/node follows the Node major in .nvmrc.
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: monthly

@@ -17,6 +17,7 @@ export default defineConfig({
     // iPhone Safari's engine (npx playwright install webkit). Specs import `test` from
     // tests/e2e/fixtures.ts, which works around WebKit upgrading localhost requests to https.
     { name: "iphone", use: { ...devices["iPhone 15"], channel: undefined } },
+    { name: "firefox", use: { ...devices["Desktop Firefox"], channel: undefined } },
   ],
   // Tests run against the production build (`npm run build` first; gates.mjs does this).
   webServer: {

@@ -18,10 +18,11 @@ npm i -D vitest @vitejs/plugin-react jsdom \
   the Node major actually in use (`node -v`): `npm i -D @types/node@^24`. Next 16
   supports Node ≥20.9, so this is safe.
 - Don't add `vite-tsconfig-paths`: Vite 8 resolves tsconfig paths natively (`resolve.tsconfigPaths`).
-- Browsers: `npx playwright install chromium webkit` if the network allows. If Chromium can't
-  be downloaded, the config below falls back to the machine's Chrome automatically. WebKit
-  (iPhone Safari's engine, ~60 MB) has no fallback: without it the `iphone` E2E project
-  can't run and the audit's `webkit` check reports SKIP. Tell the user; don't drop the project.
+- Browsers: `npx playwright install chromium webkit firefox` if the network allows. If Chromium
+  can't be downloaded, the config below falls back to the machine's Chrome automatically.
+  WebKit (iPhone Safari's engine) and Firefox have no fallback: without them the `iphone` /
+  `firefox` E2E projects can't run and the audit's `webkit` check reports SKIP. Tell the
+  user; don't drop the projects.
 - `npm warn allow-scripts … unrs-resolver` is harmless (an eslint dependency's postinstall).
 
 ## package.json scripts
@@ -101,6 +102,7 @@ export default defineConfig({
     { name: "mobile", use: { ...devices["Pixel 7"], channel } },
     // iPhone Safari's engine. Specs import `test` from tests/e2e/fixtures.ts (below).
     { name: "iphone", use: { ...devices["iPhone 15"], channel: undefined } },
+    { name: "firefox", use: { ...devices["Desktop Firefox"], channel: undefined } },
   ],
   // Tests run against the production build (`npm run build` first; gates.mjs does this).
   webServer: {
@@ -131,6 +133,19 @@ Chromium projects cover keyboard order.
 
 `gates.mjs` sets `CI=1`, so E2E never reuses a stray dev server on port 3100: stop anything
 listening there first.
+
+## CI and dependency updates (already in the repo)
+
+- `.github/workflows/ci.yml` runs on every push to `dev`/`main` and on every PR:
+  - `gates.mjs --tests`: typecheck, lint, build, unit tests, and E2E in all four projects
+  - `audit.mjs` over every converted screen (`screens.mjs all`)
+  The audit fails the job only on `--fail-on weight,headers`: the JS budget and the security
+  headers. Everything else it finds goes to the job summary. Node comes from `.nvmrc`.
+- `.github/dependabot.yml` opens weekly update PRs against `dev`: minor and patch updates
+  grouped, playwright + @playwright/test kept together, framework majors (next, react,
+  tailwindcss) left for a deliberate upgrade. CI checks each PR like any other.
+- A new check that should gate CI goes into `--fail-on` only once every converted screen
+  passes it. Until then it would fail every run.
 
 ## .gitignore additions
 

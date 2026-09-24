@@ -126,10 +126,10 @@ run every screen's unit and E2E tests, but not their capture, axe, focus or swee
    conflict later.
 5. **Tooling.** If any of `vitest`, `@testing-library/react`, `@playwright/test`,
    `axe-core` is missing from devDependencies, or `vitest.config.mts` /
-   `playwright.config.ts` (with the `iphone` project) / `tests/setup.ts` / `tests/axe.ts` /
+   `playwright.config.ts` (with the `iphone` and `firefox` projects) / `tests/setup.ts` / `tests/axe.ts` /
    `tests/e2e/fixtures.ts` is missing, apply `references/tooling-setup.md`, run
    `$S/gates.mjs --no-build`, and commit `chore: add test and audit tooling`. Make sure
-   WebKit is installed (`npx playwright install webkit`). Without it, the Safari checks are
+   WebKit and Firefox are installed (`npx playwright install webkit firefox`). Without them, those checks are
    skipped, so tell the user if it can't be downloaded.
 6. **Ignore output.** Ensure `.gitignore` has `/.quality/`, `/test-results/`, `/playwright-report/`.
 7. **State.** `node $S/state.mjs init <screen> --route <route> --base <sha> --branch <branch> --flags "<flags>"`.
@@ -214,7 +214,7 @@ Skills: `testing-frontend`. Setup facts: `references/tooling-setup.md`.
   covered: extend its tests only where something is missing, don't duplicate them.
 - **Pure logic** (structured-data builders, helpers): unit tests, e.g. the FAQ JSON-LD
   has one Question per `content.ts` item.
-- **E2E** `tests/e2e/<screen>.spec.ts`, desktop + mobile + **iphone** (WebKit) projects,
+- **E2E** `tests/e2e/<screen>.spec.ts`, desktop + mobile + **iphone** (WebKit) + **firefox** projects,
   importing `test`/`expect` from `./fixtures`: renders with an `h1`, zero console/page
   errors, no horizontal overflow, each interactive widget works once in a real browser,
   primary CTA has a real `href`.

@@ -3,6 +3,7 @@
 // break the others through shared code (layout, components/ui, globals.css, next.config).
 //
 //   node screens.mjs list                     → converted screens: screen, route, design export
+//   node screens.mjs all                      → audit.mjs arguments for every converted screen (CI)
 //   node screens.mjs others <screen>          → audit.mjs arguments for every other converted
 //                                               screen; prints nothing when there are none
 //   node screens.mjs shared-changes <screen>  → uncommitted changes that can reach other
@@ -70,15 +71,15 @@ if (!cmd) {
 } else if (cmd === "list") {
   const all = convertedScreens();
   console.log(["| screen | route | design export |", "|---|---|---|", ...all.map((s) => `| ${s.screen} | ${s.route} | ${s.original} |`)].join("\n"));
-} else if (cmd === "others" && screen) {
-  const others = convertedScreens().filter((s) => s.screen !== screen);
-  if (others.length) {
-    console.log(`--routes ${others.map((s) => argRoute(s.route)).join(",")} --original ${others.map((s) => `${argRoute(s.route)}=${s.original}`).join(",")}`);
+} else if ((cmd === "others" && screen) || cmd === "all") {
+  const list = convertedScreens().filter((s) => cmd === "all" || s.screen !== screen);
+  if (list.length) {
+    console.log(`--routes ${list.map((s) => argRoute(s.route)).join(",")} --original ${list.map((s) => `${argRoute(s.route)}=${s.original}`).join(",")}`);
   }
 } else if (cmd === "shared-changes" && screen) {
   const files = sharedChanges(screen);
   if (files.length) console.log(files.join("\n"));
 } else {
-  console.error("usage: node screens.mjs list | others <screen> | shared-changes <screen>");
+  console.error("usage: node screens.mjs list | all | others <screen> | shared-changes <screen>");
   process.exit(1);
 }

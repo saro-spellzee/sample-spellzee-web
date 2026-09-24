@@ -27,6 +27,7 @@
 //        [--widths 1440,1000,390] [--modes mobile,desktop] [--sweep-widths 320,360,…]
 //        [--out .quality/<screen>/audit] [--url http://localhost:3000] [--budget mobile.perf=85,desktop.lcp=2000] [--strict]
 //        [--quick [--links]] [--baseline .quality/<screen>/baseline.json [--phase <id>] [--reset-baseline]]
+//        [--fail-on weight,headers]   (CI: exit 1 only when one of these checks fails)
 // Default checks: everything except capture (capture is added automatically when --original is given).
 // A plain --original belongs to the first route; route=path pairs give each route its own design
 // export (screens.mjs others prints them). A route without one skips the capture.
@@ -901,4 +902,9 @@ md.push(``, `Lighthouse on localhost varies ±5 points run to run; re-run before
 fs.writeFileSync(path.join(outDir, "audit.json"), JSON.stringify(report, null, 2));
 fs.writeFileSync(path.join(outDir, "audit.md"), md.join("\n"));
 console.log(md.join("\n"));
-process.exit((flag("strict") && summary.some((s) => s.status === "FAIL")) || regressions.length ? 1 : 0);
+// --fail-on weight,headers: exit 1 when one of these checks FAILs (CI gates on them without
+// failing on the rest, which stay in the report); --strict fails on any FAIL.
+const failOn = new Set((opt("fail-on") ?? "").split(",").filter(Boolean));
+const gated = summary.filter((s) => s.status === "FAIL" && failOn.has(s.check.split(" ")[0]));
+if (gated.length) console.error(`\nFailing gated checks: ${gated.map((s) => `${s.check} on ${s.route}`).join(", ")}`);
+process.exit((flag("strict") && summary.some((s) => s.status === "FAIL")) || regressions.length || gated.length ? 1 : 0);

@@ -1,0 +1,67 @@
+# The same gates the ship-screen pipeline runs, on every push to dev/main and every PR:
+# typecheck, lint, production build, unit tests, E2E in Chrome, Android, iPhone (WebKit) and
+# Firefox, then an audit of every converted screen. The audit fails the job only on the
+# first-load JS budget and the security headers; everything else it finds (axe, focus,
+# responsive sweep, Safari) is reported in the job summary.
+name: CI
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    name: Gates, E2E and audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Playwright browsers
+        run: npx playwright install --with-deps chromium webkit firefox
+
+      - name: Gates (typecheck, lint, build, unit tests, E2E)
+        run: node .claude/skills/ship-screen/scripts/gates.mjs --tests --out .quality/ci/gates.md
+
+      - name: Audit (JS budget and security headers gate the job)
+        run: |
+          ARGS=$(node .claude/skills/ship-screen/scripts/screens.mjs all)
+          node .claude/skills/ship-screen/scripts/audit.mjs $ARGS \
+            --checks console,axe,focus,sweep,weight,webkit,headers \
+            --fail-on weight,headers --out .quality/ci/audit
+
+      - name: Job summary
+        if: always()
+        run: |
+          for f in .quality/ci/gates.md .quality/ci/audit/audit.md; do
+            if [ -f "$f" ]; then cat "$f" >> "$GITHUB_STEP_SUMMARY"; echo >> "$GITHUB_STEP_SUMMARY"; fi
+          done
+
+      - name: Reports and failure traces
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ci-reports
+          path: |
+            .quality/ci/
+            test-results/
+          retention-days: 14
+          if-no-files-found: ignore

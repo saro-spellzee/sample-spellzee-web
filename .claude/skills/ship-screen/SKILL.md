@@ -219,6 +219,7 @@ Phase 13 writes `.quality/<screen>/REPORT.md`. Your final message to the user:
    items it lists first, so the user can forward it to the design team.
 4. **Decisions needed**: merged list, each with the concrete proposal.
 5. Branch, commits, any parked attempts, and next steps: review the branch, merge into
-   the main branch, push. Offer to do the merge; never push.
+   the main branch, push. After the push, CI (`.github/workflows/ci.yml`) re-runs the same
+   gates plus the JS-budget and header audit. Offer to do the merge; never push.
 
 Keep it scannable. The detail lives in `.quality/<screen>/`.
