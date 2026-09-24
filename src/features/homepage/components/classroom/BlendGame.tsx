@@ -2,7 +2,7 @@
 
 import { Fragment, useState } from "react";
 import { cn } from "@/lib/cn";
-import { classroom } from "../../content";
+import { classroom } from "../../content/classroom";
 import { tool } from "./styles";
 
 const slotBase =

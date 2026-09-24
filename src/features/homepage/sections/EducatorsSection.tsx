@@ -5,7 +5,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Kicker } from "@/components/ui/Kicker";
 import { Lead } from "@/components/ui/Lead";
 import { Swoosh } from "@/components/ui/Swoosh";
-import { educators } from "../content";
+import { educators } from "../content/educators";
 import { MentorBrowser } from "../components/MentorBrowser";
 
 /** "Meet Your Child's Mentors": headline stat, programme filters over the mentor cards, and the matching promise. */

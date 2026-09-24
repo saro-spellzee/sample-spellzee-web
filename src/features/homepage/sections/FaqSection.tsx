@@ -5,7 +5,7 @@ import { Heading } from "@/components/ui/Heading";
 import { Icon } from "@/components/ui/Icon";
 import { Lead } from "@/components/ui/Lead";
 import { Swoosh } from "@/components/ui/Swoosh";
-import { faq } from "../content";
+import { faq } from "../content/faq";
 import { FaqAccordion } from "../components/FaqAccordion";
 import { ClosingCta } from "../components/faq/ClosingCta";
 import { faqPanels } from "../components/faq/faqPanels";

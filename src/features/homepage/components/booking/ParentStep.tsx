@@ -3,14 +3,14 @@ import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
 import { BOOKING_MAX, type BookingValues } from "../../booking/schema";
-import { booking } from "../../content";
+import { booking } from "../../content/booking";
 import { DemoScheduler, type SchedulerProps } from "./DemoScheduler";
 import { ERROR_ID, fieldAria, groupAria } from "./fields";
 import { difficultyText, languageText, possessive } from "./model";
 import { bf } from "./styles";
 
 const modeCard =
-  "flex cursor-pointer flex-col items-start gap-[3px] rounded-[14px] border-[1.5px] border-[#DCE1EC] bg-white px-3.5 py-3 text-left transition-all duration-200 ease-in-out " +
+  "flex cursor-pointer flex-col items-start gap-[3px] rounded-[14px] border-[1.5px] border-control-line bg-white px-3.5 py-3 text-left transition-all duration-200 ease-in-out " +
   "has-checked:border-brand has-checked:bg-brand-tint has-checked:shadow-[0_0_0_1px_var(--color-brand)] " +
   "has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand/35";
 
@@ -37,7 +37,7 @@ export function ParentStep({ error, pending, onBack, today, month, onMonth }: Pa
   return (
     <div className={bf.body}>
       <div className="flex items-center gap-3 rounded-2xl border border-line-soft bg-white px-3.5 py-3 text-[14px] leading-[1.35] text-ink">
-        <span aria-hidden="true" className="flex size-10 flex-none items-center justify-center rounded-full bg-linear-135 from-[#DDE7FF] to-[#ECE5FA] font-extrabold text-brand">
+        <span aria-hidden="true" className="flex size-10 flex-none items-center justify-center rounded-full bg-linear-135 from-periwinkle-soft to-tone-violet-soft font-extrabold text-brand">
           {(kid[0] ?? "C").toUpperCase()}
         </span>
         <span>

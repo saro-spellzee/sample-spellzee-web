@@ -2,7 +2,7 @@ import Image from "next/image";
 import { IconTile } from "@/components/ui/IconTile";
 import { tones } from "@/components/ui/tones";
 import { cn } from "@/lib/cn";
-import { oneOnOne } from "../content";
+import { oneOnOne } from "../content/oneOnOne";
 import type { ImageAsset } from "../types";
 
 function Avatar({ image, label, className }: { image: ImageAsset; label: string; className: string }) {

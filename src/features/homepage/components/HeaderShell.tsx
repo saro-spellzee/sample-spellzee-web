@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Icon } from "@/components/ui/Icon";
-import { header } from "../content";
+import { header } from "../content/page";
 
 const MENU_ID = "site-menu";
 
@@ -80,7 +80,7 @@ export function HeaderShell({ brand, nav, cta }: HeaderShellProps) {
         className="flex animate-fade-up flex-col gap-0.5 border-t border-[rgba(160,130,100,0.12)] bg-[rgba(252,248,244,0.97)] px-5 pt-2.5 pb-[18px] lg:hidden"
       >
         {header.nav.map((item) => (
-          <Link key={item.href} href={item.href} className="border-b border-[#F1ECE3] px-1 py-3 text-[16px] font-bold text-ink no-underline hover:text-brand">
+          <Link key={item.href} href={item.href} className="border-b border-hairline px-1 py-3 text-[16px] font-bold text-ink no-underline hover:text-brand">
             {item.label}
           </Link>
         ))}

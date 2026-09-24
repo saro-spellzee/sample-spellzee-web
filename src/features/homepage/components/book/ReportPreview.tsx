@@ -4,11 +4,19 @@ import { useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { tones } from "@/components/ui/tones";
 import { cn } from "@/lib/cn";
-import { book } from "../../content";
+import { book } from "../../content/book";
+import type { ReportLegend } from "../../types";
 import { ReportSide } from "./ReportSide";
 
 const CIRCUMFERENCE = 276.46; // 2π × 44, the ring's radius in its 100×100 viewBox
 const kicker = "text-[11px] font-extrabold tracking-[.16em] text-faint uppercase";
+
+/** Legend dots: the strength and priority rings' tones, and a lighter blue for "developing". */
+const legendDots: Record<ReportLegend["id"], string> = {
+  strength: "bg-tone-pink",
+  developing: "bg-[#6D8BFF]",
+  priority: "bg-tone-emerald",
+};
 
 /**
  * The sample "CLM Passport": tap a skill ring to read what the mentor observed, and a week
@@ -42,7 +50,7 @@ export function ReportPreview() {
                   tones[r.tone],
                   "flex cursor-pointer flex-col items-center gap-1.5 rounded-[18px] border-[1.5px] px-2.5 py-3.5 transition-all duration-300 ease-in-out",
                   "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand/35",
-                  on ? "border-(--tone) bg-(--tone-soft) shadow-[0_14px_28px_-20px_var(--tone)]" : "border-transparent bg-transparent hover:bg-[#FBF8F4]",
+                  on ? "border-(--tone) bg-(--tone-soft) shadow-[0_14px_28px_-20px_var(--tone)]" : "border-transparent bg-transparent hover:bg-paper",
                 )}
               >
                 <span className="relative size-[104px]">
@@ -137,12 +145,12 @@ export function ReportPreview() {
         </div>
       </div>
 
-      <div className="col-span-full flex flex-wrap items-center justify-between gap-3.5 border-t border-[#F1ECE3] px-[22px] py-3 text-[12px] text-faint">
+      <div className="col-span-full flex flex-wrap items-center justify-between gap-3.5 border-t border-hairline px-[22px] py-3 text-[12px] text-faint">
         <span>{report.note}</span>
         <span className="inline-flex items-center gap-1.5 font-bold">
           {report.legend.map((item) => (
             <span key={item.label} className="inline-flex items-center gap-1.5">
-              <i aria-hidden="true" className={cn("ml-2.5 size-[9px] rounded-full", item.dot)} />
+              <i aria-hidden="true" className={cn("ml-2.5 size-[9px] rounded-full", legendDots[item.id])} />
               {item.label}
             </span>
           ))}

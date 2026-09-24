@@ -18,7 +18,13 @@ export type HeroTag = {
   dot: "blue" | "amber" | "violet" | "cyan";
 };
 
-export type Credential = { id: string; name: string; caption: string; logo: ImageAsset; logoClass: string };
+/** The accreditation logos; each component sizes them by id. */
+export type SealId = "iitm" | "actd";
+
+export type Credential = { id: SealId; name: string; caption: string; logo: ImageAsset };
+
+/** A seal on the booking dialog's side panel. */
+export type BookingSeal = { id: SealId; logo: ImageAsset };
 
 export type Skill = {
   id: string;
@@ -111,6 +117,9 @@ export type BookStep = { n: number; title: string; description: string; time: st
 export type ReportRing = { id: string; label: string; value: number; status: string; tone: Tone; note: string };
 
 export type PlanWeek = { focus: string; detail: string };
+
+/** A sample-report legend entry; ReportPreview colours its dot by id. */
+export type ReportLegend = { id: "strength" | "developing" | "priority"; label: string };
 
 export type FaqExtra = "about" | "improve" | "speak" | "programmes" | "ages" | "alone" | "compare" | "online" | "structure" | "progress" | "demo" | "payment";
 

@@ -4,7 +4,7 @@ import { Heading } from "@/components/ui/Heading";
 import { Kicker } from "@/components/ui/Kicker";
 import { Lead } from "@/components/ui/Lead";
 import { Swoosh } from "@/components/ui/Swoosh";
-import { stories } from "../content";
+import { stories } from "../content/stories";
 import { FeedbackToast } from "../components/stories/FeedbackToast";
 import { ReelRow } from "../components/stories/ReelRow";
 import { WaveDivider } from "../components/WaveDivider";

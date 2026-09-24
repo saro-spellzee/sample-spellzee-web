@@ -4,12 +4,13 @@ import { useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { tones } from "@/components/ui/tones";
 import { cn } from "@/lib/cn";
-import { classroom } from "../../content";
+import { classroom } from "../../content/classroom";
 import type { LearningTool } from "../../types";
 import { BlendGame } from "./BlendGame";
 import { DecodableReader } from "./DecodableReader";
 import { FlashcardDeck } from "./FlashcardDeck";
 import { WeeklyAssignments } from "./WeeklyAssignments";
+import { studioCard } from "./styles";
 import { Worksheet } from "./Worksheet";
 
 const panels: Record<LearningTool["id"], ReactNode> = {
@@ -52,7 +53,7 @@ export function LearningTools() {
   const stages = current.from === 1 && current.to === 5 ? tools.allStages : tools.stageRange.replace("{from}", String(current.from)).replace("{to}", String(current.to));
 
   return (
-    <div className="flex flex-col rounded-[28px] border border-white/90 bg-white p-[26px] shadow-[0_24px_50px_-34px_rgba(60,40,140,.45)]">
+    <div className={cn(studioCard, "p-[26px]")}>
       <div className="flex flex-wrap items-baseline justify-between gap-2.5">
         <h3 className="m-0 text-[20px] font-extrabold">{tools.title}</h3>
         <span className="text-fine font-bold tracking-[.02em] text-subtle">

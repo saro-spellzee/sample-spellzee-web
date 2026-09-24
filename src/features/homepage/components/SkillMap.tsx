@@ -7,7 +7,7 @@ import { Icon } from "@/components/ui/Icon";
 import { IconTile } from "@/components/ui/IconTile";
 import { tones } from "@/components/ui/tones";
 import { cn } from "@/lib/cn";
-import { clm } from "../content";
+import { clm } from "../content/clm";
 import { useBrainCanvas } from "../hooks/useBrainCanvas";
 import { prefersReducedMotion } from "../hooks/canvas";
 import { isMotionPaused } from "../hooks/motion";

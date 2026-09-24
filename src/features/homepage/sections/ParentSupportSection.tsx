@@ -4,7 +4,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Swoosh } from "@/components/ui/Swoosh";
 import { tones } from "@/components/ui/tones";
 import { cn } from "@/lib/cn";
-import { parentSupport } from "../content";
+import { parentSupport } from "../content/parentSupport";
 import { WaveDivider } from "../components/WaveDivider";
 
 const glow = "pointer-events-none absolute rounded-full blur-[90px]";

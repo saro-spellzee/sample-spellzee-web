@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { hero } from "../content";
+import { hero } from "../content/hero";
 import { HeroCanvas } from "./HeroCanvas";
 import { HeroTags } from "./HeroTags";
 

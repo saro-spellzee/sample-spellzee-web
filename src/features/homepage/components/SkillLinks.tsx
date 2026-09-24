@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { tones } from "@/components/ui/tones";
-import { clm } from "../content";
+import { clm } from "../content/clm";
 import { useMotionPaused } from "../hooks/motion";
 
 /**

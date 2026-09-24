@@ -1,7 +1,11 @@
 import Image from "next/image";
 import { Icon } from "@/components/ui/Icon";
-import { booking } from "../../content";
+import { booking } from "../../content/booking";
+import type { SealId } from "../../types";
 import { GoogleMark } from "../GoogleMark";
+
+/** Each seal's size inside its 36px disc. */
+const sealSize: Record<SealId, string> = { iitm: "size-[30px]", actd: "size-6 object-contain" };
 
 /** Midnight panel beside the booking form (hidden on phones and small tablets). */
 export function BookingSide() {
@@ -19,7 +23,7 @@ export function BookingSide() {
         <ul className="mt-[22px] flex flex-col gap-3">
           {side.gets.map((item) => (
             <li key={item.strong} className="flex gap-2.5 text-[14px] leading-[1.45] text-haze">
-              <span className="mt-px flex size-[22px] flex-none items-center justify-center rounded-full bg-linear-135 from-[#22C07A] to-[#0F8A55] text-white">
+              <span className="mt-px flex size-[22px] flex-none items-center justify-center rounded-full bg-linear-135 from-success-bright to-success-deep text-white">
                 <Icon name="check" size={14} strokeWidth={3} />
               </span>
               <span>
@@ -43,7 +47,7 @@ export function BookingSide() {
           <span className="flex items-center gap-2">
             {side.seals.map((seal) => (
               <span key={seal.id} className="flex size-9 items-center justify-center overflow-hidden rounded-full bg-white">
-                <Image src={seal.logo.src} alt={seal.logo.alt} width={seal.logo.width} height={seal.logo.height} sizes="30px" className={`block ${seal.className}`} />
+                <Image src={seal.logo.src} alt={seal.logo.alt} width={seal.logo.width} height={seal.logo.height} sizes="30px" className={`block ${sealSize[seal.id]}`} />
               </span>
             ))}
             <span className="ml-1 text-[12px] font-bold text-haze">{side.sealsText}</span>

@@ -1,5 +1,5 @@
 import { cn } from "@/lib/cn";
-import { hero } from "../content";
+import { hero } from "../content/hero";
 
 const delays = ["", "[animation-delay:2s]", "[animation-delay:4s]", "[animation-delay:6s]"];
 

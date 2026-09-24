@@ -3,7 +3,7 @@
 import { useRef, useState, type KeyboardEvent } from "react";
 import { tones, type Tone } from "@/components/ui/tones";
 import { cn } from "@/lib/cn";
-import { educators } from "../content";
+import { educators } from "../content/educators";
 import { MentorCard } from "./MentorCard";
 
 const toneOf = (programme: string): Tone => educators.filters.find((f) => f.id === programme)?.tone ?? "ink";

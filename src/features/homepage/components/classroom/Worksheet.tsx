@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/cn";
-import { classroom } from "../../content";
+import { classroom } from "../../content/classroom";
 import { tool } from "./styles";
 
 const blankAnswers = [-1, -1, -1];
@@ -73,7 +73,7 @@ export function Worksheet() {
         })}
         <div className={cn(tool.bar, "mt-3.5")}>
           <span
-            className="block h-full rounded-md bg-linear-90 from-[#E08A12] to-tone-green transition-[width] duration-500 ease-in-out"
+            className="block h-full rounded-md bg-linear-90 from-marigold to-tone-green transition-[width] duration-500 ease-in-out"
             style={{ width: `${Math.round((answered / 3) * 100)}%` }}
           />
         </div>

@@ -8,8 +8,8 @@ import type { FaqCard } from "../../types";
 export const fx = {
   stack: "mt-3.5 flex flex-col gap-3",
   box: "rounded-2xl border px-4 py-3.5 shadow-[0_0_0_1px_rgba(150,120,90,.08)]",
-  good: "border-l-[3px] border-l-tone-emerald bg-[#EAF7F0]",
-  bad: "border-l-[3px] border-l-tone-pink bg-[#FDEEF2]",
+  good: "border-l-[3px] border-l-tone-emerald bg-callout-good",
+  bad: "border-l-[3px] border-l-tone-pink bg-callout-bad",
   heading: "mb-2.5 flex items-center gap-2 text-[13.5px] font-extrabold",
   two: "grid grid-cols-1 gap-3 sm:grid-cols-2",
   text: "m-0 text-meta leading-[1.55] text-slate",
@@ -26,8 +26,10 @@ export function Box({ className, border = "border-white/90", children }: BoxProp
   return <div className={cn(fx.box, border, className)}>{children}</div>;
 }
 
+export type NoteProps = { strong: string; body: string; className?: string };
+
 /** A "Good to know" style note on the green panel. */
-export function Note({ strong, body, className }: { strong: string; body: string; className?: string }) {
+export function Note({ strong, body, className }: NoteProps) {
   return (
     <Box className={cn(fx.good, className)}>
       <p className={fx.text}>
@@ -38,8 +40,10 @@ export function Note({ strong, body, className }: { strong: string; body: string
   );
 }
 
+export type CheckListProps = { items: readonly { label: string; included: boolean }[] };
+
 /** Tick (included) or cross (not included) list. */
-export function CheckList({ items }: { items: readonly { label: string; included: boolean }[] }) {
+export function CheckList({ items }: CheckListProps) {
   return (
     <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
       {items.map((item) => (
@@ -57,8 +61,10 @@ export function CheckList({ items }: { items: readonly { label: string; included
   );
 }
 
+export type CardsProps = { cards: readonly FaqCard[]; pairs?: boolean };
+
 /** Coloured cards with a top rule (`.fq-cards`): three across, or two with `pairs`. */
-export function Cards({ cards, pairs }: { cards: readonly FaqCard[]; pairs?: boolean }) {
+export function Cards({ cards, pairs }: CardsProps) {
   return (
     <div className={cn("mt-3.5 grid grid-cols-1 gap-2.5", pairs ? "sm:grid-cols-2" : "sm:grid-cols-3")}>
       {cards.map((card) => (

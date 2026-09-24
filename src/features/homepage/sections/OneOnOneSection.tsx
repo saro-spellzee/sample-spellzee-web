@@ -4,7 +4,7 @@ import { IconTile } from "@/components/ui/IconTile";
 import { Kicker } from "@/components/ui/Kicker";
 import { Lead } from "@/components/ui/Lead";
 import { Swoosh } from "@/components/ui/Swoosh";
-import { oneOnOne } from "../content";
+import { oneOnOne } from "../content/oneOnOne";
 import { OneOnOneStage } from "../components/OneOnOneStage";
 import { WaveDivider } from "../components/WaveDivider";
 

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
-import { classroom } from "../../content";
+import { classroom } from "../../content/classroom";
 import { tool } from "./styles";
 
 /** "Progress": tick off this week's assignments; the bar and message follow. */
@@ -34,7 +34,7 @@ export function WeeklyAssignments() {
               type="button"
               aria-pressed={on}
               onClick={() => setDone(done.map((d, k) => (k === i ? !d : d)))}
-              className="flex w-full cursor-pointer items-center gap-3 border-0 border-t border-[#F3EEE6] bg-transparent px-1 py-2.5 text-[14px] font-semibold text-ink-2 focus-visible:outline-3 focus-visible:outline-brand/35"
+              className="flex w-full cursor-pointer items-center gap-3 border-0 border-t border-chip bg-transparent px-1 py-2.5 text-[14px] font-semibold text-ink-2 focus-visible:outline-3 focus-visible:outline-brand/35"
             >
               <span
                 className={cn(

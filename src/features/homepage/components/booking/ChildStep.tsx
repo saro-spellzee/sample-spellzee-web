@@ -4,13 +4,18 @@ import { Icon } from "@/components/ui/Icon";
 import { tones } from "@/components/ui/tones";
 import { cn } from "@/lib/cn";
 import { BOOKING_MAX, type BookingValues } from "../../booking/schema";
-import { booking } from "../../content";
+import { booking } from "../../content/booking";
 import { ERROR_ID, fieldAria, groupAria } from "./fields";
 import { toggleDifficulty } from "./model";
 import { bf } from "./styles";
 
+export type ChildStepProps = {
+  /** The step-1 error line: the first failing field's message. */
+  error: string;
+};
+
 /** Step 1: the child's name, grade and the difficulties to work on. Continue submits the form. */
-export function ChildStep({ error }: { error: string }) {
+export function ChildStep({ error }: ChildStepProps) {
   const { difficulties } = booking;
   const {
     register,

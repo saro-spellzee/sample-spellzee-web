@@ -23,7 +23,7 @@ const variants = {
     primary +
     "shadow-[0_0_0_5px_rgba(127,166,255,.14),inset_0_1px_0_rgba(255,255,255,.35),0_16px_34px_-12px_rgba(21,87,214,.9)]",
   ghost:
-    "border border-[#DCE1EC] bg-white text-ink hover:-translate-y-0.5 hover:border-brand hover:text-brand " +
+    "border border-control-line bg-white text-ink hover:-translate-y-0.5 hover:border-brand hover:text-brand " +
     "hover:shadow-[0_12px_26px_-16px_rgba(21,87,214,.6)]",
 } as const;
 

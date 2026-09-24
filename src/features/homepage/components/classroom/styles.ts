@@ -14,3 +14,6 @@ export const tool = {
   sheetTop: "flex justify-between text-fine font-extrabold text-faint",
   bar: "h-1.5 overflow-hidden rounded-md bg-[#F0ECE4]",
 } as const;
+
+/** The two white cards in the classroom studio frame: the live class and the learning tools. */
+export const studioCard = "flex flex-col rounded-[28px] border border-white/90 bg-white shadow-[0_24px_50px_-34px_rgba(60,40,140,.45)]";

@@ -8,7 +8,7 @@ import { Lead } from "@/components/ui/Lead";
 import { Swoosh } from "@/components/ui/Swoosh";
 import { tones } from "@/components/ui/tones";
 import { cn } from "@/lib/cn";
-import { community } from "../content";
+import { community } from "../content/community";
 import { SpellzeeWord } from "../components/SpellzeeWord";
 import { WaveDivider } from "../components/WaveDivider";
 

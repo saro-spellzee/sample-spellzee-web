@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Accent } from "@/components/ui/Accent";
 import { Container } from "@/components/ui/Container";
-import { footer } from "../content";
+import { footer } from "../content/footer";
 import { NewsletterForm } from "../components/NewsletterForm";
 
 const pill = "rounded-full border border-night-line text-fine text-haze";

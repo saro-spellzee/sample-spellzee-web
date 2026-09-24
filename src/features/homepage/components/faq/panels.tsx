@@ -3,10 +3,8 @@ import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { tones } from "@/components/ui/tones";
 import { cn } from "@/lib/cn";
-import { faq } from "../../content";
+import { faqExtras as extras } from "../../content/faq";
 import { Box, CheckList, fx } from "./parts";
-
-const { extras } = faq;
 
 /** "Can my child take just the Phonics course?": what phonics alone does and doesn't cover. */
 export function AloneExtra() {
@@ -72,7 +70,7 @@ export function CompareExtra() {
           </Box>
         ))}
       </div>
-      <Box className="border-l-[3px] border-l-tone-emerald bg-[#EAF7F0]">
+      <Box className="border-l-[3px] border-l-tone-emerald bg-callout-good">
         <p className="m-0 text-[13.5px] leading-[1.6] text-slate">
           <b className="text-tone-green-deep">{recommendation.strong}</b>
           {recommendation.body}

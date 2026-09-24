@@ -3,7 +3,7 @@ import { Heading } from "@/components/ui/Heading";
 import { Kicker } from "@/components/ui/Kicker";
 import { Lead } from "@/components/ui/Lead";
 import { Swoosh } from "@/components/ui/Swoosh";
-import { classroom } from "../content";
+import { classroom } from "../content/classroom";
 import { LearningTools } from "../components/classroom/LearningTools";
 import { LiveClassCard } from "../components/classroom/LiveClassCard";
 import { MiniBadge } from "../components/MiniBadge";

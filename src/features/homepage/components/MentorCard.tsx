@@ -2,7 +2,7 @@ import Image from "next/image";
 import { Icon } from "@/components/ui/Icon";
 import { tones, type Tone } from "@/components/ui/tones";
 import { cn } from "@/lib/cn";
-import { educators } from "../content";
+import { educators } from "../content/educators";
 import type { Mentor } from "../types";
 
 export type MentorCardProps = { mentor: Mentor; tone: Tone };

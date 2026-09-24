@@ -4,7 +4,7 @@ import { Container } from "@/components/ui/Container";
 import { Heading } from "@/components/ui/Heading";
 import { Lead } from "@/components/ui/Lead";
 import { Swoosh } from "@/components/ui/Swoosh";
-import { clm } from "../content";
+import { clm } from "../content/clm";
 import { ClmStepChips } from "../components/ClmStepChips";
 import { SkillMap } from "../components/SkillMap";
 import { WaveDivider } from "../components/WaveDivider";

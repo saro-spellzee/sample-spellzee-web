@@ -1,6 +1,6 @@
 import { Container } from "@/components/ui/Container";
 import { IconTile } from "@/components/ui/IconTile";
-import { hero } from "../content";
+import { hero } from "../content/hero";
 
 /** Frosted guarantee strip overlapping the bottom of the hero. */
 export function HeroLedger() {

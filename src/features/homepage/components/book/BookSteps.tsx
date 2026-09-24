@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/cn";
-import { book } from "../../content";
+import { book } from "../../content/book";
 
 /** The three booking steps; tapping one highlights it (the last is highlighted to start). */
 export function BookSteps() {
@@ -40,7 +40,7 @@ export function BookSteps() {
               <span
                 className={cn(
                   "absolute top-3.5 right-3.5 flex-none rounded-full px-[9px] py-[3px] text-[11px] font-extrabold sm:static",
-                  on ? "bg-white/12 text-haze" : "bg-[#F3EEE6] text-faint",
+                  on ? "bg-white/12 text-haze" : "bg-chip text-faint",
                 )}
               >
                 {step.time}

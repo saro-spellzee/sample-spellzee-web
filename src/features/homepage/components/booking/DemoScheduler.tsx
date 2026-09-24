@@ -1,13 +1,13 @@
 import { useFormContext, useWatch } from "react-hook-form";
 import { cn } from "@/lib/cn";
 import type { BookingValues } from "../../booking/schema";
-import { booking } from "../../content";
+import { booking } from "../../content/booking";
 import { groupAria } from "./fields";
 import { calendarMonth, fromIso, slotHint, slotsFor } from "./model";
 import { bf } from "./styles";
 
 const navButton =
-  "size-[34px] cursor-pointer rounded-full border-[1.5px] border-[#DCE1EC] bg-white text-[18px] leading-none font-extrabold text-ink-2 " +
+  "size-[34px] cursor-pointer rounded-full border-[1.5px] border-control-line bg-white text-[18px] leading-none font-extrabold text-ink-2 " +
   "disabled:cursor-default disabled:opacity-35 focus-visible:outline-3 focus-visible:outline-offset-1 focus-visible:outline-brand/35";
 
 export type SchedulerProps = {

@@ -3,7 +3,7 @@
  * the Server Action (`../../booking/schema.ts`). Behaviour follows the export's logic class
  * (bfNext, bfSubmit, calendar, slots).
  */
-import { booking } from "../../content";
+import { booking } from "../../content/booking";
 
 /** Toggles a difficulty; "Not sure yet" is exclusive with the others. */
 export function toggleDifficulty(current: string[], id: string): string[] {

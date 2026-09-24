@@ -5,7 +5,7 @@ import { useActionState, useRef, useState, type FormEvent } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
-import { footer } from "../content";
+import { newsletter } from "../content/footer";
 import { subscribeToNewsletter } from "../newsletter/actions";
 import { HONEYPOT_FIELD, initialNewsletterState, newsletterSchema, type NewsletterState, type NewsletterValues } from "../newsletter/schema";
 
@@ -26,7 +26,6 @@ const ERROR_ID = "nl-email-error";
  * The input is 16px below `sm` (the design draws 14px) so iOS Safari doesn't zoom on focus.
  */
 export function NewsletterForm() {
-  const { newsletter } = footer;
   const inFlight = useRef(false);
   const [served, formAction, postPending] = useActionState(subscribeToNewsletter, initialNewsletterState);
   /** The result of a client-side submit; until there is one, show what the server rendered. */

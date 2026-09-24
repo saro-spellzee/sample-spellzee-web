@@ -6,7 +6,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Kicker } from "@/components/ui/Kicker";
 import { Lead } from "@/components/ui/Lead";
 import { Swoosh } from "@/components/ui/Swoosh";
-import { programs } from "../content";
+import { programs } from "../content/programs";
 import { ProgramCard } from "../components/ProgramCard";
 
 export function ProgramsSection() {

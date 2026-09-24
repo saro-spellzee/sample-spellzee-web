@@ -4,7 +4,7 @@ import { Heading } from "@/components/ui/Heading";
 import { Kicker } from "@/components/ui/Kicker";
 import { Lead } from "@/components/ui/Lead";
 import { Swoosh } from "@/components/ui/Swoosh";
-import { book } from "../content";
+import { book } from "../content/book";
 import { BookSteps } from "../components/book/BookSteps";
 import { ReportPreview } from "../components/book/ReportPreview";
 

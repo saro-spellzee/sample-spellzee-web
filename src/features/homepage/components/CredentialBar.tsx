@@ -2,7 +2,11 @@ import Image from "next/image";
 import { Fragment } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
-import { hero } from "../content";
+import { hero } from "../content/hero";
+import type { SealId } from "../types";
+
+/** Each logo's box inside its 54px disc: the IITM mark fills it, the ACTD emblem sits smaller. */
+const logoSize: Record<SealId, string> = { iitm: "size-[46px]", actd: "size-10 object-contain" };
 
 /** Frosted "Accreditations & Recognition" bar under the hero CTAs (`.cred-*`); stacks on phones. */
 export function CredentialBar() {
@@ -26,7 +30,7 @@ export function CredentialBar() {
                   width={cred.logo.width}
                   height={cred.logo.height}
                   sizes="46px"
-                  className={cn("block", cred.logoClass)}
+                  className={cn("block", logoSize[cred.id])}
                 />
               </span>
               <div>
@@ -34,7 +38,7 @@ export function CredentialBar() {
                   {cred.name}
                   <span
                     aria-hidden="true"
-                    className="inline-flex size-[15px] items-center justify-center rounded-full bg-linear-135 from-[#22C07A] to-[#0F8A55] text-white shadow-[0_0_0_2px_var(--color-success-soft)]"
+                    className="inline-flex size-[15px] items-center justify-center rounded-full bg-linear-135 from-success-bright to-success-deep text-white shadow-[0_0_0_2px_var(--color-success-soft)]"
                   >
                     <Icon name="check" size={9} strokeWidth={4} />
                   </span>

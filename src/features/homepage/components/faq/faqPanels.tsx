@@ -1,5 +1,5 @@
 import { Fragment, type ReactNode } from "react";
-import { faq } from "../../content";
+import { faq } from "../../content/faq";
 import { ClmStepChips } from "../ClmStepChips";
 import { FaqExtra } from "./FaqExtra";
 

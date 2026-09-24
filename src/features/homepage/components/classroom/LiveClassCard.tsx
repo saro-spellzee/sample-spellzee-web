@@ -1,8 +1,9 @@
 import Image from "next/image";
 import { Icon } from "@/components/ui/Icon";
 import { IconTile } from "@/components/ui/IconTile";
-import { classroom } from "../../content";
+import { classroom } from "../../content/classroom";
 import { GoogleMark } from "../GoogleMark";
+import { studioCard } from "./styles";
 
 const STAR = "M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z";
 const eqBars = ["h-1.5 [animation-delay:-.2s]", "h-3 [animation-delay:-.5s]", "h-2 [animation-delay:-.8s]", "h-[11px] [animation-delay:-.35s]"];
@@ -19,7 +20,7 @@ function Star() {
 export function LiveClassCard() {
   const { live } = classroom;
   return (
-    <div className="flex flex-col overflow-hidden rounded-[28px] border border-white/90 bg-white shadow-[0_24px_50px_-34px_rgba(60,40,140,.45)]">
+    <div className={`${studioCard} overflow-hidden`}>
       <div className="relative min-h-[280px] flex-1">
         <Image src={live.photo.src} alt={live.photo.alt} fill sizes="(min-width: 1001px) 460px, 100vw" className="object-cover" />
         <span className="absolute top-3.5 left-3.5 inline-flex items-center gap-[7px] rounded-full bg-[rgba(14,26,58,.82)] px-3 py-[7px] text-fine font-bold text-white backdrop-blur-[6px]">
@@ -41,7 +42,7 @@ export function LiveClassCard() {
           aria-hidden="true"
           className="absolute top-3.5 right-3.5 inline-flex animate-pop-in items-center gap-2 rounded-full bg-white/90 py-[7px] pr-3 pl-[7px] text-[12px] font-bold text-tone-green-deep shadow-[0_12px_24px_-14px_rgba(14,26,58,.5)] backdrop-blur-[8px]"
         >
-          <span className="flex size-5 items-center justify-center rounded-full bg-linear-135 from-[#22C07A] to-[#0F8A55] text-white">
+          <span className="flex size-5 items-center justify-center rounded-full bg-linear-135 from-success-bright to-success-deep text-white">
             <Icon name="check" size={12} strokeWidth={3.4} />
           </span>
           {live.praise}
@@ -52,7 +53,7 @@ export function LiveClassCard() {
         <p className="mt-1.5 text-[14px] leading-[1.55] text-muted">{live.body}</p>
         <ul className="mt-[18px] grid grid-cols-2 gap-2.5">
           {live.during.map((item) => (
-            <li key={item.id} className="flex items-center gap-2.5 rounded-[14px] border border-[#F0E9DE] bg-[#FBF8F4] p-2.5 text-[13px] leading-[1.25] font-bold text-ink-2">
+            <li key={item.id} className="flex items-center gap-2.5 rounded-[14px] border border-[#F0E9DE] bg-paper p-2.5 text-[13px] leading-[1.25] font-bold text-ink-2">
               <IconTile icon={item.icon} tone={item.tone} box={34} iconSize={16} strokeWidth={item.icon === "check" ? 2.2 : 2} />
               {item.title}
             </li>

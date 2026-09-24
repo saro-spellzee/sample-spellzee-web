@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import type { IconName } from "@/lib/icons";
 import type { BookingValues } from "../../booking/schema";
-import { booking } from "../../content";
+import { booking } from "../../content/booking";
 import { describeSlot, difficultyText, formatPhone, languageText, possessive } from "./model";
 import { bf } from "./styles";
 
@@ -20,11 +20,17 @@ function Note({ icon, children }: { icon: IconName; children: React.ReactNode })
 const support =
   "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-bold no-underline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand/35";
 
+export type BookingDoneProps = {
+  /** The booking as the server accepted it (trimmed, phone digits only). */
+  values: BookingValues;
+  onDone: () => void;
+};
+
 /**
  * Confirmation, shown only once the server has accepted the booking: what happens next,
  * with a way to talk now. `values` are as the schema parsed them (trimmed, phone digits only).
  */
-export function BookingDone({ values: state, onDone }: { values: BookingValues; onDone: () => void }) {
+export function BookingDone({ values: state, onDone }: BookingDoneProps) {
   const { done } = booking;
   const parentFirst = state.parent.trim().split(" ")[0] || done.parentFallback;
   const phone = done.phonePrefix + formatPhone(state.phone);
@@ -36,7 +42,7 @@ export function BookingDone({ values: state, onDone }: { values: BookingValues; 
   ];
   return (
     <div className="flex animate-fade-up flex-col items-center gap-3.5 pt-[26px] pb-6">
-      <span className="flex size-[74px] animate-success-pop items-center justify-center rounded-full bg-linear-135 from-[#22C07A] to-[#0F8A55] shadow-[0_0_0_10px_rgba(18,165,122,.12),0_20px_40px_-16px_rgba(15,138,85,.7)]">
+      <span className="flex size-[74px] animate-success-pop items-center justify-center rounded-full bg-linear-135 from-success-bright to-success-deep shadow-[0_0_0_10px_rgba(18,165,122,.12),0_20px_40px_-16px_rgba(15,138,85,.7)]">
         <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M5 12l5 5L19 7" />
         </svg>

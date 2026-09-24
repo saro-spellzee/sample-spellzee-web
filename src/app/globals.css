@@ -34,6 +34,10 @@
   --color-quiet: #7a83a3; /* numbers and captions that sit back */
   --color-star: #f5b400; /* rating stars */
   --color-rule: #d6deee; /* segment/option borders, used tiles */
+  --color-control-line: #dce1ec; /* outline of white controls: ghost button, chips, option cards, calendar arrows */
+  --color-hairline: #f1ece3; /* warm dividers on white (menu rows, report footer, ruled paper) and the dialog's close button */
+  --color-chip: #f3eee6; /* warm neutral chips on white (step time, toast dismiss) and assignment rows */
+  --color-paper: #fbf8f4; /* warm off-white rows and hovers inside white cards */
   --color-brand: #1557d6; /* links, primary (x41) */
   --color-brand-hover: #0f45ae;
   --color-brand-tint: #eef3fe;
@@ -46,6 +50,7 @@
   --color-haze: #c7cee6; /* tertiary text on navy */
   --color-dusk: #7f8ab0; /* labels on navy */
   --color-periwinkle: #9db8ff; /* accent on navy */
+  --color-periwinkle-soft: #dde7ff; /* initial discs: booking summary, sample report avatar */
 
   /* Tones: fg + soft background pairs used by per-item data (see components/ui/tones.ts) */
   --color-tone-blue: #1557d6;
@@ -91,6 +96,18 @@
   --color-tone-rose-light: #ff7aa8;
   --color-tone-amber-light: #ffb547;
   --color-tone-mint-light: #4fd6a2;
+  /* second stops of the story reel gradients (see components/stories/reelGradients.ts);
+     teal also draws the feedback toast's "delivered" ticks */
+  --color-tone-indigo: #5a3fda;
+  --color-tone-teal: #1592b6;
+  /* feedback toast avatars (initials on a tint), per message */
+  --color-tone-plum: #9a3fa6;
+  --color-tone-plum-soft: #f4e6f6;
+  --color-tone-olive: #8a7a1e;
+  --color-tone-olive-soft: #f5f0d8;
+  --color-tone-leaf: #4f8a2e;
+  --color-tone-leaf-soft: #e6f2dc;
+  --color-tone-ink-mist: #e6e9f2; /* behind ink initials; cooler and deeper than tone-ink-soft */
 
   /* Brand spectrum: the blue -> violet -> pink stops of the gradient hairlines,
      gradient text, wave dividers and CTA line art. */
@@ -105,10 +122,17 @@
   --color-vivid-violet: #7c3aed;
   --color-vivid-cyan: #0891b2;
   --color-vivid-rose: #e0316f;
+  --color-marigold: #e08a12; /* warm progress accent: worksheet progress bar, FAQ age scale */
 
   /* Answer feedback surfaces (classroom activities) and verified ticks. */
   --color-success-soft: #e4f5ec;
   --color-error-soft: #fdecf1;
+  /* the green "done / verified" disc: bg-linear-135 from-success-bright to-success-deep */
+  --color-success-bright: #22c07a;
+  --color-success-deep: #0f8a55;
+  /* FAQ callouts: what a course gives (good) and leaves out (bad) */
+  --color-callout-good: #eaf7f0;
+  --color-callout-bad: #fdeef2;
 
   /* Type scale that recurs */
   --text-body: 14.5px;
@@ -454,5 +478,5 @@
 /* Lined paper behind the worksheet rows. */
 @utility ruled-paper {
   background-color: #fff;
-  background-image: repeating-linear-gradient(180deg, transparent 0 43px, #f1ece3 43px 44px);
+  background-image: repeating-linear-gradient(180deg, transparent 0 43px, var(--color-hairline) 43px 44px);
 }

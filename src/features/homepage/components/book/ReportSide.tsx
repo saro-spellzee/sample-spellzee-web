@@ -1,6 +1,6 @@
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
-import { book } from "../../content";
+import { book } from "../../content/book";
 
 /**
  * The sample child's profile column of the report. Centred on desktop; below the desktop
@@ -16,7 +16,7 @@ export function ReportSide() {
       </span>
       <span
         aria-hidden="true"
-        className="row-span-3 flex size-16 items-center justify-center rounded-full bg-[radial-gradient(circle_at_35%_30%,#DDE7FF,#8FA9F5)] font-serif text-[30px] font-medium text-ink shadow-[0_0_0_6px_rgba(255,255,255,.1),0_0_30px_rgba(143,169,245,.5)] lg:mt-3.5 lg:size-[84px] lg:text-[40px]"
+        className="row-span-3 flex size-16 items-center justify-center rounded-full bg-[radial-gradient(circle_at_35%_30%,var(--color-periwinkle-soft),#8FA9F5)] font-serif text-[30px] font-medium text-ink shadow-[0_0_0_6px_rgba(255,255,255,.1),0_0_30px_rgba(143,169,245,.5)] lg:mt-3.5 lg:size-[84px] lg:text-[40px]"
       >
         {report.initial}
       </span>

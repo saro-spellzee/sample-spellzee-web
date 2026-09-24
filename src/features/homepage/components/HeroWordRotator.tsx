@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { tones } from "@/components/ui/tones";
 import { cn } from "@/lib/cn";
-import { hero } from "../content";
+import { hero } from "../content/hero";
 import { prefersReducedMotion } from "../hooks/canvas";
 import { isMotionPaused } from "../hooks/motion";
 

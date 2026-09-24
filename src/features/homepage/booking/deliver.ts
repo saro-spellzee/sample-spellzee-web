@@ -1,6 +1,6 @@
 import "server-only";
 import { possessive } from "../components/booking/model";
-import { booking } from "../content";
+import { booking } from "../content/booking";
 import type { BookingValues } from "./schema";
 
 /**

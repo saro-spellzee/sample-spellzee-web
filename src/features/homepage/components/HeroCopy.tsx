@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/Button";
 import { Heading } from "@/components/ui/Heading";
 import { IconTile } from "@/components/ui/IconTile";
 import { Lead } from "@/components/ui/Lead";
-import { hero } from "../content";
+import { hero } from "../content/hero";
 import { CredentialBar } from "./CredentialBar";
 import { HeroWordRotator } from "./HeroWordRotator";
 import { LanguageRotator } from "./LanguageRotator";

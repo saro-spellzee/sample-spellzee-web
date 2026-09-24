@@ -1,6 +1,6 @@
 import { array, boolean, enum as zEnum, maxLength, minLength, object, overwrite, refine, regex, string, trim, type infer as Infer } from "zod/mini";
 import { isBookable, phoneDigits } from "../components/booking/model";
-import { booking } from "../content";
+import { booking } from "../content/booking";
 
 const { errors } = booking;
 

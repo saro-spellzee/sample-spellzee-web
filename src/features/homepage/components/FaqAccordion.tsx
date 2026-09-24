@@ -4,7 +4,7 @@ import { useState, type ReactNode } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { tones } from "@/components/ui/tones";
 import { cn } from "@/lib/cn";
-import { faq } from "../content";
+import { faqQuestions } from "../content/faq";
 
 export type FaqAccordionProps = {
   /** Each question's answer, rendered on the server (text plus its designed extra), in `faq.items` order. */
@@ -17,9 +17,9 @@ export function FaqAccordion({ panels }: FaqAccordionProps) {
 
   return (
     <div className="flex flex-col gap-2.5">
-      {faq.items.map((item, i) => {
+      {faqQuestions.items.map((item, i) => {
         const isOpen = open === i;
-        const accent = faq.accents[i % faq.accents.length];
+        const accent = faqQuestions.accents[i % faqQuestions.accents.length];
         return (
           <div
             key={item.id}

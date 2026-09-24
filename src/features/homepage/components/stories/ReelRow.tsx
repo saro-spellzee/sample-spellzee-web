@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
-import { stories } from "../../content";
+import { stories } from "../../content/stories";
 import type { Reel } from "../../types";
 import { reelGradients } from "./reelGradients";
 import { VideoDialog } from "./VideoDialog";
@@ -13,12 +13,17 @@ const arrow =
   "shadow-[0_0_0_1px_rgba(150,120,90,.12),0_12px_24px_-16px_rgba(70,45,20,.45)] hover:-translate-y-0.5 hover:text-brand hover:shadow-[0_0_0_1px_var(--color-brand),0_14px_26px_-14px_rgba(21,87,214,.5)] " +
   "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand/35";
 
+export type ReelRowProps = {
+  /** The call to action under the row, rendered on the server. */
+  cta: ReactNode;
+};
+
 /**
  * Story reels: a snap-scrolling row (5 across on desktop, 3 on tablets, ~1.6 on phones)
  * with previous/next arrows; each reel opens the video dialog. `cta` is the server-rendered
  * booking prompt shown beside the arrows.
  */
-export function ReelRow({ cta }: { cta: ReactNode }) {
+export function ReelRow({ cta }: ReelRowProps) {
   const rowRef = useRef<HTMLDivElement>(null);
   const [playing, setPlaying] = useState<Reel | null>(null);
   const opener = useRef<HTMLButtonElement | null>(null);

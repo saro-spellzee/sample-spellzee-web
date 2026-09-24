@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/cn";
-import { motion } from "../content";
+import { motion } from "../content/page";
 import { setMotionPaused, useMotionPaused } from "../hooks/motion";
 
 /**

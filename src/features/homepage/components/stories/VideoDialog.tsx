@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
-import { stories } from "../../content";
+import { stories } from "../../content/stories";
 import type { Reel } from "../../types";
 import { reelGradients } from "./reelGradients";
 

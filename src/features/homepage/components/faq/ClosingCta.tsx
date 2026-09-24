@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
-import { closingCta } from "../../content";
+import { closingCta } from "../../content/faq";
 
 const glow = "pointer-events-none absolute z-0 rounded-full blur-[60px]";
 

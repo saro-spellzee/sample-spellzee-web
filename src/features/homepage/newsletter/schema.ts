@@ -1,7 +1,7 @@
 import { maxLength, minLength, object, regex, string, trim, type infer as Infer } from "zod/mini";
-import { footer } from "../content";
+import { newsletter } from "../content/footer";
 
-const { errors } = footer.newsletter;
+const { errors } = newsletter;
 
 /** RFC 5321 caps a forward/reverse path at 256 octets, i.e. 254 for the address itself. */
 export const EMAIL_MAX_LENGTH = 254;

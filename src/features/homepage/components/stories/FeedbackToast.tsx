@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
-import { stories } from "../../content";
+import { stories } from "../../content/stories";
 import { prefersReducedMotion } from "../../hooks/canvas";
 import { isMotionPaused } from "../../hooks/motion";
 import { datedMessages, relativeWhen, shortDate, type DatedMessage } from "./feedback";
@@ -15,11 +15,11 @@ const SWAP_GAP_MS = 380;
 
 const avatars: Record<DatedMessage["avatar"], string> = {
   blue: "bg-tone-blue-soft text-tone-blue",
-  plum: "bg-[#F4E6F6] text-[#9A3FA6]",
-  ink: "bg-[#E6E9F2] text-ink",
+  plum: "bg-tone-plum-soft text-tone-plum",
+  ink: "bg-tone-ink-mist text-ink",
   green: "bg-tone-green-soft text-tone-green",
-  olive: "bg-[#F5F0D8] text-[#8A7A1E]",
-  leaf: "bg-[#E6F2DC] text-[#4F8A2E]",
+  olive: "bg-tone-olive-soft text-tone-olive",
+  leaf: "bg-tone-leaf-soft text-tone-leaf",
 };
 
 const STAR = "M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z";
@@ -113,7 +113,7 @@ export function FeedbackToast() {
                 dismissed.current = true;
                 setShown(false);
               }}
-              className="flex size-6 cursor-pointer items-center justify-center rounded-full border-0 bg-[#F3EEE6] text-faint focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand/35"
+              className="flex size-6 cursor-pointer items-center justify-center rounded-full border-0 bg-chip text-faint focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand/35"
             >
               <Icon name="close" size={11} strokeWidth={2.8} />
             </button>
@@ -146,7 +146,7 @@ export function FeedbackToast() {
                 </span>
                 <span>{feedback.byline.replace("{tutor}", message.tutor).replace("{date}", shortDate(message.end))}</span>
                 <span role="img" aria-label={feedback.delivered} className="ml-auto inline-flex">
-                  <svg width="16" height="11" viewBox="0 0 16 11" fill="none" stroke="#1592B6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg width="16" height="11" viewBox="0 0 16 11" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="stroke-tone-teal">
                     <path d="M1 6l3 3 6-7M6 9l1 1 7-8" />
                   </svg>
                 </span>

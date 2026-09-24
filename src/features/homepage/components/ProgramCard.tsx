@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 import { tones } from "@/components/ui/tones";
 import { cn } from "@/lib/cn";
-import { programs } from "../content";
+import { programs } from "../content/programs";
 import type { Program } from "../types";
 
 const lift = "group-hover:bg-(--tone) group-hover:text-white group-focus-visible:bg-(--tone) group-focus-visible:text-white";

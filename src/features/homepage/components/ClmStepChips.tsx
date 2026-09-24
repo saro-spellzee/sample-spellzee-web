@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 import { Chip } from "@/components/ui/Chip";
 import { cn } from "@/lib/cn";
-import { clmSteps } from "../content";
+import { clmSteps } from "../content/clm";
 
 const sizes = {
   lg: { chip: "py-[9px] pr-4 pl-[9px] text-[14px]", num: "size-[22px] text-[12px]" },

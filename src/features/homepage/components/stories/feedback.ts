@@ -2,7 +2,7 @@
  * Timing for the "Live class feedback" toast, as in the export: each message is dated to
  * the most recent end of its class (before now), newest first, and labelled relative to now.
  */
-import { stories } from "../../content";
+import { stories } from "../../content/stories";
 import type { FeedbackMessage } from "../../types";
 
 export type DatedMessage = FeedbackMessage & { end: Date };

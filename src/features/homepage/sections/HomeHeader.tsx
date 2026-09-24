@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { header } from "../content";
+import { header } from "../content/page";
 import { HeaderShell } from "../components/HeaderShell";
 
 /** Skip link + sticky header. Nav links hide below the desktop breakpoint, where a menu button takes over. */

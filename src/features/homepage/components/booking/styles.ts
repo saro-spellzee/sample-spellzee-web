@@ -11,7 +11,7 @@ export const bf = {
     "focus:border-brand focus:shadow-[0_0_0_4px_rgba(21,87,214,.12)]",
   hint: "text-fine text-subtle",
   chip:
-    "min-h-9 cursor-pointer rounded-full border-[1.5px] border-[#DCE1EC] bg-white px-3 text-[13px] font-bold text-ink-2 transition-all duration-200 ease-in-out " +
+    "min-h-9 cursor-pointer rounded-full border-[1.5px] border-control-line bg-white px-3 text-[13px] font-bold text-ink-2 transition-all duration-200 ease-in-out " +
     "hover:border-brand hover:text-brand focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand/35 " +
     "aria-pressed:border-brand aria-pressed:bg-brand aria-pressed:text-white",
   /** Sticky action bar at the bottom of the scrolling panel. */

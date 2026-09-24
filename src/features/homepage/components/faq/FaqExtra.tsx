@@ -1,11 +1,9 @@
 import { tones } from "@/components/ui/tones";
 import { cn } from "@/lib/cn";
-import { faq } from "../../content";
+import { faqExtras as extras } from "../../content/faq";
 import type { FaqExtra as FaqExtraKind } from "../../types";
 import { Box, Cards, Note, fx } from "./parts";
 import { AloneExtra, CompareExtra, PaymentExtra, ProgressExtra, StructureExtra } from "./panels";
-
-const { extras } = faq;
 
 function Improve() {
   return (
@@ -55,7 +53,7 @@ function Ages() {
       <Box className="bg-sand">
         <div className="flex items-center gap-3">
           <span className="text-meta font-extrabold whitespace-nowrap text-ink">{from}</span>
-          <span className="relative h-2 flex-1 rounded-lg bg-[linear-gradient(90deg,#1557D6,#6D3FD6,#D0335F,#E08A12,#12855A)]">
+          <span className="relative h-2 flex-1 rounded-lg bg-[linear-gradient(90deg,var(--color-tone-blue),var(--color-tone-violet),var(--color-tone-rose),var(--color-marigold),var(--color-tone-green))]">
             {marks.map((left) => (
               <i key={left} className="absolute top-1/2 -mt-1.5 -ml-1.5 size-3 rounded-full border-2 border-ink bg-white" style={{ left: `${left}%` }} />
             ))}
@@ -88,8 +86,10 @@ function Demo() {
   );
 }
 
+export type FaqExtraProps = { kind: FaqExtraKind };
+
 /** The designed extra under an FAQ answer (cards, comparisons, timelines…), by kind. */
-export function FaqExtra({ kind }: { kind: FaqExtraKind }) {
+export function FaqExtra({ kind }: FaqExtraProps) {
   switch (kind) {
     case "about":
       return <Cards cards={extras.about} />;
