@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
-import { classroom, clm, faq, footer, header, hero, stories } from "../../src/features/homepage/content";
+import { booking, classroom, clm, faq, footer, header, hero, stories } from "../../src/features/homepage/content";
 
 /**
  * Programme pages the homepage links to that haven't been built yet. Next prefetches
@@ -40,8 +40,19 @@ test.describe("homepage", () => {
       }
       window.scrollTo(0, document.body.scrollHeight);
     });
+    // Every image in the page's width must load. The community marquee's repeat copies sit off to
+    // the side and stay lazy until they drift into view (same URL as the visible copy), so skip those.
     await expect
-      .poll(() => page.evaluate(() => [...document.images].filter((img) => !img.complete).length))
+      .poll(() =>
+        page.evaluate(() => {
+          const width = document.documentElement.clientWidth;
+          return [...document.images].filter((img) => {
+            const r = img.getBoundingClientRect();
+            const offCanvas = r.right <= 0 || r.left >= width;
+            return !img.complete && !offCanvas;
+          }).length;
+        }),
+      )
       .toBe(0);
 
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
@@ -49,10 +60,11 @@ test.describe("homepage", () => {
     expect(errors).toEqual([]);
   });
 
-  test("primary CTA and in-page links point at real targets", async ({ page }) => {
+  test("in-page links point at real targets, and the primary CTA opens the booking dialog", async ({ page }) => {
     await page.goto("/");
 
     const cta = page.getByRole("link", { name: hero.primaryCta.label });
+    // Without JavaScript the CTA still goes to the "How it works" section.
     await expect(cta).toHaveAttribute("href", hero.primaryCta.href);
 
     const hashes = await page.$$eval("a[href^='#']", (links) => [...new Set(links.map((a) => a.getAttribute("href")!))]);
@@ -62,8 +74,40 @@ test.describe("homepage", () => {
     }
 
     await cta.click();
-    await expect(page).toHaveURL(new RegExp(`${hero.primaryCta.href}$`));
-    await expect(page.locator(hero.primaryCta.href)).toBeInViewport();
+    const dialog = page.getByRole("dialog", { name: booking.steps[0].title });
+    await expect(dialog).toBeVisible();
+    await expect(page).not.toHaveURL(/#book$/);
+
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+  });
+
+  test("booking dialog: both steps, then the confirmation", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("link", { name: hero.primaryCta.label }).click();
+    const dialog = page.getByRole("dialog");
+
+    await dialog.getByRole("button", { name: booking.continue }).click();
+    await expect(dialog.getByRole("alert")).toHaveText(booking.errors.kid);
+
+    await dialog.getByLabel(booking.kid.label).fill("Aarav");
+    await dialog.getByLabel(booking.grade.label).fill("Grade 3");
+    await dialog.getByRole("button", { name: /Comprehension/ }).click();
+    await dialog.getByRole("button", { name: booking.continue }).click();
+
+    await expect(dialog.getByRole("heading", { name: booking.steps[1].title })).toBeVisible();
+    await dialog.getByLabel(booking.parent.label).fill("Meera Iyer");
+    await dialog.getByLabel(booking.phone.label).fill("98765 43210");
+    // Tap the drawn box, as a parent would: the native checkbox is visually hidden inside its label.
+    const consent = dialog.getByRole("checkbox");
+    await dialog.locator("label", { has: page.getByRole("checkbox") }).click({ position: { x: 11, y: 12 } });
+    await expect(consent).toBeChecked();
+    await dialog.getByRole("button", { name: new RegExp(booking.submit.call) }).click();
+
+    await expect(dialog.getByRole("heading", { name: booking.done.title.replace("{parent}", "Meera") })).toBeVisible();
+    await expect(dialog).toContainText("+91 98765 43210");
+    await dialog.getByRole("button", { name: booking.done.button }).click();
+    await expect(dialog).toBeHidden();
   });
 
   test("internal page links resolve, apart from the listed unbuilt routes", async ({ page, request }) => {
@@ -105,9 +149,9 @@ test.describe("homepage", () => {
     await expect(page.getByText(skill.description)).toBeVisible();
   });
 
-  test("classroom activities: blend a word, switch tab and answer", async ({ page }) => {
+  test("learning tools: blend a word, switch tool and read a word's sounds", async ({ page }) => {
     await page.goto("/");
-    const { blend, read } = classroom;
+    const { blend, tools, reader } = classroom;
     const word = blend.words[0];
 
     for (const part of word.parts) {
@@ -115,20 +159,37 @@ test.describe("homepage", () => {
     }
     await expect(page.getByText(blend.success.replace("{word}", word.word))).toBeVisible();
 
-    await page.getByRole("tab", { name: classroom.tabs[1] }).click();
-    await page.getByRole("button", { name: read.options[read.correctIndex] }).click();
-    await expect(page.getByText(read.right)).toBeVisible();
+    const readerTab = tools.items.find((t) => t.id === "reader")!;
+    await page.getByRole("tab", { name: readerTab.label }).click();
+    const panel = page.getByRole("tabpanel", { name: readerTab.label });
+    await panel.getByRole("button", { name: "the", exact: true }).click();
+    await expect(panel.getByText(reader.tricky)).toBeVisible();
   });
 
-  test("story picker features the chosen story", async ({ page }) => {
+  test("story reels open the video dialog", async ({ page }) => {
     await page.goto("/");
-    const story = stories.items[1];
-    const button = page.getByRole("button", { name: story.quote });
+    const reel = stories.reels[1];
 
-    await button.click();
+    await page.getByRole("button", { name: stories.playLabel.replace("{quote}", reel.quote) }).click();
 
-    await expect(button).toHaveAttribute("aria-pressed", "true");
-    await expect(page.locator("p[aria-live]", { hasText: story.quote })).toBeVisible();
+    const dialog = page.getByRole("dialog", { name: stories.video.label });
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText(reel.quote);
+    await dialog.getByRole("button", { name: stories.video.close }).last().click();
+    await expect(dialog).toBeHidden();
+  });
+
+  test("header menu opens the section links on smaller screens", async ({ page }) => {
+    await page.goto("/");
+    const menu = page.getByRole("button", { name: header.menuLabel });
+    test.skip(!(await menu.isVisible()), "the desktop header shows its links inline");
+
+    await menu.click();
+    const nav = page.getByRole("navigation", { name: header.mobileNavLabel });
+    await expect(nav).toBeVisible();
+    await nav.getByRole("link", { name: "FAQ" }).click();
+    await expect(nav).toBeHidden();
+    await expect(page.locator("#faq")).toBeInViewport();
   });
 
   test("FAQ opens a question and closes the previous one", async ({ page }) => {

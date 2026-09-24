@@ -12,7 +12,7 @@ import { WaveDivider } from "../components/WaveDivider";
 export function ClmSection() {
   const { badge, title, tagline, intro, closing } = clm;
   return (
-    <section id="clm" className="silk-lavender relative overflow-hidden pt-[112px] pb-[132px]">
+    <section id="clm" className="silk-lavender relative overflow-hidden py-[88px] sm:pt-[112px] sm:pb-[132px]">
       <WaveDivider id="wave-clm-top" position="top" />
       <Container className="relative z-2">
         <div className="mx-auto max-w-[900px] text-center">

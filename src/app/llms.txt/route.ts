@@ -13,14 +13,14 @@ const list = (items: string[]) => items.map((item) => `- ${item}`).join("\n");
 export function GET() {
   const facts = [
     ...community.stats.map((stat) => `${stat.value} ${stat.label}`),
-    ...hero.ledger.map((item) => `${item.title}: ${item.description}`),
+    ...hero.ledger.map((item) => item.title),
     ...hero.credentials.map((c) => `${c.name} ${c.caption}`),
     `Legal entity: ${site.legalName}`,
   ];
 
   const body = `# ${site.name}
 
-> ${site.name} helps children read, write and speak with confidence. It starts with Cognitive Literacy Mapping (CLM), a live diagnostic of a child's reading, writing and speaking, and continues with 1:1 live online sessions with a dedicated mentor. Parents can book a free assessment and receive a personalised improvement plan.
+> ${site.name} helps children read, write and speak with confidence. It starts with Cognitive Literacy Mapping (CLM), a live diagnostic of a child's reading, writing and speaking, and continues with 1:1 live online sessions with a dedicated mentor. Parents can book a free 1:1 demo class and receive their child's CLM Report.
 
 ## Key facts
 
@@ -44,13 +44,13 @@ ${list(programs.items.map((p) => `**${p.title}**: ${p.description} Focus skills:
 
 ${oneOnOne.lead}
 
-${list(oneOnOne.features.map((f) => `**${f.title}**: ${f.description}`))}
+${list(oneOnOne.features.map((f) => f.title))}
 
-Learning materials: ${classroom.materials.map((m) => m.title.toLowerCase()).join(", ")}.
+Learning tools used in class: ${classroom.tools.items.map((t) => t.label.toLowerCase()).join(", ")}.
 
 Parent support: ${parentSupport.items.map((i) => `${i.title.toLowerCase()} (${i.description.toLowerCase()})`).join("; ")}.
 
-## What happens after booking a free assessment
+## What happens after booking a free demo class
 
 ${book.steps.map((s) => `${s.n}. **${s.title}**: ${s.description}`).join("\n")}
 
@@ -63,7 +63,7 @@ ${faq.items.map((item) => `### ${item.question}\n\n${item.answer}`).join("\n\n")
 - [Homepage](${absoluteUrl("/")}): overview of CLM, programmes, educators and parent stories
 - [How CLM works](${absoluteUrl("/#clm")})
 - [Programmes](${absoluteUrl("/#programs")})
-- [Book a free assessment](${absoluteUrl("/#book")})
+- [Book a free demo class](${absoluteUrl("/#book")})
 - [FAQ](${absoluteUrl("/#faq")})
 `;
 

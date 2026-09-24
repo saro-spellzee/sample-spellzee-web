@@ -16,5 +16,4 @@ const font = (file: string) => readFile(join(process.cwd(), "src/app/_og/fonts",
 export const ogFonts = async () => [
   { name: "Jakarta", data: await font("PlusJakartaSans-800.woff"), weight: 800 as const, style: "normal" as const },
   { name: "Jakarta", data: await font("PlusJakartaSans-500.woff"), weight: 500 as const, style: "normal" as const },
-  { name: "Instrument", data: await font("InstrumentSerif-400-italic.woff"), weight: 400 as const, style: "italic" as const },
 ];

@@ -3,11 +3,12 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { meta } from "@/features/homepage/content";
 import { site } from "@/lib/site";
 import { homepageStructuredData } from "@/features/homepage/structured-data";
+import { BookingDialog } from "@/features/homepage/components/booking/BookingDialog";
+import { MotionToggle } from "@/features/homepage/components/MotionToggle";
 import { BookSection } from "@/features/homepage/sections/BookSection";
 import { ClassroomSection } from "@/features/homepage/sections/ClassroomSection";
 import { ClmSection } from "@/features/homepage/sections/ClmSection";
 import { CommunitySection } from "@/features/homepage/sections/CommunitySection";
-import { CtaSection } from "@/features/homepage/sections/CtaSection";
 import { EducatorsSection } from "@/features/homepage/sections/EducatorsSection";
 import { FaqSection } from "@/features/homepage/sections/FaqSection";
 import { HeroSection } from "@/features/homepage/sections/HeroSection";
@@ -41,9 +42,11 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <div className="min-w-90 overflow-x-clip bg-cream">
+    // No min-width: the export's 360px canvas minimum would scroll sideways on 320px screens (WCAG 1.4.10).
+    <div className="overflow-x-clip bg-cream">
       <JsonLd data={homepageStructuredData()} />
       <HomeHeader />
+      <MotionToggle />
       <main id="main" tabIndex={-1} className="outline-none">
         <HeroSection />
         <ClmSection />
@@ -56,9 +59,9 @@ export default function HomePage() {
         <CommunitySection />
         <BookSection />
         <FaqSection />
-        <CtaSection />
       </main>
       <HomeFooter />
+      <BookingDialog />
     </div>
   );
 }

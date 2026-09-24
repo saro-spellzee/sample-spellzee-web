@@ -4,7 +4,7 @@ import { heroDataUrl, logoDataUrl, ogFonts } from "./assets";
 
 export const socialCardSize = { width: 1200, height: 630 };
 export const socialCardAlt =
-  "Spellzee: Let’s help your child read, write and speak with confidence. Cognitive Literacy Mapping and 1:1 live mentoring.";
+  "Spellzee: Read. Write. Speak. Confidently. Cognitive Literacy Mapping and 1:1 live mentoring.";
 
 // Hero photo is 1672×941; scaled to the card height the child sits ~70% across,
 // so shift it right until she lands in the right third of the card.
@@ -28,12 +28,8 @@ export async function renderSocialCard() {
         <div style={{ position: "relative", display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 0 0 72px", width: 700 }}>
           <img src={logo} width={210} height={60} alt="" />
           <div style={{ display: "flex", flexDirection: "column", marginTop: 40, fontSize: 60, fontWeight: 800, lineHeight: 1.04, letterSpacing: "-0.035em", color: "#0E1A3A" }}>
-            <span>Let’s help your child</span>
-            <span>read, write and speak</span>
-            <span style={{ display: "flex" }}>
-              with&nbsp;
-              <span style={{ fontFamily: "Instrument", fontStyle: "italic", fontWeight: 400, color: "#1557D6", letterSpacing: "-0.01em" }}>confidence.</span>
-            </span>
+            <span>Read. Write. Speak.</span>
+            <span style={{ color: "#1557D6" }}>Confidently.</span>
           </div>
           <div style={{ display: "flex", marginTop: 28, fontSize: 25, fontWeight: 500, color: "#4B5575" }}>
             Cognitive Literacy Mapping · 1:1 live mentoring
@@ -45,7 +41,7 @@ export async function renderSocialCard() {
                 background: "linear-gradient(90deg, #2F6BF2, #5B4FE8)",
               }}
             >
-              Book a Free Assessment
+              Book a Free Demo Class
             </div>
           </div>
         </div>

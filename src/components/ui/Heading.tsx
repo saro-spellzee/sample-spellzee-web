@@ -24,7 +24,8 @@ const looks = {
 
 const defaultSizes = {
   display: "leading-none tracking-[-0.045em]",
-  section: "text-[36px] leading-[1.08] tracking-[-0.035em] lg:text-[46px]",
+  /** 30px on phones (the export's 640px rule), 36px on tablets, 46px on desktop. */
+  section: "text-[30px] leading-[1.2] tracking-[-0.035em] sm:text-[36px] sm:leading-[1.08] lg:text-[46px]",
 } as const;
 
 export function Heading({ as: Tag = "h2", look = "section", size, color = "text-ink", className, id, children }: HeadingProps) {

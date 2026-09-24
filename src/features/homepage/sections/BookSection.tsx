@@ -3,38 +3,35 @@ import { Container } from "@/components/ui/Container";
 import { Heading } from "@/components/ui/Heading";
 import { Kicker } from "@/components/ui/Kicker";
 import { Lead } from "@/components/ui/Lead";
+import { Swoosh } from "@/components/ui/Swoosh";
 import { book } from "../content";
-import { SampleReport } from "../components/SampleReport";
+import { BookSteps } from "../components/book/BookSteps";
+import { ReportPreview } from "../components/book/ReportPreview";
 
-/** "After you book": the three steps, plus a sample diagnostic report. */
+/** "How it works": the three steps to a CLM report, and a sample report to explore. */
 export function BookSection() {
+  const { title } = book;
   return (
-    <section id="book" className="py-[110px]">
-      <Container className="grid grid-cols-1 items-center gap-9 lg:grid-cols-2 lg:gap-14">
-        <div>
-          <Kicker>{book.kicker}</Kicker>
-          <Heading size="text-[40px] leading-[1.08] tracking-[-0.035em]" className="mt-3.5">
-            {book.title}
-          </Heading>
-          <Lead className="mt-3.5">{book.lead}</Lead>
-          <ol className="mt-[34px] flex flex-col gap-[26px]">
-            {book.steps.map((s) => (
-              <li key={s.n} className="flex gap-5">
-                <span aria-hidden="true" className="flex size-11 flex-none items-center justify-center rounded-full bg-ink font-extrabold text-white">
-                  {s.n}
-                </span>
-                <div>
-                  <h3 className="m-0 text-[18px] font-extrabold">{s.title}</h3>
-                  <div className="mt-1 text-[15px] leading-[1.6] text-ink-soft">{s.description}</div>
-                </div>
-              </li>
-            ))}
-          </ol>
-          <Button href={book.cta.href} arrow className="mt-[34px]">
+    <section id="book" className="py-16 sm:pt-[100px] sm:pb-[110px]">
+      <Container>
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <div className="max-w-[640px]">
+            <Kicker>{book.kicker}</Kicker>
+            <Heading className="mt-4">
+              {title.before}
+              <Swoosh size="xl">{title.mark}</Swoosh>
+              {title.after}
+            </Heading>
+            <Lead size="text-[16.5px] leading-[1.65]" className="mt-3.5 max-w-[560px]">
+              {book.lead}
+            </Lead>
+          </div>
+          <Button href={book.cta.href} action="book" arrow>
             {book.cta.label}
           </Button>
         </div>
-        <SampleReport />
+        <BookSteps />
+        <ReportPreview />
       </Container>
     </section>
   );

@@ -21,6 +21,14 @@ export const tones = {
   orchid: "[--tone:var(--color-tone-orchid)] [--tone-soft:var(--color-tone-orchid-soft)]",
   azure: "[--tone:var(--color-tone-azure)] [--tone-soft:var(--color-tone-azure-soft)]",
   pink: "[--tone:var(--color-tone-pink)] [--tone-soft:var(--color-tone-pink-soft)]",
+  purple: "[--tone:var(--color-tone-purple)] [--tone-soft:var(--color-tone-purple-soft)]",
+  magenta: "[--tone:var(--color-tone-magenta)] [--tone-soft:var(--color-tone-magenta-soft)]",
+  ink: "[--tone:var(--color-tone-ink)] [--tone-soft:var(--color-tone-ink-soft)]",
+  /* light accents for dark (midnight) surfaces; the soft value is the matching light-surface tint */
+  blueLight: "[--tone:var(--color-tone-blue-light)] [--tone-soft:var(--color-tone-blue-soft)]",
+  roseLight: "[--tone:var(--color-tone-rose-light)] [--tone-soft:var(--color-tone-rose-soft)]",
+  amberLight: "[--tone:var(--color-tone-amber-light)] [--tone-soft:var(--color-tone-amber-soft)]",
+  mintLight: "[--tone:var(--color-tone-mint-light)] [--tone-soft:var(--color-tone-green-soft)]",
 } as const;
 
 export type Tone = keyof typeof tones;

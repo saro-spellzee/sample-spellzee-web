@@ -9,6 +9,7 @@ const boxes = {
   34: "size-[34px] rounded-[10px]",
   38: "size-[38px] rounded-[11px]",
   40: "size-10 rounded-[12px]",
+  44: "size-11 rounded-full",
   46: "size-[46px] rounded-[14px]",
   48: "size-12 rounded-[14px]",
   50: "size-[50px] rounded-full",

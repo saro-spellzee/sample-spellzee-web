@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { axeViolations } from "../../../../tests/axe";
-import { classroom } from "../content";
+import { axeViolations } from "../../../../../tests/axe";
+import { classroom } from "../../content";
 import { BlendGame } from "./BlendGame";
 
 const { blend } = classroom;

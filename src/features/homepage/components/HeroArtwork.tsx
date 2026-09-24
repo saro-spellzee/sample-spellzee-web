@@ -6,7 +6,7 @@ import { HeroTags } from "./HeroTags";
 /** Hero photo + neural-net canvas + floating skill tags (tags hidden on phones). */
 export function HeroArtwork() {
   return (
-    <div className="relative aspect-[1672/941] overflow-hidden [container-type:size] lg:absolute lg:inset-0 lg:aspect-auto">
+    <div className="relative aspect-[4/3] overflow-hidden [container-type:size] lg:absolute lg:inset-0 lg:aspect-auto">
       <div className="hero-art">
         <Image
           src={hero.image.src}
@@ -16,7 +16,8 @@ export function HeroArtwork() {
           // whose <link> carries no fetchpriority and competes with other preloads).
           loading="eager"
           fetchPriority="high"
-          sizes="(min-width: 1001px) 90vw, 100vw"
+          // Below the desktop breakpoint the 4:3 box crops the photo, which renders ~133% of the box width.
+          sizes="(min-width: 1001px) 90vw, 134vw"
           className="object-cover object-top"
         />
       </div>

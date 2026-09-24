@@ -12,7 +12,7 @@ import { ProgramCard } from "../components/ProgramCard";
 export function ProgramsSection() {
   const { title, help } = programs;
   return (
-    <section id="programs" className="pt-[100px] pb-[110px]">
+    <section id="programs" className="py-16 sm:pt-[100px] sm:pb-[110px]">
       <Container>
         <div className="max-w-[900px]">
           <Kicker>{programs.kicker}</Kicker>
@@ -34,9 +34,9 @@ export function ProgramsSection() {
           ))}
         </ul>
 
-        <Card radius="rounded-[22px]" className="mt-[18px] flex flex-wrap items-center justify-between gap-[18px] py-[18px] pr-5 pl-[18px]">
-          {/* basis lets the CTA wrap below on phones (the export squeezes this text to one word per line) */}
-          <div className="flex min-w-0 flex-1 basis-[280px] items-center gap-4">
+        <Card radius="rounded-[22px]" className="mt-[18px] flex flex-col flex-wrap items-start justify-between gap-[18px] py-[18px] pr-5 pl-[18px] sm:flex-row sm:items-center">
+          {/* stacks on phones, with the CTA below (the export's 640px rule) */}
+          <div className="flex min-w-0 flex-1 basis-[240px] items-center gap-4">
             <span className="flex size-[52px] flex-none items-center justify-center rounded-[15px] bg-brand-tint text-brand">
               <Icon name="question" size={24} />
             </span>
@@ -45,7 +45,7 @@ export function ProgramsSection() {
               <div className="mt-[3px] text-body text-ink-soft">{help.body}</div>
             </div>
           </div>
-          <Button href={help.cta.href} size="compact" arrow>
+          <Button href={help.cta.href} action="book" size="compact" arrow>
             {help.cta.label}
           </Button>
         </Card>

@@ -2,8 +2,8 @@
 
 import { Fragment, useState } from "react";
 import { cn } from "@/lib/cn";
-import { classroom } from "../content";
-import { segment } from "./segment";
+import { classroom } from "../../content";
+import { tool } from "./styles";
 
 const slotBase =
   "flex h-[60px] items-center justify-center rounded-[14px] border-[1.5px] text-[22px] font-extrabold";
@@ -15,7 +15,7 @@ const slotStates = {
   wrong: "w-24 animate-shake border-solid border-tone-rose bg-error-soft text-tone-rose-deep",
 } as const;
 
-/** Tap the three sounds in order to build the word; wrong orders shake. */
+/** "Blend Sounds": tap the three sounds in order to build the word; wrong orders shake. */
 export function BlendGame() {
   const { blend } = classroom;
   const [wordIndex, setWordIndex] = useState(0);
@@ -35,8 +35,8 @@ export function BlendGame() {
   };
 
   return (
-    <div className="animate-fade-up">
-      <div className="mt-[18px] flex flex-wrap items-center gap-2.5">
+    <div className={tool.body}>
+      <div className="flex flex-wrap items-center justify-center gap-2.5">
         {[0, 1, 2].map((k) => (
           <Fragment key={k}>
             <span className={cn(slotBase, picked[k] !== undefined ? slotStates.filled : slotStates.empty)}>
@@ -51,7 +51,7 @@ export function BlendGame() {
           {done ? (correct ? word.word : blend.wrong) : blend.empty}
         </span>
       </div>
-      <div className="mt-4 flex gap-2.5">
+      <div className="mt-5 flex justify-center gap-2.5">
         {word.shown.map((part) => {
           const used = picked.includes(part);
           return (
@@ -74,11 +74,11 @@ export function BlendGame() {
           );
         })}
       </div>
-      <p aria-live="polite" className="mt-3.5 text-[14px] text-ink-soft">
+      <p aria-live="polite" className={`${tool.message} text-ink-soft`}>
         {message}
       </p>
-      <div className="mt-3 flex gap-2">
-        <button type="button" onClick={() => setPicked([])} className={cn(segment.base, segment.off)}>
+      <div className={tool.controls}>
+        <button type="button" onClick={() => setPicked([])} className={tool.seg}>
           {blend.reset}
         </button>
         <button
@@ -87,7 +87,7 @@ export function BlendGame() {
             setWordIndex((i) => (i + 1) % blend.words.length);
             setPicked([]);
           }}
-          className={cn(segment.base, segment.off)}
+          className={tool.seg}
         >
           {blend.next}
         </button>
