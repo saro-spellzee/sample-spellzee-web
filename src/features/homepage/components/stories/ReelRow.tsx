@@ -4,9 +4,23 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
 import { stories } from "../../content/stories";
+import { prefersReducedMotion } from "../../hooks/canvas";
 import type { Reel } from "../../types";
 import { reelGradients } from "./reelGradients";
 import { VideoDialog } from "./VideoDialog";
+
+const scrollBehavior = (): ScrollBehavior => (prefersReducedMotion() ? "auto" : "smooth");
+
+const playLabel = (reel: Reel) => stories.playLabel.replace("{kind}", reel.kind).replace("{quote}", reel.quote).replace("{tag}", reel.tag);
+
+/** Whether the element has keyboard focus (a tap or click doesn't count). Engines without `:focus-visible` say no. */
+function hasKeyboardFocus(el: Element): boolean {
+  try {
+    return el.matches(":focus-visible");
+  } catch {
+    return false;
+  }
+}
 
 const arrow =
   "flex size-[46px] cursor-pointer items-center justify-center rounded-full border border-white bg-white/80 text-ink backdrop-blur-[8px] transition-all duration-250 ease-in-out " +
@@ -30,7 +44,18 @@ export function ReelRow({ cta }: ReelRowProps) {
 
   const scroll = (direction: 1 | -1) => {
     const row = rowRef.current;
-    if (row) row.scrollBy({ left: direction * row.clientWidth * 0.8, behavior: "smooth" });
+    if (row) row.scrollBy({ left: direction * row.clientWidth * 0.8, behavior: scrollBehavior() });
+  };
+  // Tabbing onto a reel that's partly outside the row: the browser's own scroll lands between
+  // snap points and the mandatory snap pulls the row back, leaving the reel cut off. Align it
+  // to the row's start, which is a snap point, so it stays fully in view.
+  const reveal = (reel: HTMLElement) => {
+    const row = rowRef.current;
+    if (!row || !hasKeyboardFocus(reel)) return;
+    const box = row.getBoundingClientRect();
+    const r = reel.getBoundingClientRect();
+    if (r.left >= box.left - 1 && r.right <= box.right + 1) return;
+    reel.scrollIntoView?.({ block: "nearest", inline: "start", behavior: scrollBehavior() });
   };
   const close = () => setPlaying(null);
   // Focus goes back to the reel once the dialog has closed (VideoDialog's effect runs first). While
@@ -50,11 +75,12 @@ export function ReelRow({ cta }: ReelRowProps) {
           <button
             key={reel.id}
             type="button"
-            aria-label={stories.playLabel.replace("{quote}", reel.quote)}
+            aria-label={playLabel(reel)}
             onClick={(e) => {
               opener.current = e.currentTarget;
               setPlaying(reel);
             }}
+            onFocus={(e) => reveal(e.currentTarget)}
             className={cn(
               reelGradients[reel.gradient],
               "group relative aspect-[9/16] cursor-pointer snap-start overflow-hidden rounded-[24px] border-0 bg-linear-160 from-(--c) to-(--c2) p-0 text-left text-white",
@@ -67,6 +93,9 @@ export function ReelRow({ cta }: ReelRowProps) {
               <span className="absolute top-3.5 left-3.5 rounded-full bg-white/20 px-[11px] py-[5px] text-[11.5px] font-extrabold tracking-[.02em] backdrop-blur-[8px]">
                 {reel.kind}
               </span>
+              {/* The spaces between the text pieces lay out as nothing (they sit between positioned and
+                  flex items), but keep the words apart in the text tools read, such as axe's
+                  label-in-name check against the aria-label. */}{" "}
               <span
                 aria-hidden="true"
                 className="absolute top-[44%] left-1/2 flex size-[58px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/92 text-(--c) shadow-[0_0_0_8px_rgba(255,255,255,.18)] transition-[scale,box-shadow] duration-300 ease-in-out group-hover:scale-110 group-hover:shadow-[0_0_0_12px_rgba(255,255,255,.22)]"
@@ -76,7 +105,7 @@ export function ReelRow({ cta }: ReelRowProps) {
                 </svg>
               </span>
               <span className="absolute inset-x-4 bottom-4 flex flex-col gap-1.5">
-                <span className="font-serif text-[21px] leading-[1.2] font-normal italic">{reel.quote}</span>
+                <span className="font-serif text-[21px] leading-[1.2] font-normal italic">{reel.quote}</span>{" "}
                 <span className="text-[12px] font-bold opacity-85">{reel.tag}</span>
               </span>
             </span>

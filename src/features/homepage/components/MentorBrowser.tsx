@@ -70,7 +70,7 @@ export function MentorBrowser() {
             );
           })}
         </div>
-        <span className="text-meta font-semibold text-faint">
+        <span aria-live="polite" className="text-meta font-semibold text-faint">
           {educators.count.before}
           <b className="font-extrabold text-ink">{mentors.length}</b>
           {educators.count.middle}
@@ -78,13 +78,16 @@ export function MentorBrowser() {
           {educators.count.after}
         </span>
       </div>
+      {/* The cards hold nothing focusable, so the panel itself takes focus (APG tabs pattern):
+          keyboard users can scroll it on phones, and focusing it shows every card's quote. */}
       <div
         key={current.id}
         id="mentor-panel"
         role="tabpanel"
+        tabIndex={0}
         aria-labelledby={`mentor-tab-${current.id}`}
         className={cn(
-          "mt-[22px] grid gap-3.5 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4",
+          "group/panel mt-[22px] grid gap-3.5 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand/35 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4",
           // Phones: bleeds to the screen edge (the export pulls it 20px out of an 18px gutter; 18 keeps it on screen).
           "-mr-[18px] auto-cols-[80%] grid-flow-col snap-x snap-mandatory overflow-x-auto pt-1 pr-[18px] pb-3 pl-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
           "sm:mr-0 sm:auto-cols-auto sm:grid-flow-row sm:overflow-visible sm:p-0",

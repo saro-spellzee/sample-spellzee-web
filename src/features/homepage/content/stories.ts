@@ -15,7 +15,9 @@ export const stories = {
     { id: "speaks-confidently", kind: "Parent story", quote: "She speaks with much more confidence.", tag: "Communication", gradient: "violetBlue" },
     { id: "progress-clearly", kind: "Parent story", quote: "We could see the progress clearly.", tag: "Progress tracking", gradient: "inkBlue" },
   ] satisfies Reel[],
-  playLabel: "Play video: {quote}",
+  // A reel's accessible name: it carries all of the reel's visible text, in reading order, so
+  // speech-input users can say what they see (WCAG 2.5.3 Label in Name).
+  playLabel: "Play video: {kind}. {quote} {tag}",
   ctaText: "Want progress like this for your child?",
   cta: bookCta,
   previous: "Previous videos",

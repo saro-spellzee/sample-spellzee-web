@@ -28,6 +28,14 @@ describe("VideoDialog", () => {
     expect(dialog()).toHaveTextContent(video.note);
   });
 
+  it("starts with focus on the visible close button, not the full-screen backdrop", () => {
+    render(<VideoDialog reel={reel} onClose={() => {}} />);
+    const [backdrop, button] = closeButtons();
+
+    expect(button).toHaveFocus();
+    expect(backdrop).not.toHaveFocus();
+  });
+
   it("asks to close on Escape instead of closing itself, so the owner can restore focus", () => {
     const onClose = vi.fn();
     render(<VideoDialog reel={reel} onClose={onClose} />);

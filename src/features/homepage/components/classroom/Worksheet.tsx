@@ -15,18 +15,31 @@ const option = {
   dim: "cursor-default border-line bg-white text-ink opacity-40",
 } as const;
 
-/** "Worksheet": pick the missing vowel in three words; each row locks once answered. */
+/**
+ * "Worksheet": pick the missing vowel in three words; each row locks once answered. Rows show
+ * right and wrong by colour, so each pick is also read out ("Right, cat." / "Not quite, it's dog.").
+ */
 export function Worksheet() {
   const { worksheet } = classroom;
   const [set, setSet] = useState(0);
   const [answers, setAnswers] = useState<number[]>(blankAnswers);
+  /** The row answered last, for the spoken feedback; -1 before any pick on this sheet. */
+  const [lastRow, setLastRow] = useState(-1);
   const questions = worksheet.sets[set % worksheet.sets.length];
   const score = questions.filter((q, i) => answers[i] === q.answer).length;
   const answered = answers.filter((a) => a >= 0).length;
+  const last = lastRow >= 0 ? questions[lastRow] : null;
+  const feedback = last
+    ? (answers[lastRow] === last.answer ? worksheet.feedback.right : worksheet.feedback.wrong).replace(
+        "{word}",
+        `${last.before}${last.options[last.answer]}${last.after}`,
+      )
+    : "";
 
   const pick = (row: number, choice: number) => {
     if (answers[row] >= 0) return;
     setAnswers(answers.map((a, i) => (i === row ? choice : a)));
+    setLastRow(row);
   };
 
   return (
@@ -36,6 +49,9 @@ export function Worksheet() {
           <span>{worksheet.title}</span>
           <span aria-live="polite">{worksheet.score.replace("{n}", String(score))}</span>
         </div>
+        <span aria-live="polite" className="sr-only">
+          {feedback}
+        </span>
         {questions.map((q, row) => {
           const choice = answers[row];
           const done = choice >= 0;
@@ -84,6 +100,7 @@ export function Worksheet() {
           onClick={() => {
             setSet((s) => s + 1);
             setAnswers(blankAnswers);
+            setLastRow(-1);
           }}
           className={tool.seg}
         >

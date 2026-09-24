@@ -74,6 +74,36 @@ describe("MentorBrowser", () => {
     expectSelected(0);
   });
 
+  it("puts the card panel in the Tab order after the filters (its cards hold nothing focusable)", async () => {
+    const user = userEvent.setup();
+    render(<MentorBrowser />);
+
+    await user.tab();
+    expect(tab(0)).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole("tabpanel")).toHaveFocus();
+  });
+
+  it("lets a tap or click focus a card (to show its quote) without adding cards to the Tab order", async () => {
+    const user = userEvent.setup();
+    render(<MentorBrowser />);
+
+    await user.click(screen.getByRole("heading", { name: mentors[0].name }));
+
+    expect(cards()[0]).toHaveFocus();
+    expect(cards()[0]).toHaveAttribute("tabindex", "-1");
+  });
+
+  it("announces the mentor count when the filter changes", async () => {
+    const user = userEvent.setup();
+    render(<MentorBrowser />);
+
+    await user.click(tab(programme));
+    const shown = mentors.filter((m) => m.programme === filters[programme].id).length;
+
+    expect(screen.getByText(String(shown), { selector: "b" }).closest("[aria-live]")).toHaveAttribute("aria-live", "polite");
+  });
+
   it("has no axe violations, filtered or not", async () => {
     const user = userEvent.setup();
     const { container } = render(<MentorBrowser />);

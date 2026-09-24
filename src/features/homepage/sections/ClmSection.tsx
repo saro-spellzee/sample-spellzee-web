@@ -29,15 +29,18 @@ export function ClmSection() {
               {badge.after}
             </span>
           </div>
-          <Heading look="display" size="text-[clamp(34px,4vw,56px)] leading-none tracking-[-0.045em]" className="mt-4 lg:whitespace-nowrap">
-            {title.before}
-            <span className="text-gradient">{title.highlight}</span>
-            <sup className="static align-super text-[0.3em]">{title.trademark}</sup>
-          </Heading>
-          <p className="mt-2.5 text-[clamp(20px,1.8vw,24px)] leading-[1.25] font-bold tracking-[-0.02em] text-ink">
-            {tagline.before}
-            <Swoosh size="lg">{tagline.mark}</Swoosh>
-          </p>
+          {/* hgroup: the bold line under the heading is its subtitle, not a heading of its own. */}
+          <hgroup className="mt-4">
+            <Heading look="display" size="text-[clamp(34px,4vw,56px)] leading-none tracking-[-0.045em]" className="lg:whitespace-nowrap">
+              {title.before}
+              <span className="text-gradient">{title.highlight}</span>
+              <sup className="static align-super text-[0.3em]">{title.trademark}</sup>
+            </Heading>
+            <p className="mt-2.5 text-[clamp(20px,1.8vw,24px)] leading-[1.25] font-bold tracking-[-0.02em] text-ink">
+              {tagline.before}
+              <Swoosh size="lg">{tagline.mark}</Swoosh>
+            </p>
+          </hgroup>
           <Lead size="text-[16px] leading-[1.7]" className="mx-auto mt-3.5 max-w-[760px]">
             {intro.before}
             <strong className="font-bold text-ink">{intro.strong}</strong>

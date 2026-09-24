@@ -235,7 +235,9 @@ test.describe("homepage", () => {
   test("story reels scroll with the arrows and open the video dialog", async ({ page }) => {
     await page.goto("/");
     const reel = stories.reels[1];
-    const reelButton = page.getByRole("button", { name: stories.playLabel.replace("{quote}", reel.quote) });
+    const reelButton = page.getByRole("button", {
+      name: stories.playLabel.replace("{kind}", reel.kind).replace("{quote}", reel.quote).replace("{tag}", reel.tag),
+    });
 
     // More reels than fit: Next scrolls the row sideways and Previous brings it back. The scroll is
     // smooth, so read where it comes to rest (the first snap point sits a hair past 0, the row's inset).

@@ -115,6 +115,19 @@ describe("FeedbackToast", () => {
     expect(shownIndex()).toBe(1);
   });
 
+  it("holds the message while keyboard focus is on it, so its dismiss button isn't pulled away", () => {
+    renderShown();
+
+    act(() => dismissButton()?.focus());
+    tick(ROTATE_MS * 3);
+    expect(shownIndex()).toBe(0);
+    expect(dismissButton()).toHaveFocus();
+
+    act(() => dismissButton()?.blur());
+    tick(ROTATE_MS + SWAP_GAP_MS);
+    expect(shownIndex()).toBe(1);
+  });
+
   it("shows one message and never cycles when the user prefers reduced motion", () => {
     vi.stubGlobal("matchMedia", (query: string) => ({ matches: query.includes("reduce"), media: query }));
     renderShown();

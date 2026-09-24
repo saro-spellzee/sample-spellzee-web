@@ -21,7 +21,8 @@ export type HeaderShellProps = {
 /**
  * Sticky frosted header. Below the desktop breakpoint a menu button opens the section
  * links under the bar (in the flow, as in the export). The menu closes on a link tap,
- * Escape, or a tap outside the header.
+ * Escape, a tap outside the header, or keyboard focus moving on past it (the open menu
+ * would otherwise stay stuck over the page). On short screens it scrolls within the viewport.
  */
 export function HeaderShell({ brand, nav, cta }: HeaderShellProps) {
   const [open, setOpen] = useState(false);
@@ -49,6 +50,10 @@ export function HeaderShell({ brand, nav, cta }: HeaderShellProps) {
   return (
     <header
       ref={headerRef}
+      onBlur={(e) => {
+        // Only when focus lands on something else on the page, not when the window loses focus.
+        if (open && e.relatedTarget instanceof Node && !e.currentTarget.contains(e.relatedTarget)) setOpen(false);
+      }}
       className="sticky top-0 z-50 border-b border-[rgba(160,130,100,0.12)] bg-[rgba(252,248,244,0.85)] backdrop-blur-[16px] backdrop-saturate-[1.2]"
     >
       <Container className="flex h-16 items-center justify-between gap-6 sm:h-[74px]">
@@ -77,7 +82,7 @@ export function HeaderShell({ brand, nav, cta }: HeaderShellProps) {
         onClick={(e) => {
           if (e.target instanceof Element && e.target.closest("a")) setOpen(false);
         }}
-        className="flex animate-fade-up flex-col gap-0.5 border-t border-[rgba(160,130,100,0.12)] bg-[rgba(252,248,244,0.97)] px-5 pt-2.5 pb-[18px] lg:hidden"
+        className="flex max-h-[calc(100svh-4rem)] animate-fade-up flex-col gap-0.5 overflow-y-auto overscroll-contain border-t border-[rgba(160,130,100,0.12)] bg-[rgba(252,248,244,0.97)] px-5 pt-2.5 pb-[18px] sm:max-h-[calc(100svh-74px)] lg:hidden"
       >
         {header.nav.map((item) => (
           <Link key={item.href} href={item.href} className="border-b border-hairline px-1 py-3 text-[16px] font-bold text-ink no-underline hover:text-brand">

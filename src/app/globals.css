@@ -271,8 +271,15 @@
 @layer base {
   html {
     scroll-behavior: smooth;
-    /* Keep focused elements and anchor targets clear of the 74px sticky header (WCAG 2.4.11). */
+    /* Keep focused elements and anchor targets clear of the 74px sticky header (WCAG 2.4.11)
+       and of the floating "Pause motion" button in the bottom corner. */
     scroll-padding-top: 90px;
+    scroll-padding-bottom: 64px;
+  }
+  /* Controls without a focus style of their own (nav and footer links) keep the browser's
+     ring, held off the text so it doesn't sit on the letters. */
+  :focus-visible {
+    outline-offset: 3px;
   }
   body {
     @apply bg-cream font-sans text-ink antialiased;

@@ -75,6 +75,35 @@ describe("HeaderShell", () => {
     expect(menuLink(header.nav[0].label)).toHaveFocus();
   });
 
+  it("closes once keyboard focus moves on past the menu, so it doesn't stay stuck over the page", async () => {
+    const user = userEvent.setup();
+    renderHeader();
+    menuButton().focus();
+    await user.keyboard("{Enter}");
+
+    // Through every link in the menu (and its CTA) it stays open...
+    for (let i = 0; i <= header.nav.length; i++) await user.tab();
+    expect(menuLink(header.cta.label)).toHaveFocus();
+    expect(menuButton()).toHaveAttribute("aria-expanded", "true");
+
+    // ...and the next Tab, onto the page, closes it.
+    await user.tab();
+    expect(screen.getByRole("button", { name: "Page content" })).toHaveFocus();
+    expect(menuButton()).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("stays open when the window itself loses focus (switching apps)", async () => {
+    const user = userEvent.setup();
+    renderHeader();
+    menuButton().focus();
+    await user.keyboard("{Enter}");
+    await user.tab();
+
+    menuLink(header.nav[0].label).blur(); // focus goes nowhere on the page: relatedTarget is null
+
+    expect(menuButton()).toHaveAttribute("aria-expanded", "true");
+  });
+
   it("closes on Escape and returns focus to the menu button", async () => {
     const user = userEvent.setup();
     renderHeader();

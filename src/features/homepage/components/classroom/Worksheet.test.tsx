@@ -79,6 +79,23 @@ describe("Worksheet", () => {
     expect(score(0)).toHaveAttribute("aria-live", "polite");
   });
 
+  it("says whether each pick was right, and the word when it wasn't (the rows show it by colour only)", async () => {
+    const user = userEvent.setup();
+    render(<Worksheet />);
+    const wordOf = (q: Question) => `${q.before}${q.options[q.answer]}${q.after}`;
+    const spoken = (text: string) => screen.getByText(text);
+
+    await user.click(option(q1, q1.answer));
+    expect(spoken(worksheet.feedback.right.replace("{word}", wordOf(q1)))).toHaveAttribute("aria-live", "polite");
+
+    await user.click(option(q2, wrongChoice(q2)));
+    expect(spoken(worksheet.feedback.wrong.replace("{word}", wordOf(q2)))).toHaveAttribute("aria-live", "polite");
+
+    // A fresh sheet starts silent.
+    await user.click(screen.getByRole("button", { name: worksheet.reset }));
+    expect(screen.queryByText(worksheet.feedback.wrong.replace("{word}", wordOf(q2)))).not.toBeInTheDocument();
+  });
+
   it("can be answered from the keyboard", async () => {
     const user = userEvent.setup();
     render(<Worksheet />);

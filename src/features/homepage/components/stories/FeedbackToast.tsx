@@ -29,8 +29,9 @@ type Feed = { messages: DatedMessage[]; now: Date };
 /**
  * "New message from …'s class": a chat-style card that appears once the stories section is
  * in view, then cycles through recent class feedback every 7.5s. Dismissing it hides it for
- * the visit. It doesn't cycle under reduced motion or while motion is paused, and it isn't a
- * live region, so screen readers aren't interrupted every few seconds.
+ * the visit. It doesn't cycle under reduced motion, while motion is paused, or while the pointer
+ * or keyboard focus is on it, and it isn't a live region, so screen readers aren't interrupted
+ * every few seconds.
  */
 export function FeedbackToast() {
   const { feedback } = stories;
@@ -67,6 +68,10 @@ export function FeedbackToast() {
           rotateTimer = window.setInterval(() => {
             if (dismissed.current) return stop();
             if (isMotionPaused()) return;
+            // Hold the message while it's being read or its dismiss button has focus: swapping
+            // would unmount the button and drop keyboard focus to the page.
+            const slot = slotRef.current;
+            if (slot && (slot.matches(":hover") || slot.contains(document.activeElement))) return;
             setShown(false);
             swapTimer = window.setTimeout(() => {
               setIndex((i) => i + 1);
@@ -113,7 +118,7 @@ export function FeedbackToast() {
                 dismissed.current = true;
                 setShown(false);
               }}
-              className="flex size-6 cursor-pointer items-center justify-center rounded-full border-0 bg-chip text-faint focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand/35"
+              className="flex size-6 flex-none cursor-pointer items-center justify-center rounded-full border-0 bg-chip text-faint focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand/35"
             >
               <Icon name="close" size={11} strokeWidth={2.8} />
             </button>

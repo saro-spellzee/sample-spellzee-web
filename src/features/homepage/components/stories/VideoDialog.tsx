@@ -15,12 +15,18 @@ export type VideoDialogProps = { reel: Reel | null; onClose: () => void };
  */
 export function VideoDialog({ reel, onClose }: VideoDialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
   const { video } = stories;
 
   useEffect(() => {
     const dialog = ref.current;
     if (!dialog) return;
-    if (reel && !dialog.open) dialog.showModal();
+    if (reel && !dialog.open) {
+      dialog.showModal();
+      // showModal() focuses the first focusable element, which is the full-screen backdrop
+      // button: focus would sit on something with no visible ring. Start on the close button.
+      closeRef.current?.focus();
+    }
     if (!reel && dialog.open) dialog.close();
   }, [reel]);
 
@@ -66,6 +72,7 @@ export function VideoDialog({ reel, onClose }: VideoDialogProps) {
                 </div>
               </div>
               <button
+                ref={closeRef}
                 type="button"
                 aria-label={video.close}
                 onClick={onClose}

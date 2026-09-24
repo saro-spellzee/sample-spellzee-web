@@ -7,7 +7,11 @@ import type { Mentor } from "../types";
 
 export type MentorCardProps = { mentor: Mentor; tone: Tone };
 
-/** Mentor card: arched photo (quote on hover), role, certificates and teaching facts (`.ed-card`). */
+/**
+ * Mentor card: arched photo, role, certificates and teaching facts (`.ed-card`). The quote over
+ * the photo shows on hover, on a tap or click (the card takes focus, outside the Tab order), and
+ * while the panel around it has keyboard focus (MentorBrowser), so it's never hover-only.
+ */
 export function MentorCard({ mentor, tone }: MentorCardProps) {
   const facts = [
     { icon: "gradCap", text: mentor.qualification },
@@ -17,9 +21,10 @@ export function MentorCard({ mentor, tone }: MentorCardProps) {
   ] as const;
   return (
     <article
+      tabIndex={-1}
       className={cn(
         tones[tone],
-        "group animate-fade-up snap-start overflow-hidden rounded-[26px] border border-line bg-white shadow-[0_22px_44px_-32px_rgba(14,26,58,.45)]",
+        "group animate-fade-up snap-start overflow-hidden rounded-[26px] border border-line bg-white shadow-[0_22px_44px_-32px_rgba(14,26,58,.45)] outline-none",
         "transition-[translate,box-shadow,border-color] duration-350 ease-[cubic-bezier(.3,1.2,.5,1)] hover:-translate-y-1.5 hover:border-(--tone) hover:shadow-[0_0_0_3px_var(--tone-soft),0_30px_54px_-30px_rgba(14,26,58,.5)]",
       )}
     >
@@ -31,7 +36,7 @@ export function MentorCard({ mentor, tone }: MentorCardProps) {
           sizes="(min-width: 1001px) 260px, (min-width: 641px) 45vw, 80vw"
           className="object-cover object-top transition-transform duration-500 ease-in-out group-hover:scale-[1.04]"
         />
-        <span className="absolute inset-x-2.5 bottom-2.5 translate-y-2.5 rounded-[14px] bg-[rgba(14,26,58,.78)] px-3 py-2.5 font-serif text-[17px] leading-[1.25] font-normal text-white italic opacity-0 backdrop-blur-[8px] transition-all duration-350 ease-in-out group-hover:translate-y-0 group-hover:opacity-100">
+        <span className="absolute inset-x-2.5 bottom-2.5 translate-y-2.5 rounded-[14px] bg-[rgba(14,26,58,.78)] px-3 py-2.5 font-serif text-[17px] leading-[1.25] font-normal text-white italic opacity-0 backdrop-blur-[8px] transition-all duration-350 ease-in-out group-hover:translate-y-0 group-hover:opacity-100 group-focus:translate-y-0 group-focus:opacity-100 group-focus-visible/panel:translate-y-0 group-focus-visible/panel:opacity-100">
           “{mentor.quote}”
         </span>
       </div>

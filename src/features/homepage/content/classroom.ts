@@ -69,6 +69,9 @@ export const classroom = {
   worksheet: {
     title: "Worksheet · Level 2",
     score: "{n} / 3 correct",
+    // Read out (visually hidden) after each pick, since the rows show right and wrong by colour
+    // alone and a wrong pick doesn't change the score. TODO(product): approve this wording.
+    feedback: { right: "Right, {word}.", wrong: "Not quite, it’s {word}." },
     blank: "_",
     sets: [
       [
