@@ -1,47 +1,9 @@
 /**
- * Booking dialog state and rules, kept free of React so they can be tested directly.
- * Behaviour follows the export's logic class (bf state, bfNext, bfSubmit, calendar, slots).
+ * Booking dialog rules, kept free of React so they can be tested directly and shared with
+ * the Server Action (`../../booking/schema.ts`). Behaviour follows the export's logic class
+ * (bfNext, bfSubmit, calendar, slots).
  */
 import { booking } from "../../content";
-
-export type BookingMode = "call" | "schedule";
-
-export type BookingState = {
-  step: 1 | 2;
-  kid: string;
-  grade: string;
-  difficulties: string[];
-  parent: string;
-  phone: string;
-  consent: boolean;
-  /** "" means English only; otherwise the added home language ("Tamil"). */
-  language: string;
-  mode: BookingMode;
-  /** Chosen day as YYYY-MM-DD, "" when none. */
-  date: string;
-  slot: string;
-  /** Calendar month shown, as an offset from the current month (0–2). */
-  month: number;
-  error: string;
-  done: boolean;
-};
-
-export const initialBooking: BookingState = {
-  step: 1,
-  kid: "",
-  grade: "",
-  difficulties: [],
-  parent: "",
-  phone: "",
-  consent: false,
-  language: "",
-  mode: "call",
-  date: "",
-  slot: "",
-  month: 0,
-  error: "",
-  done: false,
-};
 
 /** Toggles a difficulty; "Not sure yet" is exclusive with the others. */
 export function toggleDifficulty(current: string[], id: string): string[] {
@@ -68,26 +30,9 @@ export function languageText(language: string): string {
   return language ? booking.language.join + language : booking.language.base;
 }
 
-/** Step 1 check: returns the error to show, or "" when the step is complete. */
-export function validateChild(s: Pick<BookingState, "kid" | "grade" | "difficulties">): string {
-  if (s.kid.trim().length < 2) return booking.errors.kid;
-  if (!s.grade.trim()) return booking.errors.grade;
-  if (s.difficulties.length === 0) return booking.errors.difficulties;
-  return "";
-}
-
 /** Keeps the 10-digit national number: drops spaces and a leading 91 country code. */
 export function phoneDigits(raw: string): string {
   return raw.replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
-}
-
-/** Step 2 check: returns the error to show, or "" when the booking can be sent. */
-export function validateParent(s: Pick<BookingState, "parent" | "phone" | "mode" | "date" | "slot" | "consent">): string {
-  if (s.parent.trim().length < 2) return booking.errors.parent;
-  if (!/^[6-9]\d{9}$/.test(phoneDigits(s.phone))) return booking.errors.phone;
-  if (s.mode === "schedule" && (!s.date || !s.slot)) return booking.errors.slot;
-  if (!s.consent) return booking.errors.consent;
-  return "";
 }
 
 /** "98765 43210" */
@@ -170,6 +115,23 @@ export function slotsFor(day: Date): string[] {
 
 export function slotHint(day: Date): string {
   return day.getDay() === 6 ? booking.schedule.saturdayHint : booking.schedule.weekdayHint;
+}
+
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Server-side check that a scheduled demo is one the calendar could have offered: a real,
+ * non-Sunday day and one of that day's slots. The calendar offers tomorrow to 60 days out
+ * in the visitor's time zone; this allows today to 61 days out in the checker's own, so a
+ * visitor whose clock or time zone differs from the server's is never refused.
+ */
+export function isBookable(iso: string, slot: string, now: Date = new Date()): boolean {
+  if (!ISO_DAY.test(iso)) return false;
+  const day = fromIso(iso);
+  // Rejects days that don't exist: 2026-02-30 would roll over into March.
+  if (Number.isNaN(day.getTime()) || isoDate(day) !== iso || day.getDay() === 0) return false;
+  const first = startOfDay(now);
+  return day >= first && day <= addDays(first, 61) && slotsFor(day).includes(slot);
 }
 
 /** "Sat, 3 Oct at 4:30 PM" */

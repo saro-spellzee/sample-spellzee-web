@@ -1,19 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { booking } from "../../content";
-import {
-  calendarMonth,
-  describeSlot,
-  difficultyText,
-  initialBooking,
-  phoneDigits,
-  possessive,
-  slotsFor,
-  toggleDifficulty,
-  validateChild,
-  validateParent,
-} from "./model";
+import { calendarMonth, describeSlot, difficultyText, isBookable, phoneDigits, possessive, slotsFor, toggleDifficulty } from "./model";
 
-const { errors } = booking;
 const unsure = booking.difficulties.unsureId;
 
 describe("toggleDifficulty", () => {
@@ -34,35 +22,37 @@ describe("toggleDifficulty", () => {
   });
 });
 
-describe("validateChild", () => {
-  const ok = { kid: "Aarav", grade: "Grade 3", difficulties: ["read"] };
-  it("asks for the name, then the grade, then an area", () => {
-    expect(validateChild({ ...ok, kid: " A " })).toBe(errors.kid);
-    expect(validateChild({ ...ok, grade: "  " })).toBe(errors.grade);
-    expect(validateChild({ ...ok, difficulties: [] })).toBe(errors.difficulties);
-    expect(validateChild(ok)).toBe("");
+describe("phoneDigits", () => {
+  it("accepts a number typed with spaces or the +91 country code", () => {
+    expect(phoneDigits("98765 43210")).toBe("9876543210");
+    expect(phoneDigits("+91 98765 43210")).toBe("9876543210");
+    expect(phoneDigits("919876543210")).toBe("9876543210");
   });
 });
 
-describe("validateParent", () => {
-  const ok = { ...initialBooking, parent: "Meera Iyer", phone: "98765 43210", consent: true };
-  it("needs a name, a valid Indian mobile and consent", () => {
-    expect(validateParent({ ...ok, parent: "M" })).toBe(errors.parent);
-    expect(validateParent({ ...ok, phone: "12345 67890" })).toBe(errors.phone);
-    expect(validateParent({ ...ok, phone: "98765" })).toBe(errors.phone);
-    expect(validateParent({ ...ok, consent: false })).toBe(errors.consent);
-    expect(validateParent(ok)).toBe("");
+describe("isBookable (the server's slot check)", () => {
+  // Thursday 24 September 2026, mid-afternoon.
+  const now = new Date(2026, 8, 24, 15, 30);
+
+  it("accepts a slot the calendar offers", () => {
+    expect(isBookable("2026-09-26", "10:30 AM", now)).toBe(true); // Saturday morning
+    expect(isBookable("2026-09-25", "3:00 PM", now)).toBe(true); // Friday afternoon
   });
 
-  it("needs a day and a slot when scheduling", () => {
-    expect(validateParent({ ...ok, mode: "schedule" })).toBe(errors.slot);
-    expect(validateParent({ ...ok, mode: "schedule", date: "2026-10-01" })).toBe(errors.slot);
-    expect(validateParent({ ...ok, mode: "schedule", date: "2026-10-01", slot: "4:00 PM" })).toBe("");
+  it("refuses Sundays, slots the day doesn't have, and malformed or impossible days", () => {
+    expect(isBookable("2026-09-27", "3:00 PM", now)).toBe(false); // Sunday
+    expect(isBookable("2026-09-25", "10:30 AM", now)).toBe(false); // weekday mornings are closed
+    expect(isBookable("2026-09-25", "", now)).toBe(false);
+    expect(isBookable("", "3:00 PM", now)).toBe(false);
+    expect(isBookable("2026-02-30", "3:00 PM", now)).toBe(false);
+    expect(isBookable("26/09/2026", "10:30 AM", now)).toBe(false);
   });
 
-  it("accepts a number typed with the +91 country code", () => {
-    expect(phoneDigits("+91 98765 43210")).toBe("9876543210");
-    expect(phoneDigits("919876543210")).toBe("9876543210");
+  it("allows a day of slack either side for a visitor in another time zone, and no more", () => {
+    expect(isBookable("2026-09-24", "4:00 PM", now)).toBe(true); // today
+    expect(isBookable("2026-09-23", "4:00 PM", now)).toBe(false); // yesterday
+    expect(isBookable("2026-11-24", "4:00 PM", now)).toBe(true); // 61 days out
+    expect(isBookable("2026-11-25", "4:00 PM", now)).toBe(false); // 62 days out
   });
 });
 

@@ -82,13 +82,17 @@ test.describe("homepage", () => {
     await expect(dialog).toBeHidden();
   });
 
-  test("booking dialog: both steps, then the confirmation", async ({ page }) => {
+  // The E2E server is a production build with no LEADS_WEBHOOK_URL, so the Server Action
+  // must fail loudly: a generic error, the answers kept, and never a fake confirmation.
+  test("booking dialog: both steps, then never a confirmation the server didn't give", async ({ page }) => {
+    test.skip(!!process.env.LEADS_WEBHOOK_URL, "a webhook is configured for this run");
     await page.goto("/");
     await page.getByRole("link", { name: hero.primaryCta.label }).click();
     const dialog = page.getByRole("dialog");
 
     await dialog.getByRole("button", { name: booking.continue }).click();
     await expect(dialog.getByRole("alert")).toHaveText(booking.errors.kid);
+    await expect(dialog.getByLabel(booking.kid.label)).toBeFocused();
 
     await dialog.getByLabel(booking.kid.label).fill("Aarav");
     await dialog.getByLabel(booking.grade.label).fill("Grade 3");
@@ -96,7 +100,8 @@ test.describe("homepage", () => {
     await dialog.getByRole("button", { name: booking.continue }).click();
 
     await expect(dialog.getByRole("heading", { name: booking.steps[1].title })).toBeVisible();
-    await dialog.getByLabel(booking.parent.label).fill("Meera Iyer");
+    const parent = dialog.getByLabel(booking.parent.label);
+    await parent.fill("Meera Iyer");
     await dialog.getByLabel(booking.phone.label).fill("98765 43210");
     // Tap the drawn box, as a parent would: the native checkbox is visually hidden inside its label.
     const consent = dialog.getByRole("checkbox");
@@ -104,10 +109,28 @@ test.describe("homepage", () => {
     await expect(consent).toBeChecked();
     await dialog.getByRole("button", { name: new RegExp(booking.submit.call) }).click();
 
-    await expect(dialog.getByRole("heading", { name: booking.done.title.replace("{parent}", "Meera") })).toBeVisible();
-    await expect(dialog).toContainText("+91 98765 43210");
-    await dialog.getByRole("button", { name: booking.done.button }).click();
-    await expect(dialog).toBeHidden();
+    const failed = booking.errors.failed.replace("{phone}", booking.done.support.call.number);
+    await expect(dialog.getByRole("alert")).toHaveText(failed);
+    await expect(dialog.getByRole("heading", { name: booking.done.title.replace("{parent}", "Meera") })).toHaveCount(0);
+    await expect(parent).toHaveValue("Meera Iyer");
+    await expect(dialog.getByRole("button", { name: new RegExp(booking.submit.call) })).toBeEnabled();
+  });
+
+  test("booking and newsletter inputs are at least 16px on phones, so iOS doesn't zoom on focus", async ({ page, isMobile }) => {
+    test.skip(!isMobile, "only phones zoom on focus");
+    await page.goto("/");
+    await page.getByRole("link", { name: hero.primaryCta.label }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel(booking.kid.label).fill("Aarav");
+    await dialog.getByLabel(booking.grade.label).fill("Grade 3");
+    await dialog.getByRole("button", { name: /Comprehension/ }).click();
+    await dialog.getByRole("button", { name: booking.continue }).click();
+    await expect(dialog.getByLabel(booking.parent.label)).toBeVisible();
+    const sizes = await page.$$eval("input:not([type=checkbox]):not([type=radio]):not([tabindex='-1']), select, textarea", (els) =>
+      els.map((el) => ({ name: el.getAttribute("name") ?? el.id, px: parseFloat(getComputedStyle(el).fontSize) })),
+    );
+    expect(sizes.length).toBeGreaterThan(2);
+    expect(sizes.filter((s) => s.px < 16)).toEqual([]);
   });
 
   test("internal page links resolve, apart from the listed unbuilt routes", async ({ page, request }) => {
@@ -229,5 +252,29 @@ test.describe("homepage", () => {
     await expect(page.getByRole("status").filter({ hasText: footer.newsletter.errors.failed })).toBeVisible();
     await expect(page.getByText(footer.newsletter.success)).toHaveCount(0);
     await expect(input).toHaveValue("parent@example.com");
+  });
+});
+
+// A slow phone can show the form before React hydrates. The newsletter must still submit,
+// through its Server Action, and never as a GET that puts the email in the URL.
+test.describe("before hydration (no JavaScript)", () => {
+  // Reduced motion turns off the page's smooth scrolling, which never settles for Playwright's
+  // "is it still moving?" check once JavaScript is off.
+  test.use({ javaScriptEnabled: false, reducedMotion: "reduce" });
+
+  test("newsletter posts to its Server Action and shows the server's answer", async ({ page }) => {
+    test.skip(!!process.env.NEWSLETTER_WEBHOOK_URL, "a webhook is configured for this run");
+    await page.goto("/");
+    await page.getByLabel(footer.newsletter.label).fill("parent@example.com");
+
+    const [request] = await Promise.all([
+      page.waitForRequest((r) => r.isNavigationRequest() && r.method() === "POST"),
+      page.getByRole("button", { name: footer.newsletter.submit }).click(),
+    ]);
+
+    expect(new URL(request.url()).search).toBe("");
+    await expect(page.getByRole("status").filter({ hasText: footer.newsletter.errors.failed })).toBeVisible();
+    await expect(page.getByText(footer.newsletter.success)).toHaveCount(0);
+    expect(page.url()).not.toContain("parent%40example.com");
   });
 });

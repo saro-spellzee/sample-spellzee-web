@@ -733,6 +733,8 @@ export const booking = {
   },
   back: "Back",
   submit: { call: "Book my free demo", schedule: "Confirm my demo slot" },
+  /** Submit label while the request is on its way (not in the export). */
+  pending: "Sending…",
   errors: {
     kid: "Please enter your child’s name.",
     grade: "Please enter your child’s grade or class.",
@@ -741,7 +743,11 @@ export const booking = {
     phone: "Please enter a valid 10-digit Indian mobile number.",
     slot: "Please pick a day and a time for the demo.",
     consent: "Please confirm you are the parent or guardian.",
+    /** Any delivery failure (not in the export); the detail goes to the server log only. {phone} is the support number. */
+    failed: "Sorry, we couldn’t send your request just now. Please try again, or call us on {phone}.",
   },
+  /** Honeypot: visually hidden and aria-hidden, so only bots fill it in. */
+  honeypotLabel: "Leave this field empty",
   done: {
     title: "You’re All Set, {parent}!",
     parentFallback: "there",

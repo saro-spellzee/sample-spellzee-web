@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRef, useState, type FormEvent } from "react";
+import { useActionState, useRef, useState, type FormEvent } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
@@ -14,13 +14,24 @@ const ERROR_ID = "nl-email-error";
 /**
  * Footer newsletter sign-up. React Hook Form validates with the shared Zod schema
  * (on blur, then on change once touched); the Server Action validates again and
- * delivers. The Server Action is called from the submit handler, not through
- * `useActionState`, so a network failure becomes a message instead of an error boundary.
+ * delivers.
+ *
+ * Two paths to the same Server Action:
+ * - Before hydration (slow phone, JS still loading or failed) the form posts natively to
+ *   the action through `useActionState`, so a tap isn't lost (Safari doesn't replay it) and
+ *   the email never ends up in a GET query string. The server's answer renders as `served`.
+ * - Once hydrated, the submit handler always prevents that post and calls the action itself
+ *   after client validation, so a network failure becomes a message, not an error boundary.
+ *
+ * The input is 16px below `sm` (the design draws 14px) so iOS Safari doesn't zoom on focus.
  */
 export function NewsletterForm() {
   const { newsletter } = footer;
   const inFlight = useRef(false);
-  const [result, setResult] = useState<NewsletterState>(initialNewsletterState);
+  const [served, formAction, postPending] = useActionState(subscribeToNewsletter, initialNewsletterState);
+  /** The result of a client-side submit; until there is one, show what the server rendered. */
+  const [sent, setSent] = useState<NewsletterState | null>(null);
+  const result = sent ?? served;
   const {
     register,
     handleSubmit,
@@ -36,7 +47,7 @@ export function NewsletterForm() {
   const send = async (form: HTMLFormElement) => {
     if (inFlight.current) return;
     inFlight.current = true;
-    setResult(initialNewsletterState);
+    setSent(initialNewsletterState);
     let next: NewsletterState;
     try {
       next = await subscribeToNewsletter(initialNewsletterState, new FormData(form));
@@ -45,7 +56,7 @@ export function NewsletterForm() {
     } finally {
       inFlight.current = false;
     }
-    setResult(next);
+    setSent(next);
     if (next.status === "success") reset();
     else if (next.status === "invalid" && next.errors.email) {
       setError("email", { type: "server", message: next.errors.email }, { shouldFocus: true });
@@ -57,11 +68,12 @@ export function NewsletterForm() {
     return handleSubmit(() => send(form))(e);
   };
 
-  const emailError = errors.email?.message;
+  const emailError = errors.email?.message ?? (!sent && served.status === "invalid" ? served.errors.email : undefined);
+  const busy = isSubmitting || postPending;
   const status = result.status === "success" ? newsletter.success : result.status === "failed" ? newsletter.errors.failed : "";
 
   return (
-    <form onSubmit={onSubmit} noValidate className="mt-3.5">
+    <form action={formAction} onSubmit={onSubmit} noValidate className="mt-3.5">
       <div className="flex gap-2">
         <label htmlFor="nl-email" className="sr-only">
           {newsletter.label}
@@ -77,10 +89,10 @@ export function NewsletterForm() {
           aria-invalid={emailError ? true : undefined}
           aria-describedby={emailError ? ERROR_ID : undefined}
           {...register("email")}
-          className="min-h-12 min-w-0 flex-1 rounded-full border border-night-line bg-[#16244C] px-[18px] text-sm font-medium text-white placeholder:text-[#8C97BD] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-periwinkle/50 aria-invalid:border-[#FF8FA6]"
+          className="min-h-12 min-w-0 flex-1 rounded-full border border-night-line bg-[#16244C] px-[18px] text-base font-medium text-white sm:text-sm placeholder:text-[#8C97BD] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-periwinkle/50 aria-invalid:border-[#FF8FA6]"
         />
-        <Button type="submit" size="field" disabled={isSubmitting}>
-          {isSubmitting ? newsletter.pending : newsletter.submit}
+        <Button type="submit" size="field" disabled={busy}>
+          {busy ? newsletter.pending : newsletter.submit}
         </Button>
       </div>
       {/* Honeypot: off-screen, hidden from assistive tech and skipped by Tab. */}

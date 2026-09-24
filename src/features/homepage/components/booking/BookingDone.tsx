@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import type { IconName } from "@/lib/icons";
+import type { BookingValues } from "../../booking/schema";
 import { booking } from "../../content";
-import { describeSlot, difficultyText, languageText, possessive, type BookingState } from "./model";
+import { describeSlot, difficultyText, formatPhone, languageText, possessive } from "./model";
 import { bf } from "./styles";
 
 function Note({ icon, children }: { icon: IconName; children: React.ReactNode }) {
@@ -19,11 +20,14 @@ function Note({ icon, children }: { icon: IconName; children: React.ReactNode })
 const support =
   "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-bold no-underline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand/35";
 
-/** Confirmation after the booking is sent: what happens next, with a way to talk now. */
-export function BookingDone({ state, onDone }: { state: BookingState; onDone: () => void }) {
+/**
+ * Confirmation, shown only once the server has accepted the booking: what happens next,
+ * with a way to talk now. `values` are as the schema parsed them (trimmed, phone digits only).
+ */
+export function BookingDone({ values: state, onDone }: { values: BookingValues; onDone: () => void }) {
   const { done } = booking;
   const parentFirst = state.parent.trim().split(" ")[0] || done.parentFallback;
-  const phone = done.phonePrefix + state.phone;
+  const phone = done.phonePrefix + formatPhone(state.phone);
   const whose = possessive(state.kid);
   const cells = [
     { k: done.card.child, v: `${state.kid} · ${state.grade}` },

@@ -31,11 +31,12 @@ export const test = base.extend({
     }
     await provide(context);
   },
-  page: async ({ page }, provide) => {
+  page: async ({ page, javaScriptEnabled }, provide) => {
     const goto = page.goto.bind(page);
     page.goto = async (url, options) => {
       const response = await goto(url, options);
-      await hydrated(page);
+      // With JavaScript off (the pre-hydration tests) nothing will ever hydrate.
+      if (javaScriptEnabled !== false) await hydrated(page);
       return response;
     };
     await provide(page);

@@ -1,9 +1,11 @@
+import { useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
+import { BOOKING_MAX, type BookingValues } from "../../booking/schema";
 import { booking } from "../../content";
-import type { StepProps } from "./ChildStep";
-import { DemoScheduler } from "./DemoScheduler";
+import { DemoScheduler, type SchedulerProps } from "./DemoScheduler";
+import { ERROR_ID, fieldAria, groupAria } from "./fields";
 import { difficultyText, languageText, possessive } from "./model";
 import { bf } from "./styles";
 
@@ -12,12 +14,26 @@ const modeCard =
   "has-checked:border-brand has-checked:bg-brand-tint has-checked:shadow-[0_0_0_1px_var(--color-brand)] " +
   "has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand/35";
 
-export type ParentStepProps = StepProps & { onBack: () => void; onSubmit: () => void; today: Date };
+export type ParentStepProps = SchedulerProps & {
+  /** The step-2 error line: the first failing field's message, or the delivery failure. */
+  error: string;
+  /** The request is on its way: the submit button is disabled and says so. */
+  pending: boolean;
+  onBack: () => void;
+};
 
-/** Step 2: the parent's details, consent, classroom language and how to book. */
-export function ParentStep({ state, update, onBack, onSubmit, today }: ParentStepProps) {
+/** Step 2: the parent's details, consent, classroom language and how to book. Submitting sends the booking. */
+export function ParentStep({ error, pending, onBack, today, month, onMonth }: ParentStepProps) {
   const { consent, language, mode } = booking;
-  const kid = state.kid.trim();
+  const {
+    register,
+    setValue,
+    trigger,
+    control,
+    formState: { errors },
+  } = useFormContext<BookingValues>();
+  const [kidRaw, grade, difficulties, chosenLanguage, chosenMode] = useWatch({ control, name: ["kid", "grade", "difficulties", "language", "mode"] });
+  const kid = kidRaw.trim();
   return (
     <div className={bf.body}>
       <div className="flex items-center gap-3 rounded-2xl border border-line-soft bg-white px-3.5 py-3 text-[14px] leading-[1.35] text-ink">
@@ -25,9 +41,9 @@ export function ParentStep({ state, update, onBack, onSubmit, today }: ParentSte
           {(kid[0] ?? "C").toUpperCase()}
         </span>
         <span>
-          <b>{kid}</b> · {state.grade.trim()}
+          <b>{kid}</b> · {grade.trim()}
           <br />
-          <span className="text-fine text-muted">{difficultyText(state.difficulties)}</span>
+          <span className="text-fine text-muted">{difficultyText(difficulties)}</span>
         </span>
         <button
           type="button"
@@ -43,12 +59,11 @@ export function ParentStep({ state, update, onBack, onSubmit, today }: ParentSte
         <input
           className={bf.input}
           type="text"
-          name="parent"
           autoComplete="name"
-          maxLength={60}
+          maxLength={BOOKING_MAX.parent}
           placeholder={booking.parent.placeholder}
-          value={state.parent}
-          onChange={(e) => update({ parent: e.target.value, error: "" })}
+          {...fieldAria(!!errors.parent)}
+          {...register("parent")}
         />
       </label>
 
@@ -65,14 +80,12 @@ export function ParentStep({ state, update, onBack, onSubmit, today }: ParentSte
             id="bf-phone"
             className={bf.input}
             type="tel"
-            name="phone"
             inputMode="numeric"
             autoComplete="tel-national"
             maxLength={11}
             placeholder={booking.phone.placeholder}
-            aria-describedby="bf-phone-code bf-phone-hint"
-            value={state.phone}
-            onChange={(e) => update({ phone: e.target.value, error: "" })}
+            {...fieldAria(!!errors.phone, "bf-phone-code bf-phone-hint")}
+            {...register("phone")}
           />
         </span>
         <span id="bf-phone-hint" className={bf.hint}>
@@ -81,7 +94,7 @@ export function ParentStep({ state, update, onBack, onSubmit, today }: ParentSte
       </div>
 
       <label className="flex cursor-pointer items-start gap-2.5 text-[13px] leading-[1.5] font-medium text-slate">
-        <input type="checkbox" name="consent" className="peer sr-only" checked={state.consent} onChange={(e) => update({ consent: e.target.checked, error: "" })} />
+        <input type="checkbox" className="peer sr-only" {...fieldAria(!!errors.consent)} {...register("consent")} />
         <span
           aria-hidden="true"
           className="mt-px flex size-[22px] flex-none items-center justify-center rounded-[7px] border-[1.5px] border-[#CFC6B8] bg-white text-transparent transition-all duration-200 peer-checked:border-brand peer-checked:bg-brand peer-checked:text-white peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand/35"
@@ -90,7 +103,7 @@ export function ParentStep({ state, update, onBack, onSubmit, today }: ParentSte
         </span>
         <span>
           {consent.before}
-          {possessive(state.kid)}
+          {possessive(kid)}
           {consent.after}
           <a href={consent.link.href} className="font-bold text-brand">
             {consent.link.label}
@@ -102,16 +115,22 @@ export function ParentStep({ state, update, onBack, onSubmit, today }: ParentSte
       <div className={bf.field}>
         <span className={bf.label}>
           {language.label}
-          <b className="font-extrabold text-brand">{languageText(state.language)}</b>
+          <b className="font-extrabold text-brand">{languageText(chosenLanguage)}</b>
         </span>
-        <div role="group" aria-label={language.groupLabel} className="mt-1.5 flex flex-wrap gap-1.5">
+        <div id="bf-language" role="group" aria-label={language.groupLabel} {...groupAria(!!errors.language)} className="mt-1.5 flex flex-wrap gap-1.5">
           <span className="inline-flex min-h-9 items-center rounded-full border-[1.5px] border-brand bg-brand px-3 text-[13px] font-bold text-white opacity-90">
             {language.base}
           </span>
           {language.extras.map((name) => {
-            const on = state.language === name;
+            const on = chosenLanguage === name;
             return (
-              <button key={name} type="button" aria-pressed={on} onClick={() => update({ language: on ? "" : name, error: "" })} className={bf.chip}>
+              <button
+                key={name}
+                type="button"
+                aria-pressed={on}
+                onClick={() => setValue("language", on ? "" : name, { shouldDirty: true, shouldValidate: !!errors.language })}
+                className={bf.chip}
+              >
                 {language.addPrefix}
                 {name}
               </button>
@@ -126,7 +145,15 @@ export function ParentStep({ state, update, onBack, onSubmit, today }: ParentSte
         <div className="grid grid-cols-1 gap-2 xs:grid-cols-2">
           {(["call", "schedule"] as const).map((m) => (
             <label key={m} className={modeCard}>
-              <input type="radio" name="bf-mode" className="sr-only" checked={state.mode === m} onChange={() => update({ mode: m, error: "" })} />
+              <input
+                type="radio"
+                value={m}
+                className="sr-only"
+                {...register("mode", {
+                  // A missing-slot message no longer applies once the parent picks a call-back.
+                  onChange: () => (errors.slot ? trigger("slot") : undefined),
+                })}
+              />
               <b className="text-[14px] font-extrabold text-ink">{mode[m].title}</b>
               <span className="text-[12px] leading-[1.4] text-muted">{mode[m].body}</span>
             </label>
@@ -134,11 +161,11 @@ export function ParentStep({ state, update, onBack, onSubmit, today }: ParentSte
         </div>
       </fieldset>
 
-      {state.mode === "schedule" ? <DemoScheduler state={state} update={update} today={today} /> : null}
+      {chosenMode === "schedule" ? <DemoScheduler today={today} month={month} onMonth={onMonth} /> : null}
 
       <div className={bf.actions}>
-        <div role="alert" className={bf.error}>
-          {state.error}
+        <div id={ERROR_ID} role="alert" className={bf.error}>
+          {error}
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -148,8 +175,8 @@ export function ParentStep({ state, update, onBack, onSubmit, today }: ParentSte
           >
             <Icon name="arrowLeft" size={16} strokeWidth={2.4} /> {booking.back}
           </button>
-          <Button size="go" arrow onClick={onSubmit} className="flex-1">
-            {booking.submit[state.mode]}
+          <Button type="submit" size="go" arrow disabled={pending} className="flex-1">
+            {pending ? booking.pending : booking.submit[chosenMode]}
           </Button>
         </div>
       </div>

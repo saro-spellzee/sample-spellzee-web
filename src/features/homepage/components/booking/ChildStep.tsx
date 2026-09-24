@@ -1,19 +1,24 @@
+import { useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { tones } from "@/components/ui/tones";
 import { cn } from "@/lib/cn";
+import { BOOKING_MAX, type BookingValues } from "../../booking/schema";
 import { booking } from "../../content";
-import { toggleDifficulty, type BookingState } from "./model";
+import { ERROR_ID, fieldAria, groupAria } from "./fields";
+import { toggleDifficulty } from "./model";
 import { bf } from "./styles";
 
-export type StepProps = {
-  state: BookingState;
-  update: (patch: Partial<BookingState>) => void;
-};
-
-/** Step 1: the child's name, grade and the difficulties to work on. */
-export function ChildStep({ state, update, onNext }: StepProps & { onNext: () => void }) {
+/** Step 1: the child's name, grade and the difficulties to work on. Continue submits the form. */
+export function ChildStep({ error }: { error: string }) {
   const { difficulties } = booking;
+  const {
+    register,
+    setValue,
+    control,
+    formState: { errors },
+  } = useFormContext<BookingValues>();
+  const picked = useWatch({ control, name: "difficulties" });
   return (
     <div className={bf.body}>
       <label className={bf.field}>
@@ -21,12 +26,11 @@ export function ChildStep({ state, update, onNext }: StepProps & { onNext: () =>
         <input
           className={bf.input}
           type="text"
-          name="kid"
           autoComplete="off"
-          maxLength={40}
+          maxLength={BOOKING_MAX.kid}
           placeholder={booking.kid.placeholder}
-          value={state.kid}
-          onChange={(e) => update({ kid: e.target.value, error: "" })}
+          {...fieldAria(!!errors.kid)}
+          {...register("kid")}
         />
       </label>
       <label className={bf.field}>
@@ -34,27 +38,26 @@ export function ChildStep({ state, update, onNext }: StepProps & { onNext: () =>
         <input
           className={bf.input}
           type="text"
-          name="grade"
           autoComplete="off"
-          maxLength={20}
+          maxLength={BOOKING_MAX.grade}
           placeholder={booking.grade.placeholder}
-          value={state.grade}
-          onChange={(e) => update({ grade: e.target.value, error: "" })}
+          {...fieldAria(!!errors.grade)}
+          {...register("grade")}
         />
       </label>
-      <div role="group" aria-labelledby="bf-difficulty-label" className={bf.field}>
+      <div id="bf-difficulties" role="group" aria-labelledby="bf-difficulty-label" {...groupAria(!!errors.difficulties)} className={bf.field}>
         <span id="bf-difficulty-label" className={bf.label}>
           {difficulties.label} <em className={bf.labelNote}>{difficulties.hint}</em>
         </span>
         <div className="grid grid-cols-1 gap-[9px] dlg:grid-cols-2">
           {difficulties.items.map((d) => {
-            const on = state.difficulties.includes(d.id);
+            const on = picked.includes(d.id);
             return (
               <button
                 key={d.id}
                 type="button"
                 aria-pressed={on}
-                onClick={() => update({ difficulties: toggleDifficulty(state.difficulties, d.id), error: "" })}
+                onClick={() => setValue("difficulties", toggleDifficulty(picked, d.id), { shouldDirty: true, shouldValidate: !!errors.difficulties })}
                 className={cn(
                   tones[d.tone],
                   "relative flex cursor-pointer items-center gap-[11px] rounded-2xl border-[1.5px] px-3 py-2.5 text-left transition-all duration-220 ease-in-out last:col-span-full",
@@ -83,10 +86,10 @@ export function ChildStep({ state, update, onNext }: StepProps & { onNext: () =>
         </div>
       </div>
       <div className={bf.actions}>
-        <div role="alert" className={bf.error}>
-          {state.error}
+        <div id={ERROR_ID} role="alert" className={bf.error}>
+          {error}
         </div>
-        <Button size="go" arrow onClick={onNext}>
+        <Button type="submit" size="go" arrow>
           {booking.continue}
         </Button>
       </div>
