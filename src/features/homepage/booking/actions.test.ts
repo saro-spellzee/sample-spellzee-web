@@ -101,6 +101,15 @@ describe("requestDemo (Server Action)", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it("refuses to send a child's details to a plain-http webhook in production", async () => {
+    vi.stubEnv("LEADS_WEBHOOK_URL", "http://hooks.example.test/leads");
+    vi.stubEnv("NODE_ENV", "production");
+
+    await expect(requestDemo(valid)).resolves.toEqual({ status: "failed" });
+    expect(console.error).toHaveBeenCalledWith(expect.stringContaining("must be an https:// URL"));
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("logs only a masked number and succeeds in development when no webhook is configured", async () => {
     vi.stubEnv("LEADS_WEBHOOK_URL", "");
     vi.stubEnv("NODE_ENV", "development");

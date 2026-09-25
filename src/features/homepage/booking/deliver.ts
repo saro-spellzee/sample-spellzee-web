@@ -13,7 +13,9 @@ import type { BookingValues } from "./schema";
  *
  * With no URL configured: production fails loudly (server error log + a generic error to
  * the parent, never a fake confirmation); development and tests log a masked summary.
- * Log lines never carry the parent's or child's name or the full phone number.
+ * Production also refuses a URL that isn't https://: the payload carries a child's name and
+ * a parent's phone number. Log lines never carry the parent's or child's name or the full
+ * phone number.
  */
 
 const TIMEOUT_MS = 8000;
@@ -58,6 +60,11 @@ export async function deliverBooking(values: BookingValues, requestId: string): 
     }
     console.info(`[booking] LEADS_WEBHOOK_URL not set (dev): would send a "${values.mode}" demo request for ${maskPhone(values.phone)}`);
     return true;
+  }
+
+  if (process.env.NODE_ENV === "production" && !/^https:\/\//i.test(url)) {
+    console.error(`[booking] LEADS_WEBHOOK_URL must be an https:// URL; demo request ${requestId} was NOT sent.`);
+    return false;
   }
 
   const headers: Record<string, string> = { "Content-Type": "application/json" };

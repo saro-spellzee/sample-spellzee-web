@@ -68,6 +68,15 @@ describe("subscribeToNewsletter (Server Action)", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it("refuses to send an address to a plain-http webhook in production", async () => {
+    vi.stubEnv("NEWSLETTER_WEBHOOK_URL", "http://hooks.example.test/newsletter");
+    vi.stubEnv("NODE_ENV", "production");
+
+    await expect(submit({ email: "parent@example.com" })).resolves.toEqual({ status: "failed" });
+    expect(console.error).toHaveBeenCalledWith(expect.stringContaining("must be an https:// URL"));
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("logs a masked address and succeeds in development when no webhook is configured", async () => {
     vi.stubEnv("NEWSLETTER_WEBHOOK_URL", "");
     vi.stubEnv("NODE_ENV", "development");
