@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { WidgetBoundary } from "@/components/errors/WidgetBoundary";
 import { Container } from "@/components/ui/Container";
 import { Heading } from "@/components/ui/Heading";
 import { Icon } from "@/components/ui/Icon";
@@ -6,6 +7,7 @@ import { Kicker } from "@/components/ui/Kicker";
 import { Lead } from "@/components/ui/Lead";
 import { Swoosh } from "@/components/ui/Swoosh";
 import { educators } from "../content/educators";
+import { widgetError } from "../content/page";
 import { MentorBrowser } from "../components/MentorBrowser";
 
 /** "Meet Your Child's Mentors": headline stat, programme filters over the mentor cards, and the matching promise. */
@@ -36,7 +38,9 @@ export function EducatorsSection() {
           </div>
         </div>
 
-        <MentorBrowser />
+        <WidgetBoundary name="Mentor browser" notice={widgetError} className="mt-[34px]">
+          <MentorBrowser />
+        </WidgetBoundary>
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-[20px] border border-white bg-white/70 px-5 py-4 shadow-[0_0_0_1px_rgba(150,120,90,.10)]">
           <span className="flex items-center gap-3 text-body font-semibold text-slate">

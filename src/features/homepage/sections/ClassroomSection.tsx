@@ -1,9 +1,11 @@
+import { WidgetBoundary } from "@/components/errors/WidgetBoundary";
 import { Container } from "@/components/ui/Container";
 import { Heading } from "@/components/ui/Heading";
 import { Kicker } from "@/components/ui/Kicker";
 import { Lead } from "@/components/ui/Lead";
 import { Swoosh } from "@/components/ui/Swoosh";
 import { classroom } from "../content/classroom";
+import { widgetError } from "../content/page";
 import { LearningTools } from "../components/classroom/LearningTools";
 import { LiveClassCard } from "../components/classroom/LiveClassCard";
 import { MiniBadge } from "../components/MiniBadge";
@@ -41,7 +43,9 @@ export function ClassroomSection() {
         <div className="studio-frame mt-3.5 rounded-[30px] p-2.5 lg:rounded-[40px] lg:p-[18px]">
           <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-[minmax(0,.86fr)_minmax(0,1.14fr)]">
             <LiveClassCard />
-            <LearningTools />
+            <WidgetBoundary name="Learning tools" notice={widgetError} className="self-start">
+              <LearningTools />
+            </WidgetBoundary>
           </div>
         </div>
       </Container>

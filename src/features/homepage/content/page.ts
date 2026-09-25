@@ -16,6 +16,9 @@ export const meta = {
 
 export const motion = { pause: "Pause motion", play: "Play motion" };
 
+/** Shown in place of an interactive part of the page that failed to load (components/errors/WidgetBoundary). */
+export const widgetError = { message: "This part of the page didn’t load.", retry: "Try again" };
+
 export const header = {
   logo: img("spellzee-logo.png", "Spellzee: Cognitive Literacy Mapping for kids", 524, 150),
   homeHref: "#top",

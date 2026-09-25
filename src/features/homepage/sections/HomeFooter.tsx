@@ -1,8 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
+import { WidgetBoundary } from "@/components/errors/WidgetBoundary";
 import { Accent } from "@/components/ui/Accent";
 import { Container } from "@/components/ui/Container";
 import { footer } from "../content/footer";
+import { widgetError } from "../content/page";
 import { NewsletterForm } from "../components/NewsletterForm";
 
 const pill = "rounded-full border border-night-line text-fine text-haze";
@@ -28,7 +30,9 @@ export function HomeFooter() {
             <div className="mt-6">
               <div className="text-[15px] font-extrabold">{newsletter.title}</div>
               <div className="mt-1 text-[13.5px] text-mist">{newsletter.body}</div>
-              <NewsletterForm />
+              <WidgetBoundary name="Newsletter form" notice={widgetError} className="mt-3.5">
+                <NewsletterForm />
+              </WidgetBoundary>
             </div>
           </div>
           {footer.columns.map((col) => (

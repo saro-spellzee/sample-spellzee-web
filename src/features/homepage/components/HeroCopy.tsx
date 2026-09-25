@@ -1,7 +1,10 @@
+import { WidgetBoundary } from "@/components/errors/WidgetBoundary";
 import { Button } from "@/components/ui/Button";
 import { Heading } from "@/components/ui/Heading";
 import { IconTile } from "@/components/ui/IconTile";
 import { Lead } from "@/components/ui/Lead";
+import { tones } from "@/components/ui/tones";
+import { cn } from "@/lib/cn";
 import { hero } from "../content/hero";
 import { CredentialBar } from "./CredentialBar";
 import { HeroWordRotator } from "./HeroWordRotator";
@@ -10,6 +13,7 @@ import { MiniBadge } from "./MiniBadge";
 
 export function HeroCopy() {
   const { badges, title, lead, highlights, language } = hero;
+  const firstWord = title.words[0];
   return (
     <div
       data-hero-copy
@@ -29,7 +33,10 @@ export function HeroCopy() {
         <span aria-hidden="true">
           {title.line}
           <br />
-          <HeroWordRotator />
+          {/* If the rotator fails, the headline keeps its first word. */}
+          <WidgetBoundary name="Hero word rotator" fallback={<span className={cn(tones[firstWord.tone], "text-(--tone)")}>{firstWord.text}</span>}>
+            <HeroWordRotator />
+          </WidgetBoundary>
         </span>
       </Heading>
 

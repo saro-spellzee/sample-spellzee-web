@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { WidgetBoundary } from "@/components/errors/WidgetBoundary";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { meta } from "@/features/homepage/content";
 import { site } from "@/lib/site";
@@ -46,7 +47,9 @@ export default function HomePage() {
     <div className="overflow-x-clip bg-cream">
       <JsonLd data={homepageStructuredData()} />
       <HomeHeader />
-      <MotionToggle />
+      <WidgetBoundary name="Motion toggle">
+        <MotionToggle />
+      </WidgetBoundary>
       <main id="main" tabIndex={-1} className="outline-none">
         <HeroSection />
         <ClmSection />
@@ -61,7 +64,10 @@ export default function HomePage() {
         <FaqSection />
       </main>
       <HomeFooter />
-      <BookingDialog />
+      {/* If the dialog fails, the booking CTAs go to the #book section instead. */}
+      <WidgetBoundary name="Booking dialog">
+        <BookingDialog />
+      </WidgetBoundary>
     </div>
   );
 }

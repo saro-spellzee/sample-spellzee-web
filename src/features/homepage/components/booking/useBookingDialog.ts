@@ -17,6 +17,9 @@ import { focusField } from "./fields";
 /** Links and buttons with this attribute open the dialog instead of navigating (see Button's `action`). */
 const TRIGGER = '[data-action="book"]';
 
+/** Whether this engine can show a modal <dialog>. Where it can't, the CTAs keep their plain #book link. */
+const canShowModal = () => typeof HTMLDialogElement === "function" && typeof HTMLDialogElement.prototype.showModal === "function";
+
 export type BookingStep = 1 | 2;
 
 /** Where the booking request stands. `sent` carries the booking as the server accepted it, for the confirmation. */
@@ -75,7 +78,7 @@ export function useBookingDialog() {
     const onClick = (e: MouseEvent) => {
       if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
       const link = e.target instanceof Element ? e.target.closest<HTMLElement>(TRIGGER) : null;
-      if (!link) return;
+      if (!link || !canShowModal()) return;
       // Capture phase: runs before next/link, which then sees the prevented default and stays put.
       e.preventDefault();
       opener.current = link;

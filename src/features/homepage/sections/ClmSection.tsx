@@ -1,10 +1,12 @@
 import Image from "next/image";
+import { WidgetBoundary } from "@/components/errors/WidgetBoundary";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Heading } from "@/components/ui/Heading";
 import { Lead } from "@/components/ui/Lead";
 import { Swoosh } from "@/components/ui/Swoosh";
 import { clm } from "../content/clm";
+import { widgetError } from "../content/page";
 import { ClmStepChips } from "../components/ClmStepChips";
 import { SkillMap } from "../components/SkillMap";
 import { WaveDivider } from "../components/WaveDivider";
@@ -48,7 +50,9 @@ export function ClmSection() {
           </Lead>
         </div>
 
-        <SkillMap />
+        <WidgetBoundary name="Skill map" notice={widgetError} className="mt-6">
+          <SkillMap />
+        </WidgetBoundary>
 
         <ClmStepChips className="mt-[30px] justify-center gap-2.5" size="lg" arrows />
         <p className="mt-4 text-center text-[17px] font-medium text-slate">

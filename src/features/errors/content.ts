@@ -6,8 +6,12 @@
 
 export type ErrorLink = { label: string; href: string };
 
-/** The homepage's booking section: the site's primary call to action. */
-const bookCta: ErrorLink = { label: "Book a Free Assessment", href: "/#book" };
+/**
+ * The site's primary call to action, worded as on the homepage (features/homepage/content/shared.ts
+ * `bookCta`; keep the two in step). The booking dialog isn't on these screens, so the link goes to
+ * the homepage's booking section, where it is.
+ */
+const bookCta: ErrorLink = { label: "Book a Free Demo Class", href: "/#book" };
 const home: ErrorLink = { label: "Back to homepage", href: "/" };
 
 export const errorShell = {
@@ -19,7 +23,7 @@ export const notFound = {
   title: "Page not found",
   kicker: "Error 404",
   heading: "We couldn’t find that page",
-  body: "The link may be broken, or the page may have moved. Head back to the homepage, or book a free assessment and we’ll take it from there.",
+  body: "The link may be broken, or the page may have moved. Head back to the homepage, or book a free demo class and we’ll take it from there.",
   cta: bookCta,
   home,
 } as const;
@@ -27,7 +31,7 @@ export const notFound = {
 export const routeError = {
   kicker: "Unexpected error",
   heading: "Something went wrong on our side",
-  body: "This part of the page didn’t load. Try again, and if it keeps happening, head back to the homepage.",
+  body: "This page didn’t load properly. Try again, and if it keeps happening, head back to the homepage.",
   retry: "Try again",
   cta: bookCta,
   home,

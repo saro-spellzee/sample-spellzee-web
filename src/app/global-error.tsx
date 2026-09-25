@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { globalError } from "@/features/errors/content";
+import { followWithFullLoad } from "@/features/errors/full-load";
 import { palette } from "@/lib/palette";
 import { site } from "@/lib/site";
 
@@ -55,11 +56,12 @@ export default function GlobalError({ error, retry }: GlobalErrorProps) {
             {globalError.heading}
           </h1>
           <p className="ge-text">{globalError.body}</p>
-          <div className="ge-actions">
+          <div className="ge-actions" onClickCapture={followWithFullLoad}>
             <button type="button" className="ge-btn ge-primary" onClick={() => retry()}>
               {globalError.retry}
             </button>
-            {/* Plain <a>s: a full reload is the most reliable recovery once the root has failed. */}
+            {/* Once the root has failed, a fresh document is the most reliable recovery: plain <a>s,
+                and followWithFullLoad reloads even when only the #fragment differs. */}
             <a href={globalError.home.href} className="ge-btn ge-ghost">
               {globalError.home.label}
             </a>

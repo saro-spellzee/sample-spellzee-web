@@ -15,7 +15,7 @@ import { useBookingDialog } from "./useBookingDialog";
 /**
  * The "Book a Free Demo Class" dialog: two steps (about the child, then the parent's
  * details and how to book), then a confirmation. Every CTA marked `data-action="book"`
- * opens it; without JavaScript those links still go to #book. A native modal <dialog>
+ * opens it; without JavaScript (or modal <dialog> support) those links still go to #book. A native modal <dialog>
  * keeps focus inside and closes on Escape. Behaviour lives in `useBookingDialog`.
  */
 export function BookingDialog() {

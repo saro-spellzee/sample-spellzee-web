@@ -23,9 +23,10 @@ export type ErrorShellProps = {
  */
 export function ErrorShell({ kicker, heading, body, children }: ErrorShellProps) {
   return (
-    <div className="flex min-h-svh min-w-90 flex-col bg-cream">
+    // No min-width: like the homepage, it must not scroll sideways on 320px screens (WCAG 1.4.10).
+    <div className="flex min-h-svh flex-col bg-cream">
       <header className="border-b border-line">
-        <Container className="flex h-[74px] items-center">
+        <Container className="flex h-16 items-center sm:h-[74px]">
           <Link href="/" aria-label={errorShell.homeLabel} className="flex items-center no-underline">
             <Image
               src={site.logo.src}

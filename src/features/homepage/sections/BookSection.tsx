@@ -1,3 +1,4 @@
+import { WidgetBoundary } from "@/components/errors/WidgetBoundary";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Heading } from "@/components/ui/Heading";
@@ -5,6 +6,7 @@ import { Kicker } from "@/components/ui/Kicker";
 import { Lead } from "@/components/ui/Lead";
 import { Swoosh } from "@/components/ui/Swoosh";
 import { book } from "../content/book";
+import { widgetError } from "../content/page";
 import { BookSteps } from "../components/book/BookSteps";
 import { ReportPreview } from "../components/book/ReportPreview";
 
@@ -30,8 +32,12 @@ export function BookSection() {
             {book.cta.label}
           </Button>
         </div>
-        <BookSteps />
-        <ReportPreview />
+        <WidgetBoundary name="Booking steps" notice={widgetError} className="mt-9">
+          <BookSteps />
+        </WidgetBoundary>
+        <WidgetBoundary name="Sample report" notice={widgetError} className="mt-[18px]">
+          <ReportPreview />
+        </WidgetBoundary>
       </Container>
     </section>
   );

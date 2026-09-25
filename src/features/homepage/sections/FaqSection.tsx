@@ -1,3 +1,4 @@
+import { WidgetBoundary } from "@/components/errors/WidgetBoundary";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Container } from "@/components/ui/Container";
@@ -6,6 +7,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Lead } from "@/components/ui/Lead";
 import { Swoosh } from "@/components/ui/Swoosh";
 import { faq } from "../content/faq";
+import { widgetError } from "../content/page";
 import { FaqAccordion } from "../components/FaqAccordion";
 import { ClosingCta } from "../components/faq/ClosingCta";
 import { faqPanels } from "../components/faq/faqPanels";
@@ -45,7 +47,9 @@ export function FaqSection() {
           </Card>
         </div>
         {/* Answers render on the server; the accordion only toggles them. */}
-        <FaqAccordion panels={faqPanels()} />
+        <WidgetBoundary name="FAQ accordion" notice={widgetError}>
+          <FaqAccordion panels={faqPanels()} />
+        </WidgetBoundary>
       </Container>
       <ClosingCta />
     </section>

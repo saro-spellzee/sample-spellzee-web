@@ -93,6 +93,21 @@ describe("BookingDialog", () => {
     expect(window.location.hash).not.toBe("#book");
   });
 
+  it("leaves the link to #book alone where the browser can't show a modal <dialog>", () => {
+    const showModal = HTMLDialogElement.prototype.showModal;
+    // @ts-expect-error: simulating an engine without modal dialogs
+    delete HTMLDialogElement.prototype.showModal;
+    try {
+      renderWithTrigger();
+      // Not prevented, so the browser follows the link to the booking section.
+      expect(fireEvent.click(screen.getByRole("link", { name: "Book a Free Demo Class" }))).toBe(true);
+      expect(dialog()).not.toHaveAttribute("open");
+    } finally {
+      HTMLDialogElement.prototype.showModal = showModal;
+      window.history.replaceState(null, "", "/");
+    }
+  });
+
   it("checks each step-1 field in turn, linking the message and focusing the field", async () => {
     const user = userEvent.setup();
     renderWithTrigger();
