@@ -20,12 +20,48 @@ export function glow(ctx: CanvasRenderingContext2D, x: number, y: number, r: num
 /** Wraps a callback so a throw stops the animation instead of escaping. */
 export type Guard = <A extends unknown[]>(fn: (...args: A) => void) => (...args: A) => void;
 
+/** How far outside the viewport a canvas starts, so it is already drawing when scrolled to. */
+const START_MARGIN = "200px";
+/** The longest a visible canvas waits for an idle moment before starting anyway. */
+const IDLE_TIMEOUT = 600;
+
+/**
+ * Calls `fn` once `el` comes within START_MARGIN of the viewport and the main thread is idle.
+ * Returns a cancel function. Keeps the canvases' setup (sizing, seeding, the first GPU frame)
+ * out of page load and hydration: a canvas below the fold costs nothing until it's scrolled
+ * near, and one in view starts right after hydration instead of inside it.
+ */
+function whenNearAndIdle(el: Element, fn: () => void): () => void {
+  let cancelled = false;
+  let near = false;
+  const run = () => {
+    if (!cancelled) fn();
+  };
+  const io = new IntersectionObserver(
+    (entries) => {
+      if (cancelled || near || !entries.some((e) => e.isIntersecting)) return;
+      near = true;
+      io.disconnect();
+      // Safari has no requestIdleCallback; a timeout still lets hydration finish first.
+      if (typeof requestIdleCallback === "function") requestIdleCallback(run, { timeout: IDLE_TIMEOUT });
+      else setTimeout(run, 1);
+    },
+    { rootMargin: START_MARGIN },
+  );
+  io.observe(el);
+  return () => {
+    cancelled = true;
+    io.disconnect();
+  };
+}
+
 /**
  * Starts a decorative canvas animation so that a failure can never blank its section.
  * Setup runs inside `useEffect`, where a throw would reach the route's error boundary
  * and replace the whole page. Here it is caught instead: the loop stops, the canvas is
  * hidden (the artwork underneath stays), and a single warning is logged.
- * `start` must return its cleanup; wrap async callbacks (rAF, observers) in `guard`.
+ * `start` runs once the canvas is near the viewport and the browser is idle (see
+ * `whenNearAndIdle`); it must return its cleanup; wrap async callbacks (rAF, observers) in `guard`.
  * Missing browser APIs (old engines without ResizeObserver) skip the animation.
  */
 export function startCanvas(
@@ -59,12 +95,18 @@ export function startCanvas(
         stop(error);
       }
     };
-  try {
-    cleanup = start(guard);
-  } catch (error) {
-    stop(error);
-  }
-  return () => stop();
+  const cancelStart = whenNearAndIdle(canvas, () => {
+    if (stopped) return;
+    try {
+      cleanup = start(guard);
+    } catch (error) {
+      stop(error);
+    }
+  });
+  return () => {
+    cancelStart();
+    stop();
+  };
 }
 
 export function prefersReducedMotion(): boolean {

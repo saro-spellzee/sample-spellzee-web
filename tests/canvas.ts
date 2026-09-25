@@ -31,17 +31,29 @@ export function fakeCanvas({ width = 800, height = 450 } = {}) {
   });
   vi.stubGlobal("cancelAnimationFrame", (id: number) => frames.delete(id));
 
+  // Like a browser, an observer reports whether its target is on screen as soon as it starts
+  // observing (here synchronously), and again whenever the test moves it with `setOnScreen`.
+  let visible = true;
   const onScreen: ((entries: Partial<IntersectionObserverEntry>[]) => void)[] = [];
   vi.stubGlobal(
     "IntersectionObserver",
     class {
+      private cb: (entries: Partial<IntersectionObserverEntry>[]) => void;
       constructor(cb: (entries: Partial<IntersectionObserverEntry>[]) => void) {
+        this.cb = cb;
         onScreen.push(cb);
       }
-      observe() {}
+      observe() {
+        this.cb([{ isIntersecting: visible }]);
+      }
       disconnect() {}
     },
   );
+  // The canvases start once the browser is idle; the test browser is always idle.
+  vi.stubGlobal("requestIdleCallback", (cb: IdleRequestCallback) => {
+    cb({ didTimeout: false, timeRemaining: () => 50 });
+    return 1;
+  });
   vi.stubGlobal(
     "ResizeObserver",
     class {
@@ -63,6 +75,7 @@ export function fakeCanvas({ width = 800, height = 450 } = {}) {
     },
     /** Reports the canvas scrolling into or out of view. */
     setOnScreen(isIntersecting: boolean) {
+      visible = isIntersecting;
       act(() => onScreen.forEach((cb) => cb([{ isIntersecting }])));
     },
   };

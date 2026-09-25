@@ -149,7 +149,11 @@ export function useBrainCanvas(canvasRef: RefObject<HTMLCanvasElement | null>, a
 
       // First frame before anything is attached, so a throw here leaves nothing to release.
       resize();
-      const ro = new ResizeObserver(guard(resize));
+      // The observer also reports the size it starts with; only a real change re-fits.
+      const ro = new ResizeObserver(guard(() => {
+        const r = box.getBoundingClientRect();
+        if (r.width !== w || r.height !== h) resize();
+      }));
       ro.observe(box);
       const io = new IntersectionObserver(guard((en: IntersectionObserverEntry[]) => { visible = en[0].isIntersecting; }));
       io.observe(box);

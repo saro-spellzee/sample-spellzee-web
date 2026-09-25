@@ -178,7 +178,11 @@ export function useNetCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
       resize();
       host.addEventListener("pointermove", move);
       host.addEventListener("pointerleave", leave);
-      const ro = new ResizeObserver(guard(resize));
+      // The observer also reports the size it starts with; only a real change re-fits and re-seeds.
+      const ro = new ResizeObserver(guard(() => {
+        const r = box.getBoundingClientRect();
+        if (r.width !== w || r.height !== h) resize();
+      }));
       ro.observe(box);
       const io = new IntersectionObserver(guard((en: IntersectionObserverEntry[]) => { visible = en[0].isIntersecting; }));
       io.observe(box);
