@@ -1,10 +1,12 @@
 import Image from "next/image";
+import { WidgetBoundary } from "@/components/errors/WidgetBoundary";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Heading } from "@/components/ui/Heading";
 import { Lead } from "@/components/ui/Lead";
 import { Swoosh } from "@/components/ui/Swoosh";
-import { clm } from "../content";
+import { clm } from "../content/clm";
+import { widgetError } from "../content/page";
 import { ClmStepChips } from "../components/ClmStepChips";
 import { SkillMap } from "../components/SkillMap";
 import { WaveDivider } from "../components/WaveDivider";
@@ -12,7 +14,7 @@ import { WaveDivider } from "../components/WaveDivider";
 export function ClmSection() {
   const { badge, title, tagline, intro, closing } = clm;
   return (
-    <section id="clm" className="silk-lavender relative overflow-hidden pt-[112px] pb-[132px]">
+    <section id="clm" className="silk-lavender relative overflow-hidden py-[88px] sm:pt-[112px] sm:pb-[132px]">
       <WaveDivider id="wave-clm-top" position="top" />
       <Container className="relative z-2">
         <div className="mx-auto max-w-[900px] text-center">
@@ -29,15 +31,18 @@ export function ClmSection() {
               {badge.after}
             </span>
           </div>
-          <Heading look="display" size="text-[clamp(34px,4vw,56px)] leading-none tracking-[-0.045em]" className="mt-4 lg:whitespace-nowrap">
-            {title.before}
-            <span className="text-gradient">{title.highlight}</span>
-            <sup className="static align-super text-[0.3em]">{title.trademark}</sup>
-          </Heading>
-          <p className="mt-2.5 text-[clamp(20px,1.8vw,24px)] leading-[1.25] font-bold tracking-[-0.02em] text-ink">
-            {tagline.before}
-            <Swoosh size="lg">{tagline.mark}</Swoosh>
-          </p>
+          {/* hgroup: the bold line under the heading is its subtitle, not a heading of its own. */}
+          <hgroup className="mt-4">
+            <Heading look="display" size="text-[clamp(34px,4vw,56px)] leading-none tracking-[-0.045em]" className="lg:whitespace-nowrap">
+              {title.before}
+              <span className="text-gradient">{title.highlight}</span>
+              <sup className="static align-super text-[0.3em]">{title.trademark}</sup>
+            </Heading>
+            <p className="mt-2.5 text-[clamp(20px,1.8vw,24px)] leading-[1.25] font-bold tracking-[-0.02em] text-ink">
+              {tagline.before}
+              <Swoosh size="lg">{tagline.mark}</Swoosh>
+            </p>
+          </hgroup>
           <Lead size="text-[16px] leading-[1.7]" className="mx-auto mt-3.5 max-w-[760px]">
             {intro.before}
             <strong className="font-bold text-ink">{intro.strong}</strong>
@@ -45,7 +50,9 @@ export function ClmSection() {
           </Lead>
         </div>
 
-        <SkillMap />
+        <WidgetBoundary name="Skill map" notice={widgetError} className="mt-6">
+          <SkillMap />
+        </WidgetBoundary>
 
         <ClmStepChips className="mt-[30px] justify-center gap-2.5" size="lg" arrows />
         <p className="mt-4 text-center text-[17px] font-medium text-slate">

@@ -33,14 +33,78 @@ describe("prefersReducedMotion", () => {
 describe("startCanvas", () => {
   afterEach(() => vi.unstubAllGlobals());
 
+  /** Observers that report the canvas on screen as soon as it's observed, and an idle browser. */
   const withObservers = () => {
     class Stub {
-      observe() {}
+      constructor(private cb: (entries: Partial<IntersectionObserverEntry>[]) => void) {}
+      observe() {
+        this.cb([{ isIntersecting: true }]);
+      }
       disconnect() {}
     }
     vi.stubGlobal("ResizeObserver", Stub);
     vi.stubGlobal("IntersectionObserver", Stub);
+    vi.stubGlobal("requestIdleCallback", (cb: IdleRequestCallback) => {
+      cb({ didTimeout: false, timeRemaining: () => 50 });
+      return 1;
+    });
   };
+
+  it("starts only once the canvas is near the viewport and the browser is idle", () => {
+    let report: (entries: Partial<IntersectionObserverEntry>[]) => void = () => {};
+    const options: IntersectionObserverInit[] = [];
+    vi.stubGlobal("ResizeObserver", class {});
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        constructor(cb: typeof report, init: IntersectionObserverInit) {
+          report = cb;
+          options.push(init);
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    const idle: IdleRequestCallback[] = [];
+    vi.stubGlobal("requestIdleCallback", (cb: IdleRequestCallback) => idle.push(cb));
+    const start = vi.fn(() => () => {});
+
+    startCanvas("Test", document.createElement("canvas"), start);
+    expect(options[0]?.rootMargin).toBe("200px");
+    report([{ isIntersecting: false }]);
+    expect(idle).toHaveLength(0);
+
+    report([{ isIntersecting: true }]);
+    report([{ isIntersecting: true }]);
+    expect(idle).toHaveLength(1);
+    expect(start).not.toHaveBeenCalled();
+
+    idle[0]({ didTimeout: false, timeRemaining: () => 50 });
+    expect(start).toHaveBeenCalledTimes(1);
+  });
+
+  it("never starts when unmounted before it came into view", () => {
+    let report: (entries: Partial<IntersectionObserverEntry>[]) => void = () => {};
+    vi.stubGlobal("ResizeObserver", class {});
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        constructor(cb: typeof report) {
+          report = cb;
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    vi.stubGlobal("requestIdleCallback", (cb: IdleRequestCallback) => cb({ didTimeout: false, timeRemaining: () => 50 }));
+    const start = vi.fn(() => () => {});
+
+    const stop = startCanvas("Test", document.createElement("canvas"), start);
+    stop();
+    report([{ isIntersecting: true }]);
+
+    expect(start).not.toHaveBeenCalled();
+  });
 
   it("skips the animation when observers are unavailable", () => {
     vi.stubGlobal("ResizeObserver", undefined);

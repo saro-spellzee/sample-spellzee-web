@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 import { tones } from "@/components/ui/tones";
 import { cn } from "@/lib/cn";
-import { programs } from "../content";
+import { programs } from "../content/programs";
 import type { Program } from "../types";
 
 const lift = "group-hover:bg-(--tone) group-hover:text-white group-focus-visible:bg-(--tone) group-focus-visible:text-white";
@@ -28,12 +28,12 @@ export function ProgramCard({ program, n }: ProgramCardProps) {
         <span className={cn("flex size-12 flex-none items-center justify-center rounded-[14px] bg-(--tone-soft) text-(--tone) transition-colors duration-300", lift)}>
           <Icon name={program.icon} size={22} />
         </span>
-        <span aria-hidden="true" className="text-meta font-extrabold tracking-[0.08em] text-[#A7AEC4]">0{n}</span>
+        <span aria-hidden="true" className="text-meta font-extrabold tracking-[0.08em] text-quiet">0{n}</span>
       </span>
       <span className="mt-5 block text-[18px] font-extrabold">{program.title}</span>
       <span className="mt-2 block min-h-[4.8em] text-body leading-[1.6] text-muted">{program.description}</span>
       <span className="mt-4 block border-t border-dashed border-line pt-3.5">
-        <span className="block text-[10.5px] font-extrabold tracking-[0.14em] text-[#8A93AE] uppercase">{programs.focusLabel}</span>
+        <span className="block text-[10.5px] font-extrabold tracking-[0.14em] text-subtle uppercase">{programs.focusLabel}</span>
         <span className="mt-2 flex flex-wrap gap-1.5">
           {program.focusSkills.map((skill) => (
             <span

@@ -1,5 +1,6 @@
 import { useEffect, type RefObject } from "react";
 import { TAU, fitCanvas, glow, hexA, prefersReducedMotion, startCanvas } from "./canvas";
+import { isMotionPaused } from "./motion";
 
 type Pt = { x: number; y: number };
 type Node = Pt & { ph: number; sp: number };
@@ -143,11 +144,16 @@ export function useBrainCanvas(canvasRef: RefObject<HTMLCanvasElement | null>, a
         s = w / BW;
         if (reduce) draw();
       };
-      const loop: () => void = guard(() => { if (visible) draw(); raf = requestAnimationFrame(loop); });
+      // Holds its last frame while off-screen or while the page's "Pause motion" switch is on.
+      const loop: () => void = guard(() => { if (visible && !isMotionPaused()) draw(); raf = requestAnimationFrame(loop); });
 
       // First frame before anything is attached, so a throw here leaves nothing to release.
       resize();
-      const ro = new ResizeObserver(guard(resize));
+      // The observer also reports the size it starts with; only a real change re-fits.
+      const ro = new ResizeObserver(guard(() => {
+        const r = box.getBoundingClientRect();
+        if (r.width !== w || r.height !== h) resize();
+      }));
       ro.observe(box);
       const io = new IntersectionObserver(guard((en: IntersectionObserverEntry[]) => { visible = en[0].isIntersecting; }));
       io.observe(box);

@@ -2,12 +2,14 @@
 
 import { useEffect, useRef } from "react";
 import { tones } from "@/components/ui/tones";
-import { clm } from "../content";
+import { clm } from "../content/clm";
+import { useMotionPaused } from "../hooks/motion";
 
 /**
  * Curved connectors from each skill pill to the brain, in the design's 1080x440
  * stage coordinates. End points bob 8px (SMIL); the active link shows a flowing dash.
- * Desktop only. SMIL ignores the CSS reduced-motion reset, so it is paused here.
+ * Desktop only. SMIL ignores CSS (the reduced-motion reset and the "Pause motion" switch),
+ * so both are applied here.
  */
 const LINKS = [
   { from: [262, 110], to: [442.6, 179.9] },
@@ -29,6 +31,7 @@ export type SkillLinksProps = { /** Index of the selected skill. */ active: numb
 
 export function SkillLinks({ active }: SkillLinksProps) {
   const ref = useRef<SVGSVGElement>(null);
+  const paused = useMotionPaused();
   useEffect(() => {
     const svg = ref.current;
     const mq = window.matchMedia?.("(prefers-reduced-motion: reduce)");
@@ -37,6 +40,8 @@ export function SkillLinks({ active }: SkillLinksProps) {
       if (mq.matches) {
         svg.setCurrentTime(0);
         svg.pauseAnimations();
+      } else if (paused) {
+        svg.pauseAnimations();
       } else {
         svg.unpauseAnimations();
       }
@@ -44,7 +49,7 @@ export function SkillLinks({ active }: SkillLinksProps) {
     sync();
     mq.addEventListener?.("change", sync);
     return () => mq.removeEventListener?.("change", sync);
-  }, []);
+  }, [paused]);
 
   return (
     <svg

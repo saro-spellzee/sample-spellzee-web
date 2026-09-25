@@ -7,9 +7,10 @@ import { Icon } from "@/components/ui/Icon";
 import { IconTile } from "@/components/ui/IconTile";
 import { tones } from "@/components/ui/tones";
 import { cn } from "@/lib/cn";
-import { clm } from "../content";
+import { clm } from "../content/clm";
 import { useBrainCanvas } from "../hooks/useBrainCanvas";
 import { prefersReducedMotion } from "../hooks/canvas";
+import { isMotionPaused } from "../hooks/motion";
 import { SkillLinks } from "./SkillLinks";
 
 const AUTO_ADVANCE_MS = 3600;
@@ -19,7 +20,7 @@ const IDLE_AFTER_TOUCH_MS = 7000;
  * The six CLM skills around the brain. Hover, focus or click a pill to select it;
  * while the section is in view and untouched for 7s, it auto-advances every 3.6s.
  * Auto-advance pauses while the pointer or keyboard focus is inside the map, and is
- * off entirely under prefers-reduced-motion (WCAG 2.2.2).
+ * off entirely under prefers-reduced-motion or the page's "Pause motion" switch (WCAG 2.2.2).
  */
 export function SkillMap() {
   const skills = clm.skills;
@@ -38,7 +39,7 @@ export function SkillMap() {
     const id = window.setInterval(() => {
       const root = rootRef.current;
       const sec = root?.closest("section");
-      if (!root || !sec || prefersReducedMotion()) return;
+      if (!root || !sec || prefersReducedMotion() || isMotionPaused()) return;
       if (root.matches(":hover") || root.contains(document.activeElement)) return;
       const r = sec.getBoundingClientRect();
       const vh = window.innerHeight || 800;

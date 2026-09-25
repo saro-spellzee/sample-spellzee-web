@@ -1,18 +1,19 @@
 import Image from "next/image";
 import { IconTile } from "@/components/ui/IconTile";
+import { tones } from "@/components/ui/tones";
 import { cn } from "@/lib/cn";
-import { oneOnOne } from "../content";
+import { oneOnOne } from "../content/oneOnOne";
 import type { ImageAsset } from "../types";
 
 function Avatar({ image, label, className }: { image: ImageAsset; label: string; className: string }) {
   return (
     <div
       className={cn(
-        "absolute top-1/2 flex size-[88px] animate-floaty items-center justify-center overflow-visible rounded-full border-4 border-white shadow-[0_20px_40px_-18px_rgba(14,26,58,.55)] [transform:translate(-50%,-50%)]",
+        "absolute top-1/2 flex size-[66px] animate-floaty items-center justify-center overflow-visible rounded-full border-4 border-white shadow-[0_20px_40px_-18px_rgba(14,26,58,.55)] [transform:translate(-50%,-50%)] sm:size-[88px]",
         className,
       )}
     >
-      <Image src={image.src} alt={image.alt} width={image.width} height={image.height} sizes="80px" className="block size-full rounded-full object-cover" />
+      <Image src={image.src} alt={image.alt} width={image.width} height={image.height} sizes="(min-width: 641px) 80px, 58px" className="block size-full rounded-full object-cover" />
       <span className="absolute top-[calc(100%+12px)] left-1/2 -translate-x-1/2 text-meta font-bold whitespace-nowrap text-ink-2">{label}</span>
     </div>
   );
@@ -22,7 +23,7 @@ function Avatar({ image, label, className }: { image: ImageAsset; label: string;
 export function OneOnOneStage() {
   return (
     <div className="relative">
-      <div className="relative h-[270px]">
+      <div className="relative h-[210px] sm:h-[250px]">
         <svg viewBox="0 0 520 300" preserveAspectRatio="none" aria-hidden="true" className="absolute inset-0 size-full overflow-visible">
           <path
             d="M118 150 C 190 30, 330 30, 402 150"
@@ -39,12 +40,12 @@ export function OneOnOneStage() {
         <Avatar image={oneOnOne.student.image} label={oneOnOne.student.label} className="left-[77.3%] bg-vivid-rose [animation-delay:-3s]" />
         <div
           aria-hidden="true"
-          className="absolute top-[56%] left-1/2 -translate-x-1/2 -translate-y-1/2 font-serif text-[110px] leading-none tracking-[-.02em] whitespace-nowrap text-ink italic sm:text-[128px]"
+          className="absolute top-[56%] left-1/2 -translate-x-1/2 -translate-y-1/2 font-serif text-[84px] leading-none tracking-[-.02em] whitespace-nowrap text-ink italic sm:text-[128px]"
         >
           {oneOnOne.ratio[0]}
-          <span className="mx-[.1em] inline-flex h-[.66em] flex-col justify-center gap-[.2em] align-[.06em]">
-            <i className="block size-[.105em] rounded-full bg-ink" />
-            <i className="block size-[.105em] rounded-full bg-ink" />
+          <span className="relative mr-[.04em] ml-[.02em] inline-block h-[.56em] w-[.24em]">
+            <i className="absolute top-0 left-1/2 -ml-[.055em] size-[.11em] rounded-full bg-ink" />
+            <i className="absolute bottom-[.02em] left-1/2 -ml-[.055em] size-[.11em] rounded-full bg-ink" />
           </span>
           {oneOnOne.ratio[1]}
         </div>
@@ -53,13 +54,14 @@ export function OneOnOneStage() {
         {oneOnOne.features.map((f) => (
           <li
             key={f.id}
-            className="flex h-full items-start gap-3 rounded-[18px] border border-white bg-white/86 px-4 py-3.5 shadow-feat backdrop-blur-[10px]"
+            className={cn(
+              tones[f.tone],
+              "flex h-full items-center gap-3 rounded-[18px] border border-l-[3px] border-white border-l-(--tone) bg-white/90 px-4 py-3.5 shadow-feat",
+              "transition-[translate,box-shadow] duration-300 ease-in-out hover:-translate-y-[3px] hover:shadow-[0_24px_44px_-26px_rgba(70,45,20,.5)]",
+            )}
           >
-            <IconTile icon={f.icon} tone={f.tone} box={38} />
-            <div>
-              <h3 className="m-0 text-body font-extrabold">{f.title}</h3>
-              <div className="mt-[3px] text-fine leading-[1.45] text-muted">{f.description}</div>
-            </div>
+            <IconTile icon={f.icon} tone={f.tone} box={40} />
+            <h3 className="m-0 text-[15px] leading-[1.25] font-extrabold text-ink">{f.title}</h3>
           </li>
         ))}
       </ul>

@@ -1,6 +1,6 @@
 import { Container } from "@/components/ui/Container";
 import { IconTile } from "@/components/ui/IconTile";
-import { hero } from "../content";
+import { hero } from "../content/hero";
 
 /** Frosted guarantee strip overlapping the bottom of the hero. */
 export function HeroLedger() {
@@ -11,13 +11,10 @@ export function HeroLedger() {
           {hero.ledger.map((item) => (
             <li
               key={item.id}
-              className="flex items-start gap-3.5 border-[#EFE6DA] px-3.5 py-2.5 lg:border-l lg:px-[18px] lg:py-0.5 lg:first:border-l-0"
+              className="flex items-center gap-3.5 border-line-soft px-3.5 py-2.5 lg:border-l lg:px-[18px] lg:py-0.5 lg:first:border-l-0"
             >
               <IconTile icon={item.icon} tone={item.tone} box={38} />
-              <div>
-                <div className="text-body font-extrabold whitespace-nowrap">{item.title}</div>
-                <div className="mt-0.5 text-meta leading-[1.45] text-muted">{item.description}</div>
-              </div>
+              <div className="text-body font-extrabold whitespace-nowrap">{item.title}</div>
             </li>
           ))}
         </ul>

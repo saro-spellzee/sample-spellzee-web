@@ -1,8 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
+import { WidgetBoundary } from "@/components/errors/WidgetBoundary";
 import { Accent } from "@/components/ui/Accent";
 import { Container } from "@/components/ui/Container";
-import { footer } from "../content";
+import { footer } from "../content/footer";
+import { widgetError } from "../content/page";
 import { NewsletterForm } from "../components/NewsletterForm";
 
 const pill = "rounded-full border border-night-line text-fine text-haze";
@@ -13,7 +15,9 @@ export function HomeFooter() {
     <footer className="bg-night pt-20 pb-[34px] text-white">
       <Container>
         <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-10">
-          <div className="col-span-2 max-w-[420px]">
+          {/* Spans two tracks, as in the export (on phones that adds a column for the link lists).
+              Below the export's 360px minimum that no longer fits, so it takes the full row. */}
+          <div className="col-span-full max-w-[420px] 2xs:col-span-2">
             <div className="flex items-center gap-3">
               <Image src={footer.mark.src} alt="" width={footer.mark.width} height={footer.mark.height} sizes="37px" className="block h-10 w-auto" />
               <span className="text-[25px] font-extrabold tracking-[-0.03em]">{footer.brand}</span>
@@ -26,7 +30,9 @@ export function HomeFooter() {
             <div className="mt-6">
               <div className="text-[15px] font-extrabold">{newsletter.title}</div>
               <div className="mt-1 text-[13.5px] text-mist">{newsletter.body}</div>
-              <NewsletterForm />
+              <WidgetBoundary name="Newsletter form" notice={widgetError} className="mt-3.5">
+                <NewsletterForm />
+              </WidgetBoundary>
             </div>
           </div>
           {footer.columns.map((col) => (

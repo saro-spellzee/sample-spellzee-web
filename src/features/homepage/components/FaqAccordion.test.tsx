@@ -4,6 +4,9 @@ import { describe, expect, it } from "vitest";
 import { axeViolations } from "../../../../tests/axe";
 import { clmSteps, faq } from "../content";
 import { FaqAccordion } from "./FaqAccordion";
+import { faqPanels } from "./faq/faqPanels";
+
+const renderAccordion = () => render(<FaqAccordion panels={faqPanels()} />);
 
 const question = (i: number) => screen.getByRole("button", { name: faq.items[i].question });
 const answer = (i: number) => screen.getByText(faq.items[i].answer);
@@ -18,14 +21,14 @@ function expectOnlyOpen(open: number) {
 
 describe("FaqAccordion", () => {
   it("renders every question as a heading button, with the first one open", () => {
-    render(<FaqAccordion />);
+    renderAccordion();
 
     expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(faq.items.length);
     expectOnlyOpen(0);
   });
 
   it("links each question to its answer region", () => {
-    render(<FaqAccordion />);
+    renderAccordion();
 
     const region = screen.getByRole("region", { name: faq.items[0].question });
     expect(question(0)).toHaveAttribute("aria-controls", region.id);
@@ -34,7 +37,7 @@ describe("FaqAccordion", () => {
 
   it("opens one question at a time", async () => {
     const user = userEvent.setup();
-    render(<FaqAccordion />);
+    renderAccordion();
 
     await user.click(question(1));
     expectOnlyOpen(1);
@@ -45,7 +48,7 @@ describe("FaqAccordion", () => {
 
   it("closes the open question when it is clicked again", async () => {
     const user = userEvent.setup();
-    render(<FaqAccordion />);
+    renderAccordion();
 
     await user.click(question(0));
 
@@ -54,7 +57,7 @@ describe("FaqAccordion", () => {
 
   it("toggles with Enter and Space from the keyboard", async () => {
     const user = userEvent.setup();
-    render(<FaqAccordion />);
+    renderAccordion();
 
     await user.tab();
     expect(question(0)).toHaveFocus();
@@ -69,7 +72,7 @@ describe("FaqAccordion", () => {
 
   it("shows the CLM step chips inside answers that ask for them", async () => {
     const user = userEvent.setup();
-    render(<FaqAccordion />);
+    renderAccordion();
     const i = faq.items.findIndex((item) => item.showSteps);
     expect(i).toBeGreaterThanOrEqual(0);
 
@@ -78,8 +81,26 @@ describe("FaqAccordion", () => {
     for (const step of clmSteps) expect(region).toHaveTextContent(step.label);
   });
 
+  it("shows each answer's designed extra (cards, comparisons, steps)", async () => {
+    const user = userEvent.setup();
+    renderAccordion();
+    const region = (i: number) => screen.getByRole("region", { name: faq.items[i].question });
+
+    // First answer: the three "about" cards.
+    for (const card of faq.extras.about) expect(region(0)).toHaveTextContent(card.title);
+
+    const compare = faq.items.findIndex((item) => item.extra === "compare");
+    await user.click(question(compare));
+    expect(region(compare)).toHaveTextContent(faq.extras.compare.foundational.title);
+    expect(region(compare)).toHaveTextContent(faq.extras.compare.recommendation.body.trim());
+
+    const payment = faq.items.findIndex((item) => item.extra === "payment");
+    await user.click(question(payment));
+    expect(region(payment)).toHaveTextContent(faq.extras.payment.refund.body);
+  });
+
   it("has no axe violations", async () => {
-    const { container } = render(<FaqAccordion />);
+    const { container } = renderAccordion();
     expect(await axeViolations(container)).toEqual([]);
   });
 });

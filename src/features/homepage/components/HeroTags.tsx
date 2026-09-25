@@ -2,7 +2,7 @@
 
 import { useState, type KeyboardEvent } from "react";
 import { cn } from "@/lib/cn";
-import { hero } from "../content";
+import { hero } from "../content/hero";
 import type { HeroTag } from "../types";
 import { Pulse } from "./Pulse";
 

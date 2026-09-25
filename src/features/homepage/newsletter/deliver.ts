@@ -11,6 +11,7 @@ import "server-only";
  *
  * With no URL configured: production fails loudly (server error log + a generic error to
  * the visitor, never a fake "subscribed"); development and tests log a masked address.
+ * Production also refuses a URL that isn't https://, so an address never travels in clear text.
  */
 
 const TIMEOUT_MS = 8000;
@@ -34,6 +35,11 @@ export async function deliverSubscription(email: string): Promise<boolean> {
     }
     console.info(`[newsletter] NEWSLETTER_WEBHOOK_URL not set (dev): would subscribe ${maskEmail(email)}`);
     return true;
+  }
+
+  if (process.env.NODE_ENV === "production" && !/^https:\/\//i.test(url)) {
+    console.error("[newsletter] NEWSLETTER_WEBHOOK_URL must be an https:// URL; the sign-up was NOT sent.");
+    return false;
   }
 
   const headers: Record<string, string> = { "Content-Type": "application/json" };

@@ -1,5 +1,6 @@
 import { useEffect, type RefObject } from "react";
 import { TAU, fitCanvas, glow, hexA, prefersReducedMotion, startCanvas } from "./canvas";
+import { isMotionPaused } from "./motion";
 import {
   GAP,
   IH,
@@ -106,7 +107,7 @@ export function useNetCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
           n.fire *= 0.94;
           if (mouse.on && n.rest === 0 && Math.hypot(n.x - mouse.x, n.y - mouse.y) < 55) fire(n, 4, null);
         }
-        if (Math.random() < 0.012 && near.length) fire(near[(Math.random() * near.length) | 0], 3, null);
+        if (Math.random() < 0.006 && near.length) fire(near[(Math.random() * near.length) | 0], 3, null);
       };
       const draw = () => {
         t += 1;
@@ -163,7 +164,8 @@ export function useNetCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
           if (n.fire > 0.2) { ctx.fillStyle = `rgba(255,255,255,${n.fire})`; ctx.beginPath(); ctx.arc(n.x, n.y, n.r * 0.6, 0, TAU); ctx.fill(); }
         }
       };
-      const loop: () => void = guard(() => { if (visible) draw(); raf = requestAnimationFrame(loop); });
+      // Holds its last frame while off-screen or while the page's "Pause motion" switch is on.
+      const loop: () => void = guard(() => { if (visible && !isMotionPaused()) draw(); raf = requestAnimationFrame(loop); });
       const move = guard((ev: PointerEvent) => {
         const r = box.getBoundingClientRect();
         mouse.x = ev.clientX - r.left;
@@ -176,7 +178,11 @@ export function useNetCanvas(canvasRef: RefObject<HTMLCanvasElement | null>) {
       resize();
       host.addEventListener("pointermove", move);
       host.addEventListener("pointerleave", leave);
-      const ro = new ResizeObserver(guard(resize));
+      // The observer also reports the size it starts with; only a real change re-fits and re-seeds.
+      const ro = new ResizeObserver(guard(() => {
+        const r = box.getBoundingClientRect();
+        if (r.width !== w || r.height !== h) resize();
+      }));
       ro.observe(box);
       const io = new IntersectionObserver(guard((en: IntersectionObserverEntry[]) => { visible = en[0].isIntersecting; }));
       io.observe(box);

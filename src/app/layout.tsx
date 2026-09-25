@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Caveat, Instrument_Serif, Plus_Jakarta_Sans } from "next/font/google";
+import { Instrument_Serif, Plus_Jakarta_Sans } from "next/font/google";
 import { site } from "@/lib/site";
 import "./globals.css";
 
@@ -14,14 +14,6 @@ const instrument = Instrument_Serif({
   weight: "400",
   style: ["normal", "italic"],
   variable: "--font-instrument",
-});
-
-const caveat = Caveat({
-  subsets: ["latin"],
-  weight: ["500", "600"],
-  variable: "--font-caveat",
-  // Handwriting notes sit far below the fold; don't spend first-load bandwidth on them.
-  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -55,7 +47,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang={site.language}
-      className={`${jakarta.variable} ${instrument.variable} ${caveat.variable}`}
+      className={`${jakarta.variable} ${instrument.variable}`}
     >
       <body>{children}</body>
     </html>

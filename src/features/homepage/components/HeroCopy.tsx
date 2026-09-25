@@ -1,48 +1,50 @@
-import { Accent } from "@/components/ui/Accent";
+import { WidgetBoundary } from "@/components/errors/WidgetBoundary";
 import { Button } from "@/components/ui/Button";
 import { Heading } from "@/components/ui/Heading";
-import { Icon } from "@/components/ui/Icon";
 import { IconTile } from "@/components/ui/IconTile";
 import { Lead } from "@/components/ui/Lead";
-import { Swoosh } from "@/components/ui/Swoosh";
-import { hero } from "../content";
+import { tones } from "@/components/ui/tones";
+import { cn } from "@/lib/cn";
+import { hero } from "../content/hero";
 import { CredentialBar } from "./CredentialBar";
-import { Pulse } from "./Pulse";
-
-const badge =
-  "inline-flex items-center rounded-full border border-[#E3E8F4] bg-white/80 py-2 pr-4 text-meta font-bold";
+import { HeroWordRotator } from "./HeroWordRotator";
+import { LanguageRotator } from "./LanguageRotator";
+import { MiniBadge } from "./MiniBadge";
 
 export function HeroCopy() {
-  const { badges, title, lead, highlights } = hero;
+  const { badges, title, lead, highlights, language } = hero;
+  const firstWord = title.words[0];
   return (
     <div
       data-hero-copy
-      className="relative z-4 order-first animate-rise px-7 pt-12 pb-3 lg:order-none lg:ml-[max(40px,calc((100%-1200px)/2+40px))] lg:w-[min(46%,600px)] lg:px-0 lg:pt-9 lg:pb-[84px]"
+      className="relative z-4 order-first animate-rise px-5 pt-7 pb-2 sm:px-7 sm:pt-12 sm:pb-3 lg:order-none lg:ml-[max(40px,calc((100%-1200px)/2+40px))] lg:w-[min(46%,600px)] lg:px-0 lg:pt-9 lg:pb-[84px]"
     >
       <div className="flex flex-wrap gap-2.5">
-        <span className={`${badge} gap-2.5 pl-3.5 text-brand`}>
-          <Pulse className="bg-vivid-rose text-vivid-rose" />
-          {badges.intro}
-        </span>
-        <span className={`${badge} gap-2 pl-3 text-ink`}>
-          <Icon name="institution" size={15} />
-          {badges.incubated}
-        </span>
+        <MiniBadge pulse>
+          {badges.method.before}
+          <b className="font-extrabold text-tone-iris">{badges.method.strong}</b>
+          {badges.method.after}
+        </MiniBadge>
+        <MiniBadge pulse>{badges.incubated}</MiniBadge>
       </div>
 
-      <Heading as="h1" look="display" size="text-[clamp(36px,3.6vw,52px)] leading-[1.08] tracking-[-0.045em]" className="mt-[18px]">
-        {title.lines[0]}{" "}
-        <br />
-        {title.lines[1]}{" "}
-        <br />
-        {title.lines[2]}
-        <Accent className="pl-[0.04em] text-[1.14em] text-brand">{title.accent}</Accent>
+      <Heading as="h1" look="display" size="text-[40px] leading-[1.08] tracking-[-0.045em] sm:text-[clamp(36px,3.5vw,54px)]" className="mt-[18px]">
+        <span className="sr-only">{title.spoken}</span>
+        <span aria-hidden="true">
+          {title.line}
+          <br />
+          {/* If the rotator fails, the headline keeps its first word. */}
+          <WidgetBoundary name="Hero word rotator" fallback={<span className={cn(tones[firstWord.tone], "text-(--tone)")}>{firstWord.text}</span>}>
+            <HeroWordRotator />
+          </WidgetBoundary>
+        </span>
       </Heading>
 
-      <Lead className="mt-5 max-w-[520px]">
+      <Lead className="mt-[22px] max-w-[540px]">
+        {lead.before}
         <strong className="font-bold text-ink">{lead.strong}</strong>
         {lead.middle}
-        <Swoosh>{lead.mark}</Swoosh>
+        <strong className="font-bold text-ink">{lead.strong2}</strong>
         {lead.after}
       </Lead>
 
@@ -56,10 +58,16 @@ export function HeroCopy() {
             </span>
           </li>
         ))}
+        <li className="inline-flex items-center gap-[9px]">
+          <IconTile icon={language.icon} tone={language.tone} box={28} iconSize={15} strokeWidth={2.2} />
+          <span>
+            {language.label} <LanguageRotator />
+          </span>
+        </li>
       </ul>
 
       <div className="mt-6 flex flex-wrap gap-3">
-        <Button href={hero.primaryCta.href} arrow>
+        <Button href={hero.primaryCta.href} action="book" arrow>
           {hero.primaryCta.label}
         </Button>
         <Button href={hero.secondaryCta.href} variant="ghost" size="mdEven">

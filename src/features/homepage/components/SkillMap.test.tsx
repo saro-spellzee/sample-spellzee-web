@@ -2,7 +2,9 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { axeViolations } from "../../../../tests/axe";
+import { fakeCanvas } from "../../../../tests/canvas";
 import { clm } from "../content";
+import { setMotionPaused } from "../hooks/motion";
 import { SkillMap } from "./SkillMap";
 
 const AUTO_ADVANCE_MS = 3600;
@@ -51,6 +53,7 @@ describe("SkillMap", () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.unstubAllGlobals();
+    setMotionPaused(false);
   });
 
   it("starts on the first skill and describes it", () => {
@@ -163,6 +166,18 @@ describe("SkillMap", () => {
       expectActive(3);
     });
 
+    it("holds while the page's Pause motion switch is on, and resumes after", () => {
+      renderInSection(true);
+
+      act(() => setMotionPaused(true));
+      tick(AUTO_ADVANCE_MS * 3);
+      expectActive(0);
+
+      act(() => setMotionPaused(false));
+      tick(AUTO_ADVANCE_MS);
+      expectActive(1);
+    });
+
     it("stays paused while the pointer rests over the map", () => {
       const { container } = renderInSection(true);
       const root = container.querySelector("section > div")!;
@@ -172,6 +187,33 @@ describe("SkillMap", () => {
       tick(AUTO_ADVANCE_MS * 3);
 
       expectActive(0);
+    });
+  });
+
+  describe("brain canvas", () => {
+    it("animates on screen, and holds its last frame while motion is paused", () => {
+      const canvas = fakeCanvas({ width: 370, height: 330 });
+      render(<SkillMap />);
+      canvas.runFrame();
+      expect(canvas.drawn()).toBe(1);
+
+      act(() => setMotionPaused(true));
+      canvas.runFrame();
+      canvas.runFrame();
+      expect(canvas.drawn()).toBe(1);
+
+      act(() => setMotionPaused(false));
+      canvas.runFrame();
+      expect(canvas.drawn()).toBe(2);
+    });
+
+    it("draws one still frame and never animates when the user prefers reduced motion", () => {
+      vi.stubGlobal("matchMedia", (query: string) => ({ matches: query.includes("reduce"), media: query }));
+      const canvas = fakeCanvas({ width: 370, height: 330 });
+      render(<SkillMap />);
+
+      expect(canvas.drawn()).toBe(1);
+      expect(canvas.pending()).toBe(0);
     });
   });
 
