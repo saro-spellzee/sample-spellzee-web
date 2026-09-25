@@ -378,6 +378,50 @@ describe("BookingDialog", () => {
     expect(screen.getByRole("link", { name: "Book a Free Demo Class" })).toHaveFocus();
   });
 
+  it("returns focus to the menu button when the phone menu hid the link that opened it", async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <header>
+          <button type="button" aria-controls="site-menu">
+            Menu
+          </button>
+          <a href="#book" data-action="book">
+            Book a Free Demo Class
+          </a>
+        </header>
+        <BookingDialog />
+      </>,
+    );
+    await open(user);
+    // The menu closes on that click, and a link in a display:none menu can't take focus.
+    // jsdom has no layout, so stand in for that refusal.
+    vi.spyOn(screen.getByRole("link", { name: "Book a Free Demo Class" }), "focus").mockImplementation(() => {});
+
+    fireEvent(dialog(), new Event("cancel", { cancelable: true }));
+
+    expect(dialog()).not.toHaveAttribute("open");
+    expect(screen.getByRole("button", { name: "Menu" })).toHaveFocus();
+  });
+
+  it.each(["+919876543210", "+91 98765 43210"])("sends the whole number when it's pasted or autofilled as %s", async (typed) => {
+    const user = userEvent.setup();
+    renderWithTrigger();
+    await open(user);
+    await fillChild(user);
+    await user.type(screen.getByLabelText(booking.parent.label), "Meera Iyer");
+    const phone = screen.getByLabelText<HTMLInputElement>(booking.phone.label);
+    // Browsers cut a paste at maxLength (jsdom doesn't), and a cut "+9198765432" still looks like 10 digits.
+    expect(phone.maxLength).toBeGreaterThanOrEqual(typed.length);
+    await user.type(phone, typed);
+    await user.click(screen.getByRole("checkbox"));
+
+    await user.click(submitCall());
+
+    await waitFor(() => expect(action).toHaveBeenCalledOnce());
+    expect(sent()).toMatchObject({ phone: "9876543210" });
+  });
+
   it.each([["Ctrl", { ctrlKey: true }], ["Cmd", { metaKey: true }], ["Shift", { shiftKey: true }]])(
     "leaves a %s-click on a booking link to the browser (a new tab or window)",
     (_label, modifier) => {

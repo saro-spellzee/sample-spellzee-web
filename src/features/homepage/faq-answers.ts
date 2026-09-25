@@ -32,7 +32,7 @@ function checkColumn({ title, tag, items, result }: CheckColumn) {
   const missing = items.filter((item) => !item.included).map((item) => item.label);
   return [
     labelled(`${title} (${tag})`, covered.join("; ")),
-    ...(missing.length ? [labelled("Not covered", missing.join("; "))] : []),
+    ...(missing.length ? [labelled(extras.compare.notCovered, missing.join("; "))] : []),
     note(result),
   ].join(" ");
 }

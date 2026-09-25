@@ -61,7 +61,7 @@ export function CompareExtra() {
               {data.title} <span className={cn("rounded-full px-2 py-0.5 text-[10.5px] font-extrabold", tag)}>{data.tag}</span>
             </div>
             <div className="mb-3">
-              <CheckList items={data.items} />
+              <CheckList items={data.items} excludedLabel={extras.compare.notCovered} />
             </div>
             <div className={cn("mt-auto rounded-[10px] px-3 py-[9px] text-fine font-semibold", result)}>
               <b>{data.result.strong}</b>

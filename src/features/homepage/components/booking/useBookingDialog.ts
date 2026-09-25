@@ -20,6 +20,18 @@ const TRIGGER = '[data-action="book"]';
 /** Whether this engine can show a modal <dialog>. Where it can't, the CTAs keep their plain #book link. */
 const canShowModal = () => typeof HTMLDialogElement === "function" && typeof HTMLDialogElement.prototype.showModal === "function";
 
+/**
+ * Gives focus back to the CTA that opened the dialog. The phone menu hides itself when its CTA
+ * is clicked, and a hidden link can't take focus, so then focus goes to the menu button that
+ * leads back to it instead of falling to <body>.
+ */
+function returnFocus(opener: HTMLElement | null) {
+  if (!opener) return;
+  opener.focus();
+  if (document.activeElement === opener) return;
+  opener.closest("header")?.querySelector<HTMLElement>("[aria-controls]")?.focus();
+}
+
 export type BookingStep = 1 | 2;
 
 /** Where the booking request stands. `sent` carries the booking as the server accepted it, for the confirmation. */
@@ -102,7 +114,7 @@ export function useBookingDialog() {
     if (open && !dialog.open) dialog.showModal();
     if (!open && dialog.open) {
       dialog.close();
-      opener.current?.focus();
+      returnFocus(opener.current);
     }
   }, [open]);
 

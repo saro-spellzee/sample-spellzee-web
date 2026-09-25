@@ -40,10 +40,14 @@ export function Note({ strong, body, className }: NoteProps) {
   );
 }
 
-export type CheckListProps = { items: readonly { label: string; included: boolean }[] };
+export type CheckListProps = {
+  items: readonly { label: string; included: boolean }[];
+  /** Read before each crossed item, for screen readers, where the list mixes ticks and crosses. */
+  excludedLabel?: string;
+};
 
 /** Tick (included) or cross (not included) list. */
-export function CheckList({ items }: CheckListProps) {
+export function CheckList({ items, excludedLabel }: CheckListProps) {
   return (
     <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
       {items.map((item) => (
@@ -54,7 +58,10 @@ export function CheckList({ items }: CheckListProps) {
             strokeWidth={3}
             className={cn("mt-0.5 flex-none", item.included ? "text-tone-green" : "text-tone-rose")}
           />
-          {item.label}
+          <span>
+            {!item.included && excludedLabel ? <span className="sr-only">{`${excludedLabel}: `}</span> : null}
+            {item.label}
+          </span>
         </li>
       ))}
     </ul>

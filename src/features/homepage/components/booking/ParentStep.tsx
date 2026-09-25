@@ -82,7 +82,8 @@ export function ParentStep({ error, pending, onBack, today, month, onMonth }: Pa
             type="tel"
             inputMode="numeric"
             autoComplete="tel-national"
-            maxLength={11}
+            // Room for a pasted or autofilled "+91 98765 43210"; the schema still wants 10 digits.
+            maxLength={16}
             placeholder={booking.phone.placeholder}
             {...fieldAria(!!errors.phone, "bf-phone-code bf-phone-hint")}
             {...register("phone")}

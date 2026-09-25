@@ -36,7 +36,7 @@ export function ProgramsSection() {
 
         <Card radius="rounded-[22px]" className="mt-[18px] flex flex-col flex-wrap items-start justify-between gap-[18px] py-[18px] pr-5 pl-[18px] sm:flex-row sm:items-center">
           {/* stacks on phones, with the CTA below (the export's 640px rule) */}
-          <div className="flex min-w-0 flex-1 basis-[240px] items-center gap-4">
+          <div className="flex min-w-0 flex-1 items-center gap-4 sm:basis-[240px]">
             <span className="flex size-[52px] flex-none items-center justify-center rounded-[15px] bg-brand-tint text-brand">
               <Icon name="question" size={24} />
             </span>

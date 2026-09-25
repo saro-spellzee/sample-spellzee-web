@@ -102,6 +102,8 @@ export const faqExtras = {
       result: { strong: "Result:", body: " Reads words, with limited communication" },
     },
     recommendation: { strong: "Recommendation:", body: " Foundational Skills provides the complete English learning experience, while Phonics alone covers the core reading mechanics." },
+    /** Says in words what the cross icon shows (screen readers) and labels those items in the FAQ answer text. */
+    notCovered: "Not covered",
   },
   online: [
     { title: "Live 1:1", body: "A mentor hears and sees every answer your child gives.", tone: "blue" },
